@@ -1742,6 +1742,12 @@ window.addEventListener('pagehide', save);
 
 route();
 try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) { }
+// offline mode: save a copy of the game on this device (needs https, so not when opened as a local file)
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => { }); });
+}
+window.addEventListener('offline', () => { if (running) toast('You’re offline. Your game keeps saving on this device.'); });
+window.addEventListener('online', () => { if (running) toast('Back online'); });
 setCloud('local');
 </script>
 </body>
