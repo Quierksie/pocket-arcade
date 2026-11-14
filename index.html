@@ -118,8 +118,8 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--gold); outline-
 .toast { position: absolute; top: 58px; left: 50%; transform: translateX(-50%); background: rgba(10,7,5,.92); border: 2px solid var(--gold); border-radius: 4px; padding: 10px 14px; font-family: var(--display); font-size: 10px; line-height: 1.6; text-align: center; color: var(--gold); pointer-events: none; z-index: 5; width: max-content; max-width: calc(100% - 32px); opacity: 0; transition: opacity .25s; }
 .toast.show { opacity: 1; }
 
-.tabs { display: grid; grid-template-columns: repeat(4, 1fr); background: #0b0806; border-top: 2px solid #000; border-bottom: 1px solid var(--line); }
-.tab { background: none; border: 0; padding: 12px 2px; font-family: var(--display); font-size: 9px; color: var(--muted); cursor: pointer; position: relative; border-bottom: 3px solid transparent; }
+.tabs { display: grid; grid-template-columns: repeat(5, 1fr); background: #0b0806; border-top: 2px solid #000; border-bottom: 1px solid var(--line); }
+.tab { background: none; border: 0; padding: 12px 1px; font-family: var(--display); font-size: 8px; color: var(--muted); cursor: pointer; position: relative; border-bottom: 3px solid transparent; }
 .tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--gold); }
 .badge { display: inline-block; min-width: 18px; padding: 3px 4px; margin-left: 6px; border-radius: 9px; background: var(--bad); color: #fff; font-size: 8px; vertical-align: 1px; }
 .panel { flex: 1; min-height: 0; overflow-y: auto; padding: 12px; background: var(--panel); display: flex; flex-direction: column; gap: 8px; -webkit-overflow-scrolling: touch; }
@@ -175,6 +175,30 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--gold); outline-
 .modal .row button.warn { background: var(--bad); color: #fff; border-color: #000; font-weight: 700; }
 
 @media (prefers-reduced-motion: reduce) { .toast, .mine { transition: none; } }
+.fsec { padding: 6px 2px 0; }
+.fsec b { display: block; font-family: var(--display); font-size: 11px; color: var(--gold); }
+.fsec small { display: block; color: var(--muted); font-size: 13px; line-height: 1.45; margin-top: 6px; }
+.fsec small b { display: inline; font-family: var(--body); font-size: 13px; color: var(--ink); }
+.btn2 { display: flex; flex-direction: column; gap: 6px; }
+.btn2 .buy { min-width: 74px; padding: 8px 6px; }
+.buy.alt { background: #3a3027; color: var(--ink); box-shadow: 0 3px 0 #1a140f; }
+.smith { display: grid; gap: 8px; padding: 12px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 5px; }
+.smith .nm { font-weight: 700; }
+.smith ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+.smith li.ok { color: var(--good); }
+.smith .hint { margin: 0; }
+.smith.star { grid-template-columns: 64px 1fr; align-items: start; border: 2px solid #d63cff; background: #1c1024; }
+.smith.star .buy { grid-column: 1 / -1; }
+.starprev { width: 64px; height: 64px; image-rendering: pixelated; }
+.chap { position: relative; display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 12px; border-radius: 5px; border: 1px solid var(--line); background: var(--panel-2); cursor: pointer; overflow: hidden; }
+.chap b { display: block; font-size: 14px; }
+.chap small { display: block; color: var(--muted); font-size: 12px; margin-top: 3px; }
+.chap em { font-style: normal; font-family: var(--display); font-size: 9px; color: var(--gold); }
+.chap i { position: absolute; left: 0; bottom: 0; height: 3px; background: var(--gold); }
+.chap.done { border-color: #2f5a2a; }
+.chap.done em { color: var(--good); }
+.chap.locked { opacity: .5; cursor: default; }
+.trav button.dimb { border-color: #6a2a5a; }
 .gemhud { display: inline-flex; align-items: center; gap: 5px; margin-left: 10px; font-size: 11px; color: #f2a6ff; }
 .ability { position: absolute; top: 66px; width: 54px; height: 54px; border-radius: 6px; border: 2px solid #000; background: #2a221b; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-family: var(--display); font-size: 7px; color: var(--ink); cursor: pointer; z-index: 3; box-shadow: 0 3px 0 #000; overflow: hidden; padding: 0; }
 .ability canvas { width: 24px; height: 24px; image-rendering: pixelated; }
@@ -287,11 +311,13 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--gold); outline-
     <nav class="tabs" role="tablist">
       <button class="tab" role="tab" aria-selected="true" data-tab="upgrades" id="tab-upgrades">UPGRADES</button>
       <button class="tab" role="tab" aria-selected="false" data-tab="bag" id="tab-bag">BAG<span class="badge" id="bagBadge" hidden>0</span></button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="forge" id="tab-forge">FORGE</button>
       <button class="tab" role="tab" aria-selected="false" data-tab="gems" id="tab-gems">GEMS<span class="badge" id="gemBadge" hidden>!</span></button>
       <button class="tab" role="tab" aria-selected="false" data-tab="more" id="tab-more">MORE</button>
     </nav>
     <section class="panel" id="panel-upgrades"></section>
     <section class="panel" id="panel-bag" hidden></section>
+    <section class="panel" id="panel-forge" hidden></section>
     <section class="panel" id="panel-gems" hidden></section>
     <section class="panel" id="panel-more" hidden></section>
   </div>
@@ -312,6 +338,9 @@ const ORES = {
   diamond:  { name: 'Diamond',   value: 4500,   color: '#5ff0f0', shine: '#e8ffff' },
   voidstone:{ name: 'Voidstone', value: 16000,  color: '#8a3cff', shine: '#d6b8ff' },
   starcore: { name: 'Starcore',  value: 70000,  color: '#ffffff', shine: '#ffe27a' },
+  uranium:  { name: 'Uranium',   value: 250000, color: '#7dff3a', shine: '#e0ffc0' },
+  blackdiamond: { name: 'Black Diamond', value: 1200000, color: '#24222e', shine: '#c8c4e8' },
+  unobtainium: { name: 'Unobtainium', value: 6000000, color: '#ff4fa0', shine: '#ffe0f0' },
 };
 const LAYERS = [
   { name: 'Topsoil',       from: 0,   base: '#7a5230', dark: '#553620', light: '#9b6c42', sky: ['#3a2a1d', '#17100a'], ores: [['copper', .14], ['coal', .10]] },
@@ -321,11 +350,19 @@ const LAYERS = [
   { name: 'Crystal Caves', from: 210, base: '#2f3d6b', dark: '#1d2647', light: '#7fa8ff', sky: ['#14204a', '#060a1c'], ores: [['gold', .10], ['ruby', .09], ['emerald', .05], ['diamond', .015]] },
   { name: 'The Abyss',     from: 320, base: '#1c1426', dark: '#0e0914', light: '#5a3a80', sky: ['#120a1c', '#030106'], ores: [['emerald', .10], ['diamond', .06], ['voidstone', .02]] },
   { name: 'Planet Core',   from: 460, base: '#6b4a10', dark: '#3d2805', light: '#ffd34a', sky: ['#3a2304', '#0d0700'], ores: [['diamond', .10], ['voidstone', .06], ['starcore', .015]] },
+  { name: 'Uranium Veins',    from: 600,  base: '#2a3a1c', dark: '#16220c', light: '#7dff3a', sky: ['#16260c', '#040801'], ores: [['voidstone', .06], ['starcore', .04], ['uranium', .03]] },
+  { name: 'Black Mantle',     from: 800,  base: '#1c1a24', dark: '#0a090e', light: '#5a566e', sky: ['#0e0c14', '#000000'], ores: [['starcore', .05], ['uranium', .05], ['blackdiamond', .02]] },
+  { name: 'Unobtainium Rift', from: 1000, base: '#3a1030', dark: '#1e0618', light: '#ff4fa0', sky: ['#2a0820', '#080006'], ores: [['uranium', .06], ['blackdiamond', .04], ['unobtainium', .012]] },
+  // dimensions: portal worlds unlocked by prestiging. 'eff' is how tough their first block is, in overworld meters
+  { name: 'Ember Realm',   from: 10000, dim: 'ember',  need: 1, eff: 300, base: '#6a2a14', dark: '#3a120a', light: '#ffb02a', sky: ['#4a1206', '#160300'], ores: [['gold', .12], ['ruby', .10], ['ember', .012]] },
+  { name: 'Frost Expanse', from: 20000, dim: 'frost',  need: 2, eff: 450, base: '#7aa8c8', dark: '#4a7898', light: '#e8f6ff', sky: ['#1a3a5a', '#06121e'], ores: [['diamond', .10], ['emerald', .10], ['frost', .01]] },
+  { name: 'The Aether',    from: 30000, dim: 'aether', need: 3, eff: 650, base: '#d8d0b8', dark: '#a89878', light: '#ffffff', sky: ['#5a7ab8', '#1a2a58'], ores: [['starcore', .06], ['uranium', .05], ['aether', .008]] },
 ];
 function layerAt(d) { let l = LAYERS[0]; for (const L of LAYERS) if (d >= L.from) l = L; return l; }
-function nextLayer(d) { return LAYERS.find(L => L.from > d) || null; }
-function hp(d) { return Math.ceil(8 * Math.pow(1.042, d) + d * 3); }
-function rubble(d) { return Math.ceil(1 + d * 0.15 + Math.pow(1.045, d) * 0.5); }
+function nextLayer(d) { if (layerAt(d).dim) return null; return LAYERS.find(L => !L.dim && L.from > d) || null; }
+function effD(d) { const L = layerAt(d); return L.dim ? L.eff + (d - L.from) : d; }
+function hp(d) { d = effD(d); return Math.ceil(8 * Math.pow(1.042, d) + d * 3); }
+function rubble(d) { d = effD(d); return Math.ceil(1 + d * 0.15 + Math.pow(1.045, d) * 0.5); }
 const UP = {
   pick:     { name: 'Pickaxe',     max: 0,  cost: l => Math.ceil(12 * Math.pow(1.62, l)) },
   hold:     { name: 'Power Grip',  max: 1,  cost: l => 100 },
@@ -342,6 +379,42 @@ const MAX_BREAKS = 8; // most blocks that can break per second, however strong y
 let nextBreakAt = 0;
 const HOLD_RATE = 6.9; // hits per second while holding down on the block
 const PRESTIGE_DEPTH = 460;
+const SHARDS = {
+  ember:  { name: 'Ember Shard',  color: '#ff6a2a', shine: '#ffe0a0' },
+  frost:  { name: 'Frost Shard',  color: '#8fe0ff', shine: '#ffffff' },
+  aether: { name: 'Aether Shard', color: '#fff2a8', shine: '#ffffff' },
+};
+const SMELT = {
+  iron:         { name: 'Iron Ingot',          ore: 'iron',         n: 4 },
+  gold:         { name: 'Gold Ingot',          ore: 'gold',         n: 3 },
+  diamond:      { name: 'Diamond Ingot',       ore: 'diamond',      n: 2 },
+  void:         { name: 'Void Ingot',          ore: 'voidstone',    n: 2 },
+  uranium:      { name: 'Uranium Ingot',       ore: 'uranium',      n: 2 },
+  blackdiamond: { name: 'Black Diamond Ingot', ore: 'blackdiamond', n: 1 },
+  unobtainium:  { name: 'Unobtainium Ingot',   ore: 'unobtainium',  n: 1 },
+};
+const TIERS = [
+  { name: 'Basic' },
+  { name: 'Steel',         ingot: 'iron',         n: 5, coins: 2e3 },
+  { name: 'Golden',        ingot: 'gold',         n: 5, coins: 5e4 },
+  { name: 'Diamond',       ingot: 'diamond',      n: 5, coins: 2e6 },
+  { name: 'Void',          ingot: 'void',         n: 5, coins: 5e7, unlocks: 'Uranium' },
+  { name: 'Uranium',       ingot: 'uranium',      n: 4, coins: 1e9, unlocks: 'Black Diamond' },
+  { name: 'Black Diamond', ingot: 'blackdiamond', n: 3, coins: 5e10, unlocks: 'Unobtainium' },
+  { name: 'Unobtainium',   ingot: 'unobtainium',  n: 2, coins: 2e12 },
+];
+const ORE_REQ = { uranium: 4, blackdiamond: 5, unobtainium: 6 }; // pickaxe tier needed to collect
+const STAR_RECIPE = [['ingot', 'iron', 5], ['ingot', 'gold', 5], ['ingot', 'diamond', 5], ['ingot', 'void', 5], ['ingot', 'uranium', 3], ['ingot', 'blackdiamond', 2], ['ingot', 'unobtainium', 1], ['shard', 'ember', 1], ['shard', 'frost', 1], ['shard', 'aether', 1]];
+function tierMult(s) { return Math.pow(1.5, s.tier || 0); }
+function starMult(s) { return Math.pow(2, s.stars || 0); }
+const CHAPTERS = [
+  { n: 1, name: 'Getting Started', bonus: 3 },
+  { n: 2, name: 'Going Deeper', bonus: 5 },
+  { n: 3, name: 'The Core', bonus: 8 },
+  { n: 4, name: 'Beyond the Core', bonus: 12 },
+  { n: 5, name: 'Other Worlds', bonus: 15 },
+  { n: 6, name: 'The Black Star', bonus: 25 },
+];
 const GEM_UP = {
   power: { name: 'Ancient Power', icon: 'pick',     max: 0,  cost: l => l + 1 },
   touch: { name: 'Golden Touch',  icon: 'merchant', max: 0,  cost: l => l + 1 },
@@ -368,6 +441,7 @@ const SKINS = {
   diamond: { name: 'Diamond Deluxe', head: '#5ff0f0', dark: '#1f9a9a', handle: '#2f3d6b', cost: ['diamond', 8],   spark: '#e8ffff' },
   void:    { name: 'Void Reaper',    head: '#a45cff', dark: '#4a1a99', handle: '#1c1426', cost: ['voidstone', 5], spark: '#d6b8ff' },
   star:    { name: 'Starbreaker',    head: '#ffffff', dark: '#ffd34a', handle: '#6b4a10', cost: ['starcore', 2],  spark: '#ffe27a', rainbow: true },
+  uranium: { name: 'Uranium Glow',   head: '#7dff3a', dark: '#2f8a10', handle: '#2a3a1c', cost: ['uranium', 10],  spark: '#e0ffc0' },
 };
 const DRILL_SKINS = {
   classic: { name: 'Classic',         body: '#e2a23a', hi: '#ffd27a', cap: '#3a2a10', bitA: '#a0a3aa', bitB: '#e8e8ee', cost: null },
@@ -379,6 +453,7 @@ const DRILL_SKINS = {
   diamond: { name: 'Diamond Driller', body: '#2f3d6b', hi: '#7fa8ff', cap: '#141c38', bitA: '#5ff0f0', bitB: '#e8ffff', cost: ['diamond', 8] },
   void:    { name: 'Void Bore',       body: '#2a1440', hi: '#a45cff', cap: '#0e0914', bitA: '#8a3cff', bitB: '#d6b8ff', cost: ['voidstone', 5] },
   star:    { name: 'Star Spinner',    body: '#ffffff', hi: '#ffe27a', cap: '#6b4a10', bitA: '#ffd34a', bitB: '#ffffff', cost: ['starcore', 2], rainbow: true },
+  blackdia: { name: 'Black Diamond Bore', body: '#24222e', hi: '#c8c4e8', cap: '#000000', bitA: '#5a566e', bitB: '#e8e6ff', cost: ['blackdiamond', 5] },
 };
 const BGS = {
   layer:  { name: 'Match the layer', cost: null },
@@ -409,7 +484,24 @@ const ACH = [
   { id: 'rebirth',  name: 'Rebirth',             desc: 'Prestige once',                 gems: 3, val: s => s.prestiges || 0, goal: 1 },
   { id: 'streak',   name: 'Daily Digger',        desc: 'Reach a 7-day daily streak',    gems: 2, val: s => s.daily.streak, goal: 7 },
   { id: 'style',    name: 'Fashionable',         desc: 'Buy any skin or background',    gems: 1, val: s => Object.keys(s.skins).length + Object.keys(s.drillSkins || {}).length + Object.keys(s.bgs || {}).length - 3, goal: 1 },
+  { id: 'ingot1',   ch: 2, name: 'Hot Metal',          desc: 'Smelt your first ingot',            gems: 1, val: s => Object.values(s.ingots || {}).reduce((a, b) => a + b, 0) + (s.tier || 0), goal: 1 },
+  { id: 'smith1',   ch: 2, name: 'Blacksmith',         desc: 'Forge a Steel Pickaxe',             gems: 2, val: s => s.tier || 0, goal: 1 },
+  { id: 'uveins',   ch: 4, name: 'Glowing Rocks',      desc: 'Reach Uranium Veins (600 m)',       gems: 4, val: s => s.best, goal: 600 },
+  { id: 'rift',     ch: 4, name: 'The Rift',           desc: 'Reach Unobtainium Rift (1000 m)',   gems: 6, val: s => s.best, goal: 1000 },
+  { id: 'smith4',   ch: 4, name: 'Void Forged',        desc: 'Forge a Void Pickaxe',              gems: 4, val: s => s.tier || 0, goal: 4 },
+  { id: 'uranium',  ch: 4, name: 'Hot Stuff',          desc: 'Collect Uranium',                   gems: 3, val: s => s.seen.uranium ? 1 : 0, goal: 1 },
+  { id: 'blackdia', ch: 4, name: 'Darkest Gem',        desc: 'Collect a Black Diamond',           gems: 4, val: s => s.seen.blackdiamond ? 1 : 0, goal: 1 },
+  { id: 'unob',     ch: 4, name: 'Unobtainable?',      desc: 'Collect Unobtainium',               gems: 6, val: s => s.seen.unobtainium ? 1 : 0, goal: 1 },
+  { id: 'smith7',   ch: 4, name: 'The Impossible Pick', desc: 'Forge an Unobtainium Pickaxe',     gems: 8, val: s => s.tier || 0, goal: 7 },
+  { id: 'ember',    ch: 5, name: 'Into the Fire',      desc: 'Enter the Ember Realm (prestige 1 time)', gems: 3, val: s => s.dimVisited.ember ? 1 : 0, goal: 1 },
+  { id: 'frost',    ch: 5, name: 'Cold Feet',          desc: 'Enter the Frost Expanse (prestige 2 times)', gems: 4, val: s => s.dimVisited.frost ? 1 : 0, goal: 1 },
+  { id: 'aether',   ch: 5, name: 'Above the Clouds',   desc: 'Enter the Aether (prestige 3 times)', gems: 5, val: s => s.dimVisited.aether ? 1 : 0, goal: 1 },
+  { id: 'shards',   ch: 5, name: 'Shard Collector',    desc: 'Find all 3 dimension shards',       gems: 8, val: s => Object.keys(s.shardSeen || {}).length, goal: 3 },
+  { id: 'blackstar', ch: 6, name: 'The Black Star',    desc: 'Craft the Black Star',              gems: 25, val: s => s.stars || 0, goal: 1 },
+  { id: 'stars3',   ch: 6, name: 'Constellation',      desc: 'Own 3 Black Stars',                 gems: 30, val: s => s.stars || 0, goal: 3 },
 ];
+const CH_OF = { blocks10: 1, stone: 1, chest1: 1, gold: 1, cps10: 1, style: 1, deep: 2, magma: 2, crystal: 2, chest25: 2, cps15: 2, million: 2, abyss: 3, core: 3, diamond: 3, starcore: 3, kaboom: 3, rebirth: 3, streak: 3, taps: 3 };
+ACH.forEach(a => { a.ch = a.ch || CH_OF[a.id] || 1; });
 function normalize(o) {
   o = o || {}; const s = Object.assign(fresh(), o);
   ['up', 'paused', 'g', 'daily'].forEach(k => { s[k] = Object.assign(fresh()[k], o[k] || {}); });
@@ -421,13 +513,13 @@ function normalize(o) {
   return s;
 }
 
-function tapDmg(s) { const l = s.up.pick; return Math.max(1, Math.round((1 + l) * Math.pow(1.22, l) * gemDmg(s))); }
+function tapDmg(s) { const l = s.up.pick; return Math.max(1, Math.round((1 + l) * Math.pow(1.22, l) * gemDmg(s) * tierMult(s) * starMult(s))); }
 function drillDpsAt(s, l) { return l === 0 ? 0 : tapDmg(s) * l * 0.45 * Math.pow(1.04, l); }
 function drillDps(s) { return drillDpsAt(s, s.up.drill); }
 function liveDps() { return S.paused.drill ? 0 : drillDps(S); }
 function critChance(s) { return Math.min(0.6, s.up.crit * 0.05); }
 function luckMult(s) { return (1 + s.up.luck * 0.15) * (1 + 0.1 * s.g.lamp); }
-function priceMult(s) { return (1 + s.up.merchant * 0.25) * gemVal(s); }
+function priceMult(s) { return (1 + s.up.merchant * 0.25) * gemVal(s) * starMult(s); }
 function roll(s, d, rnd = Math.random) {
   if (d > 3 && rnd() < 0.02) return 'chest';
   const L = layerAt(d), m = luckMult(s);
@@ -438,7 +530,7 @@ function chestReward(s, d) { return Math.ceil(rubble(d) * 30 * priceMult(s)); }
 function oreValue(s, id) { return Math.ceil(ORES[id].value * priceMult(s)); }
 function bagValue(s) { let c = 0; for (const id in s.inv) c += oreValue(s, id) * s.inv[id]; return c; }
 function bagCount(s) { let c = 0; for (const id in s.inv) c += s.inv[id]; return c; }
-function fresh() { return { coins: 0, depth: 0, inv: {}, up: { pick: 0, hold: 0, drill: 0, merchant: 0, luck: 0, crit: 0, tnt: 0, pouch: 0, cart: 0 }, g: { power: 0, touch: 0, lamp: 0, start: 0, fuse: 0 }, gems: 0, totalGems: 0, prestiges: 0, ach: {}, skins: { classic: 1 }, skin: 'classic', drillSkins: { classic: 1 }, drillSkin: 'classic', bgs: { layer: 1 }, bg: 'layer', daily: { last: '', streak: 0 }, runMax: 0, farm: null, tntCharges: 3, tntRecharge: 0, tntUses: 0, best: 0, mined: 0, taps: 0, earned: 0, chests: 0, bestCps: 0, seen: {}, paused: { drill: false, cart: false }, cloudStamp: 0, time: 0, blockHp: null, drop: null, sound: true, last: Date.now() }; }
+function fresh() { return { coins: 0, depth: 0, inv: {}, up: { pick: 0, hold: 0, drill: 0, merchant: 0, luck: 0, crit: 0, tnt: 0, pouch: 0, cart: 0 }, g: { power: 0, touch: 0, lamp: 0, start: 0, fuse: 0 }, gems: 0, totalGems: 0, prestiges: 0, ach: {}, skins: { classic: 1 }, skin: 'classic', drillSkins: { classic: 1 }, drillSkin: 'classic', bgs: { layer: 1 }, bg: 'layer', daily: { last: '', streak: 0 }, runMax: 0, farm: null, tier: 0, ingots: {}, shards: {}, shardSeen: {}, dimDepth: {}, dimVisited: {}, stars: 0, chapDone: {}, tntCharges: 3, tntRecharge: 0, tntUses: 0, best: 0, mined: 0, taps: 0, earned: 0, chests: 0, bestCps: 0, seen: {}, paused: { drill: false, cart: false }, cloudStamp: 0, time: 0, blockHp: null, drop: null, sound: true, last: Date.now() }; }
 function fmt(n) {
   if (n < 1000) return (n < 10 && n % 1 ? n.toFixed(1) : Math.floor(n)).toString();
   const u = ['K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc'];
@@ -497,7 +589,7 @@ function makeBlock(depth, drop) {
     drawMap(c, ['................', '................', '................', '....OOOOOOOO....', '...OllllllllO...', '...OlLLLLLLlO...', '...OOOOGGOOOO...', '...OwwwGgwwwO...', '...OwWWGGWWwO...', '...OwWWWWWWwO...', '...OwWWWWWWwO...', '...OOOOOOOOOO...', '................', '................', '................', '................'],
       { O: '#2a170a', l: '#b07a3a', L: '#c98d45', w: '#7a4a20', W: '#8b5a2b', G: '#f5c518', g: '#fff2a8' });
   } else if (drop) {
-    const o = ORES[drop], n = 3 + Math.floor(r() * 2);
+    const o = ORES[drop] || SHARDS[drop], n = 3 + Math.floor(r() * 2);
     for (let i = 0; i < n; i++) {
       const cx = 2 + Math.floor(r() * 11), cy = 2 + Math.floor(r() * 11);
       const pts = [[0, 0], [1, 0], [0, 1], [1, 1], [-1, 0], [0, -1]].slice(0, 3 + Math.floor(r() * 3));
@@ -617,14 +709,20 @@ function hitBlock(px, py, ts) {
   floatText((crit ? 'CRIT ' : '') + fmt(dmg), px + (Math.random() * 30 - 15), py - 10, crit ? '#f5c518' : '#ffffff', crit ? 14 : 11);
   crit ? sfx.crit() : sfx.hit();
 }
+let lastReqToast = 0;
 function breakBlock(silent = false) {
   const d = S.depth, drop = S.drop, L = layerAt(d);
   const cx = BX + BS / 2, cy = BY + BS / 2;
-  const rb = Math.ceil(rubble(d) * gemVal(S)); S.coins += rb; S.earned += rb; S.mined++;
+  const rb = Math.ceil(rubble(d) * gemVal(S) * starMult(S)); S.coins += rb; S.earned += rb; S.mined++;
   if (!silent) { chips(20, cx, cy, [L.base, L.dark, L.light], 1.4); floatText('+' + fmt(rb), BX + BS * 0.82, BY + 18, '#f5c518', 11, -30); sfx.brk(); }
   if (drop === 'chest') {
     const c = chestReward(S, d); S.coins += c; S.earned += c; S.chests++;
     if (!silent) { chips(26, cx, cy, ['#f5c518', '#fff2a8', '#c98d45'], 1.6); toast(`Treasure chest! +${fmt(c)} coins`); sfx.chest(); }
+  } else if (drop && SHARDS[drop]) {
+    S.shards[drop] = (S.shards[drop] || 0) + 1; const first = !S.shardSeen[drop]; S.shardSeen[drop] = 1;
+    if (!silent) { chips(30, cx, cy, [SHARDS[drop].color, SHARDS[drop].shine, '#ffffff'], 1.8); floatText('+1 ' + SHARDS[drop].name, cx, cy - 20, SHARDS[drop].shine, 13, -70); toast(first ? `You found a ${SHARDS[drop].name}! It’s used to craft the Black Star.` : `+1 ${SHARDS[drop].name}`); sfx.chest(); }
+  } else if (drop && (ORE_REQ[drop] || 0) > S.tier) {
+    if (!silent) { const need = TIERS[ORE_REQ[drop]].name; floatText(`Needs ${need} Pickaxe`, cx, cy - 20, '#ff6b5e', 10, -50); if (Date.now() - lastReqToast > 8000) { lastReqToast = Date.now(); toast(`${ORES[drop].name} slipped away! Collecting it needs a ${need} Pickaxe from the FORGE tab.`); } }
   } else if (drop) {
     S.inv[drop] = (S.inv[drop] || 0) + 1;
     if (!silent) {
@@ -636,7 +734,8 @@ function breakBlock(silent = false) {
   }
   S.depth++;
   if (S.farm) { const FL = LAYERS.find(x => x.name === S.farm), FN = FL && nextLayer(FL.from); if (!FL) S.farm = null; else if (FN && S.depth >= FN.from) S.depth = FL.from; }
-  S.best = Math.max(S.best, S.depth); S.runMax = Math.max(S.runMax || 0, S.depth);
+  if (L.dim) { const nx = LAYERS.find(x => x.from > L.from); if (nx && S.depth >= nx.from) S.depth = L.from; S.dimDepth[L.dim] = S.depth - L.from; }
+  else { S.best = Math.max(S.best, S.depth); S.runMax = Math.max(S.runMax || 0, S.depth); }
   if (!silent && layerAt(S.depth) !== L) { toast(`You reached ${layerAt(S.depth).name}!` + (cloud.state === 'on' ? '' : ' Back up your save code in More > Stats.')); sfx.layer(); }
   S.drop = null; S.blockHp = null;
   if (!silent) { spawnBlock(); markDirty(); }
@@ -669,7 +768,7 @@ const PICK_NAMES = ['Wooden', 'Stone', 'Iron', 'Gold', 'Diamond', 'Void', 'Star'
 function upInfo(id) {
   const l = S.up[id], nx = Object.assign({}, S, { up: Object.assign({}, S.up, { [id]: l + 1 }) });
   switch (id) {
-    case 'pick': return { title: `${PICK_NAMES[Math.min(6, Math.floor(l / 6))]} Pickaxe`, desc: `Tap damage ${fmt(tapDmg(S))} <b>→ ${fmt(tapDmg(nx))}</b>` };
+    case 'pick': return { title: `${TIERS[S.tier].name} Pickaxe`, desc: `Tap damage ${fmt(tapDmg(S))} <b>→ ${fmt(tapDmg(nx))}</b>` };
     case 'drill': return { title: 'Auto-Drill', desc: l ? `Digs ${fmt(drillDps(S))}/s <b>→ ${fmt(drillDps(nx))}/s</b>, even while you're away` : `Digs <b>${fmt(drillDps(nx))}/s</b> for you, even while you're away` };
     case 'merchant': return { title: 'Merchant', desc: `Ore prices +${l * 25}% <b>→ +${(l + 1) * 25}%</b>` };
     case 'luck': return { title: 'Lucky Lamp', desc: `Ore chance x${luckMult(S).toFixed(2)} <b>→ x${luckMult(nx).toFixed(2)}</b>` };
@@ -762,8 +861,8 @@ let tab = 'upgrades';
 function setTab(t) {
   tab = t;
   document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === t ? 'true' : 'false'));
-  ['upgrades', 'bag', 'gems', 'more'].forEach(k => $('panel-' + k).hidden = k !== t);
-  if (t === 'bag') renderBag(); if (t === 'gems') renderGems(); if (t === 'more') renderMore(); if (t === 'upgrades') renderUpgrades(true);
+  ['upgrades', 'bag', 'forge', 'gems', 'more'].forEach(k => $('panel-' + k).hidden = k !== t);
+  if (t === 'bag') renderBag(); if (t === 'forge') renderForge(); if (t === 'gems') renderGems(); if (t === 'more') renderMore(); if (t === 'upgrades') renderUpgrades(true);
 }
 document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
 
@@ -894,9 +993,12 @@ function renderGems() {
 function checkAch() {
   let got = [], gems = 0;
   for (const a of ACH) if (!S.ach[a.id] && a.val(S) >= a.goal) { S.ach[a.id] = Date.now(); got.push(a); gems += a.gems; }
-  if (!got.length) return;
+  const chaps = [];
+  for (const C of CHAPTERS) if (!S.chapDone[C.n] && ACH.filter(a => a.ch === C.n).every(a => S.ach[a.id])) { S.chapDone[C.n] = 1; chaps.push(C); gems += C.bonus; }
+  if (!got.length && !chaps.length) return;
   S.gems += gems; S.totalGems += gems; sfx.layer();
-  toast(got.length === 1 ? `Achievement: ${got[0].name} (+${gems} gem${gems > 1 ? 's' : ''})` : `${got.length} achievements unlocked (+${gems} gems)`);
+  if (chaps.length) toast(`Chapter ${chaps[0].n} complete: ${chaps[0].name}! (+${gems} gems)`);
+  else toast(got.length === 1 ? `Quest done: ${got[0].name} (+${gems} gem${gems > 1 ? 's' : ''})` : `${got.length} quests done (+${gems} gems)`);
   markDirty(); save();
 }
 
@@ -910,12 +1012,12 @@ function buySkin(id) {
 function equipSkin(id) { if (!S.skins[id]) return; S.skin = id; sfx.buy(); renderMore(); save(); }
 
 // ---------- MORE tab ----------
-let moreSub = 'goals', moreKey = '';
-function moreStateKey() { return moreSub + '|' + Object.keys(S.ach).length + '|' + (moreSub === 'skins' ? JSON.stringify(S.inv) + skinCat + S.skin + S.drillSkin + S.bg + Object.keys(S.skins).length + Object.keys(S.drillSkins).length + Object.keys(S.bgs).length : ''); }
+let moreSub = 'goals', moreKey = '', openCh = null;
+function moreStateKey() { return moreSub + '|' + Object.keys(S.ach).length + '|' + openCh + '|' + (moreSub === 'skins' ? JSON.stringify(S.inv) + skinCat + S.skin + S.drillSkin + S.bg + Object.keys(S.skins).length + Object.keys(S.drillSkins).length + Object.keys(S.bgs).length : ''); }
 function renderMore() {
   const p = $('panel-more'); p.innerHTML = ''; moreKey = moreStateKey();
   const seg = document.createElement('div'); seg.className = 'seg'; seg.setAttribute('role', 'tablist');
-  [['goals', 'GOALS'], ['skins', 'SKINS'], ['stats', 'STATS']].forEach(([k, label]) => {
+  [['goals', 'QUESTS'], ['skins', 'SKINS'], ['stats', 'STATS']].forEach(([k, label]) => {
     const b = document.createElement('button'); b.type = 'button'; b.id = 'sub-' + k; b.textContent = label; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', k === moreSub ? 'true' : 'false');
     b.onclick = () => { moreSub = k; renderMore(); }; seg.append(b);
   });
@@ -923,16 +1025,25 @@ function renderMore() {
   const body = document.createElement('div'); body.id = 'moreBody'; p.append(body);
   if (moreSub === 'goals') {
     const done = ACH.filter(a => S.ach[a.id]).length;
-    const h = document.createElement('p'); h.className = 'hint'; h.textContent = `${done} of ${ACH.length} done. Each achievement gives gems.`; body.append(h);
-    const list = ACH.slice().sort((a, b) => (!!S.ach[a.id]) - (!!S.ach[b.id]));
-    for (const a of list) {
-      const ok = !!S.ach[a.id], v = Math.min(a.val(S), a.goal);
-      const row = document.createElement('div'); row.className = 'ach' + (ok ? ' got' : '');
-      const cv = document.createElement('canvas'); cv.width = cv.height = 8; drawMap(cv.getContext('2d'), ICONS.trophy.map, ok ? ICONS.trophy.pal : { Y: '#4a3f35', y: '#3a3027' });
-      const mid = document.createElement('div'); mid.innerHTML = `<div class="n">${a.name}</div><div class="v">${a.desc}</div>` + (ok || a.goal <= 1 ? '' : `<div class="bar"><i style="width:${(v / a.goal * 100).toFixed(1)}%"></i></div>`);
-      const rw = document.createElement('div'); rw.className = 'rw'; rw.append(gemIcon(12), ok ? ' DONE' : ' +' + a.gems);
-      row.append(cv, mid, rw); body.append(row);
-    }
+    const h = document.createElement('p'); h.className = 'hint'; h.textContent = `Quest book · ${done} of ${ACH.length} done. Quests give gems, and finishing a whole chapter gives a bonus. The last chapter is the Black Star.`; body.append(h);
+    if (openCh === null) { const c = CHAPTERS.find(c => !S.chapDone[c.n]); openCh = c ? c.n : 1; }
+    CHAPTERS.forEach((C, i) => {
+      const list = ACH.filter(a => a.ch === C.n), got = list.filter(a => S.ach[a.id]).length, prev = CHAPTERS[i - 1];
+      const unlocked = !prev || ACH.filter(a => a.ch === prev.n && S.ach[a.id]).length * 2 >= ACH.filter(a => a.ch === prev.n).length;
+      const card = document.createElement('button'); card.type = 'button'; card.className = 'chap' + (S.chapDone[C.n] ? ' done' : '') + (unlocked ? '' : ' locked'); card.id = 'chap-' + C.n;
+      card.innerHTML = `<span><b>Chapter ${C.n} · ${C.name}</b><small>${S.chapDone[C.n] ? 'Complete!' : unlocked ? `${got}/${list.length} done · +${C.bonus} gems when complete` : `Finish half of Chapter ${prev.n} to unlock`}</small></span><em>${got}/${list.length}</em><i style="width:${(got / list.length * 100).toFixed(1)}%"></i>`;
+      card.onclick = () => { if (!unlocked) return; openCh = openCh === C.n ? 0 : C.n; renderMore(); };
+      body.append(card);
+      if (openCh !== C.n || !unlocked) return;
+      for (const a of list.slice().sort((a, b) => (!!S.ach[a.id]) - (!!S.ach[b.id]))) {
+        const ok = !!S.ach[a.id], v = Math.min(a.val(S), a.goal);
+        const row = document.createElement('div'); row.className = 'ach' + (ok ? ' got' : '');
+        const cv = document.createElement('canvas'); cv.width = cv.height = 8; drawMap(cv.getContext('2d'), ICONS.trophy.map, ok ? ICONS.trophy.pal : { Y: '#4a3f35', y: '#3a3027' });
+        const mid = document.createElement('div'); mid.innerHTML = `<div class="n">${a.name}</div><div class="v">${a.desc}</div>` + (ok || a.goal <= 1 ? '' : `<div class="bar"><i style="width:${(v / a.goal * 100).toFixed(1)}%"></i></div>`);
+        const rw = document.createElement('div'); rw.className = 'rw'; rw.append(gemIcon(12), ok ? ' DONE' : ' +' + a.gems);
+        row.append(cv, mid, rw); body.append(row);
+      }
+    });
   } else if (moreSub === 'skins') {
     renderCosmetics(body);
   } else {
@@ -1025,6 +1136,40 @@ function buildScene(key, w, h, p) {
     case 'layer:Planet Core':
       glow(w / 2, h / 2, Math.max(w, h) * 0.6, 'rgba(255,211,74,.22)');
       dyn = (c, t) => { const pulse = 0.08 + 0.06 * Math.sin(t / 500); c.fillStyle = `rgba(255,180,40,${pulse.toFixed(3)})`; c.fillRect(0, 0, w, h); for (const s of S2(34)) { const y = h - ((t * 0.07 * (0.4 + s[3]) + s[2] * h) % h), x = s[0] * w + Math.sin(t / 400 + s[1] * 6) * 4; c.fillStyle = s[1] < .3 ? '#ffffff' : '#ffd34a'; c.fillRect(x, y, 2, 4); } };
+      break;
+    case 'layer:Uranium Veins': {
+      const g = c.createLinearGradient(0, h, 0, h * 0.5); g.addColorStop(0, 'rgba(125,255,58,.28)'); g.addColorStop(1, 'rgba(125,255,58,0)'); c.fillStyle = g; c.fillRect(0, h * 0.5, w, h * 0.5);
+      for (const [x0, dir] of [[w * 0.1, -1], [w * 0.9, -1], [w * 0.5, 1]]) { glow(x0, dir < 0 ? h : 0, 40, 'rgba(125,255,58,.25)'); for (let k = 0; k < 4; k++) { const cx = x0 + (k - 2) * 2 * p, ht = 3 + Math.floor(r() * 5); for (let i = 0; i < ht; i++) px(cx, (dir < 0 ? h - p : 0) + dir * i * p, i % 2 ? '#7dff3a' : '#c8ff9a'); } }
+      dyn = (c, t) => { for (const s of S2(24)) { const a = 0.4 + 0.4 * Math.sin(t / 400 + s[1] * 20); c.fillStyle = `rgba(160,255,90,${a.toFixed(2)})`; const y = h - ((t * 0.02 * (0.5 + s[3]) + s[2] * h) % h); c.fillRect(s[0] * w + Math.sin(t / 900 + s[1] * 6) * 6, y, 2, 2); } };
+      break;
+    }
+    case 'layer:Black Mantle':
+      { const v = c.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.2, w / 2, h / 2, Math.max(w, h) * 0.7); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.7)'); c.fillStyle = v; c.fillRect(0, 0, w, h); }
+      for (let k = 0; k < 10; k++) walk(r() * w, r() * h, 6 + r() * 10, 'rgba(90,86,110,.35)', r() < .5 ? -1 : 1, 1);
+      dyn = (c, t) => { for (const s of S2(30)) { const a = Math.max(0, Math.sin(t / 900 + s[2] * 40)); if (a < .3) continue; c.globalAlpha = a; c.fillStyle = '#e8e6ff'; c.fillRect(s[0] * w, s[1] * h, 2, 2); } c.globalAlpha = 1; };
+      break;
+    case 'layer:Unobtainium Rift':
+      glow(w / 2, h / 2, Math.max(w, h) * 0.6, 'rgba(255,79,160,.18)');
+      for (let k = 0; k < 9; k++) walk(r() * w, r() * h, 10 + r() * 14, '#ff4fa0', r() < .5 ? -1 : 1, r() < .5 ? -1 : 1);
+      dyn = (c, t) => { const pulse = 0.05 + 0.05 * Math.sin(t / 350); c.fillStyle = `rgba(255,79,160,${pulse.toFixed(3)})`; c.fillRect(0, 0, w, h); for (const s of S2(18)) { const y = h - ((t * 0.025 * (0.5 + s[3]) + s[2] * h) % h), x = s[0] * w + Math.sin(t / 700 + s[1] * 6) * 8; c.fillStyle = s[1] < .5 ? '#ff4fa0' : '#ffe0f0'; c.fillRect(x, y, 3, 5); } };
+      break;
+    case 'layer:Ember Realm':
+      for (const s of S2(4)) { const ix = s[0] * w, iy = h * (0.2 + s[1] * 0.4), iw = 6 + Math.floor(s[2] * 8); for (let j = 0; j < iw; j++) { px(ix + j * p, iy, '#3a120a'); if (j > 0 && j < iw - 1) px(ix + j * p, iy + p, '#2a0a04'); if (j > 1 && j < iw - 2) px(ix + j * p, iy + 2 * p, '#1a0602'); } }
+      { const g = c.createLinearGradient(0, h, 0, h * 0.6); g.addColorStop(0, 'rgba(255,120,40,.35)'); g.addColorStop(1, 'rgba(255,120,40,0)'); c.fillStyle = g; c.fillRect(0, h * 0.6, w, h * 0.4); }
+      dyn = (c, t) => { for (const s of S2(30)) { const y = h - ((t * 0.05 * (0.5 + s[3]) + s[2] * h) % h); c.fillStyle = s[1] < .5 ? '#ffb02a' : '#ff6a2a'; c.fillRect(s[0] * w + Math.sin(t / 500 + s[1] * 6) * 6, y, 3, 3); } c.fillStyle = 'rgba(80,60,60,.5)'; for (const s of S2(14)) { c.fillRect((s[1] * w + t * 0.01) % w, (s[0] * h + t * 0.015 * (0.5 + s[2])) % h, 2, 2); } };
+      break;
+    case 'layer:Frost Expanse':
+      for (let x = 0; x < w; x += p) { const hh = 2 + Math.floor((Math.sin(x / 29) + 1) * 2); for (let i = 0; i < hh; i++) px(x, h - (i + 1) * p, i === hh - 1 ? '#ffffff' : '#d8eefc'); }
+      for (const s of S2(9)) { const x = s[0] * w, len = 2 + Math.floor(s[1] * 5); for (let i = 0; i < len; i++) px(x, i * p, i === len - 1 ? '#ffffff' : '#a8d8f0'); }
+      dyn = (c, t) => { c.fillStyle = 'rgba(255,255,255,.85)'; for (const s of S2(40)) { const y = (s[2] * h + t * 0.02 * (0.4 + s[3])) % h, x = s[0] * w + Math.sin(t / 900 + s[1] * 10) * 12; c.fillRect(x, y, s[3] < .3 ? 3 : 2, s[3] < .3 ? 3 : 2); } };
+      break;
+    case 'layer:The Aether':
+      glow(w * 0.8, h * 0.1, w * 0.5, 'rgba(255,240,180,.35)');
+      dyn = (c, t) => {
+        c.fillStyle = 'rgba(255,255,255,.7)';
+        for (const s of S2(6)) { const len = 40 + s[1] * 70, x = ((s[0] * (w + len) + t * 0.01 * (0.4 + s[3])) % (w + len)) - len, y = s[2] * h; c.fillRect(Math.round(x), Math.round(y), Math.round(len), 6); c.fillRect(Math.round(x + len * 0.2), Math.round(y - 4), Math.round(len * 0.5), 4); }
+        for (const s of S2(20)) { const a = 0.4 + 0.4 * Math.sin(t / 500 + s[2] * 20); c.fillStyle = `rgba(255,226,122,${a.toFixed(2)})`; c.fillRect(s[0] * w, h - ((t * 0.015 * (0.5 + s[3]) + s[1] * h) % h), 2, 2); }
+      };
       break;
     case 'night':
       pixCircle(w * 0.82, h * 0.2, Math.max(8, w * 0.06), '#f4ead8'); px(w * 0.8, h * 0.19, '#cfc4b0', 2); px(w * 0.85, h * 0.23, '#cfc4b0');
@@ -1135,35 +1280,132 @@ function travelTo(d) {
   d = Math.max(0, Math.min(d, S.runMax));
   $('modal').hidden = true;
   if (d === S.depth && !(S.farm && layerAt(d) === layerAt(S.runMax))) return;
+  const fromDim = layerAt(S.depth).dim;
   S.depth = d; S.blockHp = null; S.drop = null; spawnBlock();
   S.farm = layerAt(d) !== layerAt(S.runMax) ? layerAt(d).name : null;
-  sfx.layer(); toast(S.farm ? `Farming ${S.farm}. Use Travel to go back down.` : `Traveled to ${layerAt(d).name} (${d} m)`);
+  sfx.layer(); toast(fromDim ? 'Back in the Overworld' : S.farm ? `Farming ${S.farm}. Use Travel to go back down.` : `Traveled to ${layerAt(d).name} (${d} m)`);
   markDirty(); save();
 }
 function openTravel() {
   const here = layerAt(S.depth);
-  let html = 'Go back to any layer you’ve reached to farm its ores. While farming, you stay in that layer: when you reach its bottom, you loop back to its top. Your deepest point is saved, so tap Back to deepest when you’re done.<div class="trav" id="travList">';
-  if (S.runMax > S.depth) html += `<button type="button" class="deep" data-d="${S.runMax}"><span><b>Back to deepest</b><small>${layerAt(S.runMax).name}</small></span><em>${S.runMax} m</em></button>`;
-  for (const L of LAYERS) {
+  let html = 'Go back to any layer you’ve reached to farm its ores. While farming, you stay in that layer and loop back to its top. Tap Back to deepest when you’re done.<div class="trav" id="travList">';
+  if (here.dim) html += `<button type="button" class="deep" data-d="${S.runMax}"><span><b>Return to the Overworld</b><small>Back to your deepest point</small></span><em>${S.runMax} m</em></button>`;
+  else if (S.runMax > S.depth) html += `<button type="button" class="deep" data-d="${S.runMax}"><span><b>Back to deepest</b><small>${layerAt(S.runMax).name}</small></span><em>${S.runMax} m</em></button>`;
+  for (const L of LAYERS.filter(x => !x.dim)) {
     const ok = L.from <= S.runMax, ores = L.ores.map(o => S.seen[o[0]] ? ORES[o[0]].name : '???').join(', ');
     html += `<button type="button" data-d="${L.from}" ${ok ? '' : 'disabled'} class="${L === here ? 'here' : ''}"><span><b>${L.name}${L === here ? ' (you’re here)' : ''}</b><small>${ok ? ores : 'Reach ' + L.from + ' m to unlock'}</small></span><em>${L.from} m</em></button>`;
+  }
+  html += '<p class="hint" style="margin:8px 0 0">Dimensions · each prestige opens a new one. They get tougher the deeper you go, and each hides a rare shard.</p>';
+  for (const L of LAYERS.filter(x => x.dim)) {
+    const ok = (S.prestiges || 0) >= L.need, dd = S.dimDepth[L.dim] || 0;
+    const ores = L.ores.map(o => SHARDS[o[0]] ? (S.shardSeen[o[0]] ? SHARDS[o[0]].name : '??? Shard') : (S.seen[o[0]] ? ORES[o[0]].name : '???')).join(', ');
+    html += `<button type="button" class="dimb ${L === here ? 'here' : ''}" data-dim="${L.dim}" ${ok ? '' : 'disabled'}><span><b>${L.name}${L === here ? ' (you’re here)' : ''}</b><small>${ok ? ores : `Prestige ${L.need} time${L.need > 1 ? 's' : ''} to open`}</small></span><em>${ok ? dd + ' m' : 'LOCKED'}</em></button>`;
   }
   html += '</div>';
   modal('Travel', html, [{ label: 'Close' }]);
   $('travList').querySelectorAll('button[data-d]').forEach(b => b.onclick = () => travelTo(+b.dataset.d));
+  $('travList').querySelectorAll('button[data-dim]').forEach(b => b.onclick = () => enterDim(b.dataset.dim));
 }
 $('travelBtn').addEventListener('click', openTravel);
+
+// ---------- endgame: smelting, smithing, dimensions, Black Star ----------
+function oreName(id) { return ORES[id] ? ORES[id].name : SHARDS[id] ? SHARDS[id].name : id; }
+function ingotIcon(id, px = 32, known = true) {
+  const c = document.createElement('canvas'); c.width = c.height = 8; c.style.width = c.style.height = px + 'px'; c.style.imageRendering = 'pixelated';
+  const o = ORES[SMELT[id].ore];
+  drawMap(c.getContext('2d'), ['........', '........', '..AAAAA.', '.ABBBBA.', 'ACCCCCA.', 'AAAAAAA.', '........', '........'], known ? { A: '#000000', B: o.shine, C: o.color } : { A: '#2a221b', B: '#3a3027', C: '#3a3027' });
+  return c;
+}
+function shardIcon(id, px = 32, known = true) {
+  const c = document.createElement('canvas'); c.width = c.height = 8; c.style.width = c.style.height = px + 'px'; c.style.imageRendering = 'pixelated';
+  const o = SHARDS[id];
+  drawMap(c.getContext('2d'), ['...A....', '..ABA...', '.ABCBA..', 'ABCCCBA.', '.ACCCA..', '..ACA...', '...A....', '........'], known ? { A: '#000000', B: o.shine, C: o.color } : { A: '#2a221b', B: '#3a3027', C: '#3a3027' });
+  return c;
+}
+function smelt(id, all) {
+  const r = SMELT[id], have = S.inv[r.ore] || 0, times = all ? Math.floor(have / r.n) : (have >= r.n ? 1 : 0);
+  if (!times) return;
+  S.inv[r.ore] = have - times * r.n; if (!S.inv[r.ore]) delete S.inv[r.ore];
+  S.ingots[id] = (S.ingots[id] || 0) + times; sfx.buy();
+  toast(`Smelted ${times} ${SMELT[id].name}${times > 1 ? 's' : ''}`); markDirty(); renderForge(); save();
+}
+function nextTier() { return TIERS[S.tier + 1] || null; }
+function canSmith() { const t = nextTier(); return !!t && (S.ingots[t.ingot] || 0) >= t.n && S.coins >= t.coins; }
+function smith() {
+  const t = nextTier(); if (!t || !canSmith()) return;
+  S.ingots[t.ingot] -= t.n; S.coins -= t.coins; S.tier++;
+  chips(40, BX + BS / 2, BY + BS / 2, ['#f5c518', '#ffffff', ORES[SMELT[t.ingot].ore].color], 1.8); sfx.layer();
+  toast(`You forged a ${t.name} Pickaxe! Damage x${tierMult(S).toFixed(1)}`); markDirty(); renderForge(); renderUpgrades(true); save();
+}
+function starReady() { return STAR_RECIPE.every(([kind, id, n]) => ((kind === 'ingot' ? S.ingots[id] : S.shards[id]) || 0) >= n); }
+function craftStar() {
+  if (!starReady()) return;
+  for (const [kind, id, n] of STAR_RECIPE) (kind === 'ingot' ? S.ingots : S.shards)[id] -= n;
+  S.stars = (S.stars || 0) + 1;
+  chips(120, BX + BS / 2, BY + BS / 2, ['#000000', '#ffffff', '#d63cff', '#f5c518', '#ff4fa0'], 2.6); if (!reduceMotion) shake = 0.6; sfx.chest(); setTimeout(() => sfx.layer(), 400);
+  modal(S.stars === 1 ? 'You crafted the Black Star!' : `Black Star #${S.stars} crafted!`,
+    `${S.stars === 1 ? 'You beat Deep Dig. ' : ''}Every Black Star you own doubles your damage and every coin and ore price, forever, even after you prestige.<ul><li>Black Stars owned: ${S.stars}</li><li>Total bonus: x${fmt(starMult(S))}</li></ul>`,
+    [{ label: 'Keep digging', cls: 'primary' }]);
+  markDirty(); renderForge(); save();
+}
+let forgeKey = '';
+function forgeStateKey() { const t = nextTier(); return JSON.stringify([S.inv, S.ingots, S.shards, S.tier, S.stars, t ? S.coins >= t.coins : 0, S.seen]); }
+function renderForge() {
+  const p = $('panel-forge'); p.innerHTML = ''; forgeKey = forgeStateKey();
+  const sec = (title, sub) => { const h = document.createElement('div'); h.className = 'fsec'; h.innerHTML = `<b>${title}</b><small>${sub}</small>`; p.append(h); };
+  // smelter
+  sec('Smelter', 'Turn ores from your bag into ingots. Ingots are kept when you prestige. Pause the Ore Cart so it doesn’t sell the ores first.');
+  for (const id of Object.keys(SMELT)) {
+    const r = SMELT[id], known = !!S.seen[r.ore], have = S.inv[r.ore] || 0;
+    const row = document.createElement('div'); row.className = 'up' + (known ? '' : ' done');
+    const mid = document.createElement('div');
+    mid.innerHTML = `<div class="nm"><span>${known ? r.name : '???'}</span><span class="lv">x${fmt(S.ingots[id] || 0)}</span></div><div class="ds">${known ? `${r.n} ${ORES[r.ore].name} each · you have ${fmt(have)}` : `Find its ore first`}</div>`;
+    const btns = document.createElement('div'); btns.className = 'btn2';
+    const b1 = document.createElement('button'); b1.type = 'button'; b1.className = 'buy'; b1.id = 'smelt-' + id; b1.textContent = 'SMELT'; b1.disabled = have < r.n; b1.onclick = () => smelt(id, false);
+    const b2 = document.createElement('button'); b2.type = 'button'; b2.className = 'buy alt'; b2.id = 'smeltall-' + id; b2.textContent = 'ALL'; b2.disabled = have < r.n * 2; b2.onclick = () => smelt(id, true);
+    btns.append(b1, b2); row.append(ingotIcon(id, 40, known), mid, btns); p.append(row);
+  }
+  // smithing
+  const cur = TIERS[S.tier], t = nextTier();
+  sec('Smithing', `Your pickaxe: <b>${cur.name}</b> (damage x${tierMult(S).toFixed(1)}). Each tier multiplies damage by 1.5 and lets you collect tougher ores. Your tier is kept when you prestige.`);
+  const card = document.createElement('div'); card.className = 'smith';
+  if (t) {
+    const ok1 = (S.ingots[t.ingot] || 0) >= t.n, ok2 = S.coins >= t.coins;
+    card.innerHTML = `<div class="nm">Forge a ${t.name} Pickaxe</div><ul><li class="${ok1 ? 'ok' : ''}">${t.n} ${SMELT[t.ingot].name}s · you have ${S.ingots[t.ingot] || 0}</li><li class="${ok2 ? 'ok' : ''}">${fmt(t.coins)} coins</li></ul>${t.unlocks ? `<p class="hint">Lets you collect ${t.unlocks}.</p>` : ''}`;
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'buy'; b.id = 'smithBtn'; b.textContent = 'FORGE'; b.disabled = !(ok1 && ok2); b.onclick = smith; card.append(b);
+  } else card.innerHTML = `<div class="nm">Your Unobtainium Pickaxe is the best there is.</div>`;
+  p.append(card);
+  // black star
+  sec('The Black Star', `The final goal. Craft it from ingots of every metal plus a shard from each dimension. Each Black Star doubles damage and prices forever. ${S.stars ? `You own ${S.stars} (x${fmt(starMult(S))}).` : ''}`);
+  const star = document.createElement('div'); star.className = 'smith star';
+  const cv = document.createElement('canvas'); cv.width = cv.height = 16; cv.className = 'starprev';
+  drawMap(cv.getContext('2d'), ['.......W........', '.......K........', '......KPK.......', '......KPK.......', '.....KPWPK......', 'KKKKKKPPPKKKKKKK', '.KPPPPPWPPPPPPK.', '...KPPPPPPPPK...', '....KPPPPPPK....', '....KPPKKPPK....', '...KPPK..KPPK...', '...KPK....KPK...', '..KPK......KPK..', '..KK........KK..', '................', '................'], { K: '#000000', P: '#2a1440', W: '#d63cff' });
+  const list = document.createElement('ul');
+  for (const [kind, id, n] of STAR_RECIPE) {
+    const have = (kind === 'ingot' ? S.ingots[id] : S.shards[id]) || 0;
+    const name = kind === 'ingot' ? (S.seen[SMELT[id].ore] ? SMELT[id].name : '???') : (have || S.shardSeen[id] ? SHARDS[id].name : '??? Shard');
+    const li = document.createElement('li'); li.className = have >= n ? 'ok' : ''; li.textContent = `${n} ${name} · ${Math.min(have, n)}/${n}`; list.append(li);
+  }
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'buy'; b.id = 'starBtn'; b.textContent = 'CRAFT'; b.disabled = !starReady(); b.onclick = craftStar;
+  star.append(cv, list, b); p.append(star);
+}
+function enterDim(id) {
+  const L = LAYERS.find(x => x.dim === id); if (!L || (S.prestiges || 0) < L.need) return;
+  $('modal').hidden = true;
+  S.farm = null; S.depth = L.from + (S.dimDepth[id] || 0); S.blockHp = null; S.drop = null; S.dimVisited[id] = 1;
+  spawnBlock(); sfx.layer(); toast(`Entered ${L.name}! Use Travel to return.`); markDirty(); save();
+}
 
 // ---------- HUD ----------
 let dirty = true; function markDirty() { dirty = true; }
 let lastBagKey = '';
 function renderHud() {
   $('coins').textContent = fmt(S.coins);
-  $('depth').textContent = S.depth + ' m' + (S.runMax > S.depth ? ` / ${S.runMax}` : '');
-  $('travelBtn').hidden = S.runMax < LAYERS[1].from;
+  $('depth').textContent = layerAt(S.depth).dim ? `${S.depth - layerAt(S.depth).from} m` : S.depth + ' m' + (S.runMax > S.depth ? ` / ${S.runMax}` : '');
+  $('travelBtn').hidden = S.runMax < LAYERS[1].from && !S.prestiges && !layerAt(S.depth).dim;
   const L = layerAt(S.depth), N = nextLayer(S.depth);
   $('depthFill').style.width = N ? ((S.depth - L.from) / (N.from - L.from) * 100) + '%' : '100%';
-  $('depthNote').textContent = S.farm ? `Farming ${S.farm} · loops back to ${L.from} m` : N ? `Next layer at ${N.from} m` : 'You reached the deepest layer';
+  $('depthNote').textContent = L.dim ? `Exploring ${L.name} · use Travel to return` : S.farm ? `Farming ${S.farm} · loops back to ${L.from} m` : N ? `Next layer at ${N.from} m` : 'You reached the deepest layer';
   const frac = Math.max(0, S.blockHp / block.max);
   $('hpFill').style.width = (frac * 100) + '%';
   $('hpText').textContent = `${fmt(Math.max(0, Math.ceil(S.blockHp)))} / ${fmt(block.max)}`;
@@ -1178,6 +1420,7 @@ function renderHud() {
   const tb = $('tntBtn'); tb.hidden = !S.up.tnt;
   if (S.up.tnt) { const left = tntLeft(), ch = S.tntCharges; $('tntLbl').textContent = `${ch}/${tntMax(S)}`; $('tntCd').hidden = ch > 0; $('tntCd').textContent = Math.ceil(left) + 's'; $('tntNext').textContent = ch < tntMax(S) && ch > 0 ? Math.ceil(left) + 's' : ''; tb.classList.toggle('ready', ch > 0); }
   $('dailyBtn').hidden = !dailyReady();
+  if (tab === 'forge' && forgeStateKey() !== forgeKey) renderForge();
   if (tab === 'gems') { const k = S.gems + '|' + JSON.stringify(S.g) + '|' + (S.runMax >= PRESTIGE_DEPTH); if (k !== gemsKey) renderGems(); }
   if (tab === 'more' && moreSub !== 'stats' && moreStateKey() !== moreKey) renderMore();
   if (tab === 'bag') { const k = n + '|' + S.up.merchant; if (k !== lastBagKey) { lastBagKey = k; renderBag(); } }
@@ -1379,7 +1622,7 @@ function adoptCloud(d) {
   const sound = S.sound;
   S = normalize(d.state);
   S.sound = sound; S.cloudStamp = d.updatedAt; cloud.lastSync = d.updatedAt; save();
-  $('cab-best').textContent = S.best > 0 ? `Best: ${S.best} m` : '';
+  $('cab-best').textContent = (S.best > 0 ? `Best: ${S.best} m` : '') + (S.stars ? ` · ★${S.stars}` : '');
   if (running) { spawnBlock(); renderUpgrades('build'); setTab(tab); markDirty(); offlineProgress(); }
   toast(d.state.mined || d.state.earned ? 'Loaded your cloud save' : 'Progress was wiped');
 }
@@ -1448,7 +1691,7 @@ function askLoadCode() {
       const sound = S.sound, stamp = Math.max(S.cloudStamp || 0, cloud.lastPushedAt);
       S = normalize(o);
       S.sound = sound; S.cloudStamp = stamp; S.last = Date.now(); save();
-      $('cab-best').textContent = S.best > 0 ? `Best: ${S.best} m` : '';
+      $('cab-best').textContent = (S.best > 0 ? `Best: ${S.best} m` : '') + (S.stars ? ` · ★${S.stars}` : '');
       if (running) { spawnBlock(); renderUpgrades('build'); setTab(tab); markDirty(); }
       if (cloud.state === 'on') pushCloud();
       toast(`Save loaded: ${S.depth} m deep`);
@@ -1476,7 +1719,7 @@ function startGame() {
 function showArcade() {
   if (running) { running = false; save(); if (cloud.state === 'on') pushCloud(); }
   $('dig').hidden = true; $('arcade').hidden = false;
-  $('cab-best').textContent = S.best > 0 ? `Best: ${S.best} m` : '';
+  $('cab-best').textContent = (S.best > 0 ? `Best: ${S.best} m` : '') + (S.stars ? ` · ★${S.stars}` : '');
 }
 function route() { if (location.hash === '#deep-dig') startGame(); else showArcade(); }
 $('cab-dig').addEventListener('click', () => { audio(); if (location.hash === '#deep-dig') startGame(); else location.hash = 'deep-dig'; });
