@@ -76,6 +76,11 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--gold); outline-
 .acct .st small { display: block; color: var(--muted); font-size: 13px; }
 .acct .btns { display: flex; gap: 8px; flex-wrap: wrap; }
 .acct .btns button { padding: 9px 12px; border-radius: 4px; border: 1px solid var(--line); background: var(--panel-2); cursor: pointer; font-size: 13px; }
+.acct .btns button.primary { background: var(--gold); color: #2a1a00; border-color: #000; font-weight: 700; }
+.autherr { margin: 0 0 6px; padding: 8px 10px; border-radius: 4px; background: #3a1c14; color: #ffb3aa; font-size: 13px; }
+.fld { display: block; margin-top: 10px; font-size: 13px; color: var(--muted); }
+#modal .fld + input { margin-top: 4px; }
+.linkbtn { background: none; border: 0; padding: 0; margin-top: 8px; color: var(--gold); text-decoration: underline; cursor: pointer; font-size: 13px; }
 .acct .btns button.wipe { color: var(--bad); border-color: #5a2a24; background: none; }
 .acct .btns button:disabled { opacity: .5; cursor: default; }
 #modal textarea { width: 100%; min-height: 110px; padding: 10px; border-radius: 4px; border: 1px solid var(--line); background: #120e0b; color: var(--ink); font: 12px/1.4 ui-monospace, monospace; margin-top: 10px; word-break: break-all; -webkit-user-select: text; user-select: text; }
@@ -1508,7 +1513,7 @@ function loop(t) {
   draw(t);
   uiT += dt; if (uiT > 0.1 || dirty) { uiT = 0; dirty = false; renderHud(); }
   saveT += dt; if (saveT > 5) { saveT = 0; save(); }
-  cloudT += dt; if (cloudT > 20) { cloudT = 0; if (cloud.state === 'on') pushCloud(); }
+  cloudT += dt; if (cloudT > 60) { cloudT = 0; if (cloud.state === 'on') pushCloud(); }
   requestAnimationFrame(loop);
 }
 
@@ -1566,17 +1571,20 @@ function ago(ms) { const s = Math.round((Date.now() - ms) / 1000); return s < 5 
 function renderAcct() {
   ['acct-arcade', 'acct-stats'].forEach(id => {
     const el = $(id); if (!el) return;
-    let head = '', sub = '';
-    if (cloud.state === 'checking') { head = 'Connecting to cloud save…'; sub = 'Your progress is saving on this device in the meantime.'; }
-    else if (cloud.state === 'on') { head = `Signed in${cloud.name ? ' as <b></b>' : ''}. Cloud save is on.`; sub = 'Your progress follows your Claude account to any device.' + (cloud.lastSync ? ' Last synced ' + ago(cloud.lastSync) + '.' : ''); }
-    else if (cloud.state === 'local') { head = 'Your progress autosaves on this device.'; sub = 'Copy your save code to back it up or to move your game to another phone or computer.'; }
-    else { head = 'Cloud save is off.'; sub = (cloud.msg || 'Open this page while signed in to Claude to sync your progress.') + ' Progress saves on this device only, and your browser can clear it. Copy your save code to keep a backup.'; }
-    el.innerHTML = `<div class="st ${cloud.state}"><span class="dot"></span><div><span class="hd">${head}</span><small>${sub}</small></div></div><div class="btns"><button type="button" class="sync">Sync now</button><button type="button" class="copy">Copy save code</button><button type="button" class="load">Load save code</button><button type="button" class="wipe">Wipe all progress</button></div>`;
+    const st = cloud.state; let head = '', sub = '', cls = 'local';
+    if (st === 'on') { cls = 'on'; head = 'Signed in as <b></b>. Cloud save is on.'; sub = 'Your progress saves to your account and follows you to any device.' + (cloud.lastSync ? ' Last synced ' + ago(cloud.lastSync) + '.' : ''); }
+    else if (st === 'checking') { cls = 'checking'; head = 'Loading your account save…'; sub = 'Your progress keeps saving on this device in the meantime.'; }
+    else if (fbAuth) { head = 'Save your progress to an account.'; sub = (cloud.msg ? cloud.msg + ' ' : '') + 'Sign in to keep your game safe and play it on any device. Right now it only saves on this device.'; }
+    else { head = 'Your progress autosaves on this device.'; sub = navigator.onLine ? 'Copy your save code to back it up or move it to another device.' : 'You’re offline. Go online to sign in to your account.'; }
+    const acctBtns = st === 'on' ? '<button type="button" class="sync">Sync now</button><button type="button" class="out">Sign out</button>' : (fbAuth && st !== 'checking' ? '<button type="button" class="in primary">Sign in</button><button type="button" class="up">Create account</button>' : '');
+    el.innerHTML = `<div class="st ${cls}"><span class="dot"></span><div><span class="hd">${head}</span><small>${sub}</small></div></div><div class="btns">${acctBtns}<button type="button" class="copy">Copy save code</button><button type="button" class="load">Load save code</button><button type="button" class="wipe">Wipe all progress</button></div>`;
     const nb = el.querySelector('b'); if (nb) nb.textContent = cloud.name;
-    const sy = el.querySelector('.sync'); sy.hidden = cloud.state !== 'on'; sy.onclick = async () => { sy.disabled = true; await pushCloud(); toast('Progress synced'); renderAcct(); };
-    el.querySelector('.wipe').onclick = askWipe;
-    el.querySelector('.copy').onclick = copyCode;
-    el.querySelector('.load').onclick = askLoadCode;
+    const q = c => el.querySelector(c);
+    if (q('.sync')) q('.sync').onclick = async () => { q('.sync').disabled = true; await pushCloud(); toast('Progress synced'); renderAcct(); };
+    if (q('.out')) q('.out').onclick = signOutAcct;
+    if (q('.in')) q('.in').onclick = () => openAuth('in');
+    if (q('.up')) q('.up').onclick = () => openAuth('up');
+    q('.wipe').onclick = askWipe; q('.copy').onclick = copyCode; q('.load').onclick = askLoadCode;
   });
 }
 function updateBackupBanner() {
@@ -1586,6 +1594,9 @@ function updateBackupBanner() {
   const unsaved = S.time - (S.backupPlay || 0);
   const stale = !S.lastBackup || unsaved > 600;
   bk.className = 'backup' + (stale ? ' stale' : '');
+  const btn = bk.querySelector('button');
+  if (fbAuth) { bk.className = 'backup'; bk.querySelector('p').innerHTML = '<b>Save your progress online.</b><small>Sign in or create an account so your game is safe and works on any device.</small>'; btn.textContent = 'SIGN IN'; btn.onclick = () => openAuth('in'); return; }
+  btn.textContent = 'COPY SAVE CODE'; btn.onclick = copyCode;
   bk.querySelector('p').innerHTML = S.lastBackup
     ? `<b>Back up your progress.</b><small>Last backup ${ago(S.lastBackup)}. Your browser can clear your save, so copy a new code often.</small>`
     : `<b>Back up your progress.</b><small>It autosaves on this device. Copy your save code and keep it in Notes in case you switch devices or clear your browser.</small>`;
@@ -1594,12 +1605,13 @@ function maybeWarnBackup() {
   if (cloud.state === 'on' || cloud.state === 'checking' || !running || S.warned || !$('modal').hidden) return;
   S.warned = true; save();
   modal('Keep your progress safe',
-    'Your progress autosaves on <b>this device</b>. To keep it extra safe:<ul><li>Add the game to your Home Screen (in Safari: Share, then Add to Home Screen) so it opens like an app.</li><li>Tap <b>Copy save code</b> and paste it in your Notes app every so often.</li><li>If your progress ever disappears, or you switch devices, open <b>More</b>, then <b>Stats</b>, and tap <b>Load save code</b> and paste it in.</li></ul>',
-    [{ label: 'Later' }, { label: 'Copy save code', cls: 'primary', fn: copyCode }]);
+    'Your progress autosaves on <b>this device</b>. To keep it extra safe:<ul><li><b>Create an account</b> so it saves online and works on any device.</li><li>Add the game to your Home Screen (in Safari: Share, then Add to Home Screen) so it opens like an app.</li><li>Tap <b>Copy save code</b> and paste it in your Notes app every so often.</li><li>If your progress ever disappears, or you switch devices, open <b>More</b>, then <b>Stats</b>, and tap <b>Load save code</b> and paste it in.</li></ul>',
+    fbAuth ? [{ label: 'Later' }, { label: 'Create account', cls: 'primary', fn: () => openAuth('up') }] : [{ label: 'Later' }, { label: 'Copy save code', cls: 'primary', fn: copyCode }]);
 }
 function snapshotState() { return JSON.parse(JSON.stringify(S)); }
 async function pushCloud() {
   if (cloud.state !== 'on' && cloud.state !== 'checking') return;
+  if (cloud.choosing) return;
   if (!cloud.ref || !cloud.ready) { cloud.pending = true; return; }
   if (cloud.writing) { cloud.pending = true; return; }
   cloud.writing = true;
@@ -1610,7 +1622,7 @@ async function pushCloud() {
     S.cloudStamp = now; cloud.lastSync = now; save(); renderAcct();
   } catch (e) {
     const code = e && e.code;
-    if (code === 'invalid_argument' || code === 'not_granted' || code === 'revoked' || code === 'capability_disabled' || code === 'capability_removed') setCloud('off', 'Online saving only works for the game’s owner, not on shared links.');
+    if (code === 'permission-denied' || code === 'unauthenticated' || code === 'invalid-argument') setCloud('local', 'Couldn’t save to your account. Try signing in again.');
     else if (code === 'quota_exceeded') setCloud('off', 'The cloud save is full.');
     else { cloud.pending = true; }
   } finally {
@@ -1659,7 +1671,7 @@ function askWipe() {
 }
 function hashStr(str) { let h = 5381; for (let i = 0; i < str.length; i++) h = (Math.imul(h, 33) ^ str.charCodeAt(i)) >>> 0; return h.toString(36); }
 function saveCode() {
-  const st = snapshotState(); delete st.sound; delete st.cloudStamp;
+  const st = snapshotState(); delete st.sound; delete st.cloudStamp; delete st.cloudUid;
   const j = JSON.stringify(st);
   return 'DEEPDIG-' + hashStr(j) + '-' + btoa(unescape(encodeURIComponent(j)));
 }
@@ -1688,9 +1700,9 @@ function askLoadCode() {
     [{ label: 'Cancel' }, { label: 'Load save', cls: 'primary', fn: () => {
       const o = parseCode($('codeIn').value);
       if (!o) { toast('That save code didn’t work. Copy the whole code and try again.'); return; }
-      const sound = S.sound, stamp = Math.max(S.cloudStamp || 0, cloud.lastPushedAt);
+      const sound = S.sound, uid = S.cloudUid, stamp = Math.max(S.cloudStamp || 0, cloud.lastPushedAt);
       S = normalize(o);
-      S.sound = sound; S.cloudStamp = stamp; S.last = Date.now(); save();
+      S.sound = sound; S.cloudUid = uid; S.cloudStamp = stamp; S.last = Date.now(); save();
       $('cab-best').textContent = (S.best > 0 ? `Best: ${S.best} m` : '') + (S.stars ? ` · ★${S.stars}` : '');
       if (running) { spawnBlock(); renderUpgrades('build'); setTab(tab); markDirty(); }
       if (cloud.state === 'on') pushCloud();
@@ -1699,15 +1711,101 @@ function askLoadCode() {
   setTimeout(() => $('codeIn') && $('codeIn').focus(), 50);
 }
 async function wipeAll() {
-  const sound = S.sound, stamp = Math.max(S.cloudStamp || 0, cloud.lastPushedAt);
+  const sound = S.sound, uid = S.cloudUid, stamp = Math.max(S.cloudStamp || 0, cloud.lastPushedAt);
   try { localStorage.removeItem(SAVE_KEY); } catch (e) { }
-  S = fresh(); S.sound = sound; S.cloudStamp = stamp; save();
+  S = fresh(); S.sound = sound; S.cloudUid = uid; S.cloudStamp = stamp; save();
   $('cab-best').textContent = '';
   if (running) { spawnBlock(); renderUpgrades('build'); setTab(tab); markDirty(); }
   if (cloud.state === 'on') await pushCloud();
   toast('All progress wiped'); renderAcct();
 }
 setInterval(() => { if (cloud.state === 'on') renderAcct(); updateBackupBanner(); }, 30000);
+
+// ---------- accounts (Firebase: email + password sign-in, one save per player) ----------
+const FB_CONFIG = {"apiKey": "AIzaSyDKdZ2RGPp45SrXGtpse9-kBpcJOQ9gVoQ", "authDomain": "pocket-arcade-9bcbf.firebaseapp.com", "projectId": "pocket-arcade-9bcbf", "storageBucket": "pocket-arcade-9bcbf.firebasestorage.app", "messagingSenderId": "187036226775", "appId": "1:187036226775:web:6628259ce35cfabd668c92"};
+const FB_VER = '10.12.2';
+let fbAuth = null, fbDb = null;
+function loadScript(src) { return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); }
+function esc(t) { return String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+async function initAccounts() {
+  setCloud('local');
+  try {
+    const base = `https://www.gstatic.com/firebasejs/${FB_VER}/`;
+    await loadScript(base + 'firebase-app-compat.js');
+    await Promise.all([loadScript(base + 'firebase-auth-compat.js'), loadScript(base + 'firebase-firestore-compat.js')]);
+    firebase.initializeApp(FB_CONFIG);
+    fbAuth = firebase.auth(); fbDb = firebase.firestore();
+    renderAcct(); updateBackupBanner();
+    fbAuth.onAuthStateChanged(onAuth);
+  } catch (e) { fbAuth = null; renderAcct(); }
+}
+function onAuth(user) {
+  if (cloud.unsub) { cloud.unsub(); cloud.unsub = null; }
+  cloud.ready = false; cloud.ref = null; cloud.pending = false; cloud.choosing = false; clearTimeout(cloud.timer);
+  if (!user) { cloud.name = ''; setCloud('local'); return; }
+  cloud.name = user.email || 'your account';
+  // a different account than last time on this device: let the account's own save decide
+  if (S.cloudUid !== user.uid) { cloud.switching = true; S.cloudStamp = 0; cloud.lastPushedAt = 0; }
+  S.cloudUid = user.uid; save();
+  cloud.ref = fbDb.collection('saves').doc(user.uid);
+  setCloud('checking');
+  cloud.timer = setTimeout(() => { if (!cloud.ready) setCloud('local', 'Couldn’t reach your account right now. Your progress is still saving on this device.'); }, 12000);
+  cloud.unsub = cloud.ref.onSnapshot(onAccountSnap, () => { clearTimeout(cloud.timer); cloud.ready = false; setCloud('local', 'Couldn’t load your account save. Try signing in again.'); });
+}
+function onAccountSnap(snap) {
+  if (cloud.switching && !snap.metadata.fromCache) {
+    cloud.switching = false;
+    const d = snap.exists ? snap.data() : null;
+    // both this device and the account have real progress: ask which one to keep
+    if (d && d.state && (S.mined || 0) > 20 && (d.state.mined || 0) !== (S.mined || 0)) {
+      cloud.ready = true; cloud.choosing = true; clearTimeout(cloud.timer); setCloud('on');
+      modal('Which save do you want?', `This account already has a save: best depth <b>${d.state.best || 0} m</b>, ${fmt(d.state.mined || 0)} blocks mined. This device also has progress: best depth <b>${S.best} m</b>, ${fmt(S.mined)} blocks mined.<br>The one you don’t pick is replaced.`,
+        [{ label: 'Use this device', fn: () => { cloud.choosing = false; S.cloudStamp = d.updatedAt || 0; pushCloud(); toast('Saved this device’s progress to your account'); } },
+         { label: 'Use account save', cls: 'primary', fn: () => { cloud.choosing = false; adoptCloud(d); } }]);
+      return;
+    }
+  }
+  onCloudSnap(snap);
+}
+function authMsg(e) {
+  const c = (e && e.code) || '';
+  if (c.includes('invalid-credential') || c.includes('wrong-password') || c.includes('user-not-found')) return 'That email or password isn’t right.';
+  if (c.includes('email-already-in-use')) return 'There’s already an account with that email. Try signing in instead.';
+  if (c.includes('weak-password')) return 'Pick a password with at least 6 characters.';
+  if (c.includes('invalid-email') || c.includes('missing-email')) return 'That doesn’t look like an email address.';
+  if (c.includes('missing-password')) return 'Type your password.';
+  if (c.includes('too-many-requests')) return 'Too many tries. Wait a minute and try again.';
+  if (c.includes('network-request-failed')) return 'You’re offline. Connect to the internet and try again.';
+  return 'Something went wrong. Try again.';
+}
+function openAuth(mode, email = '', err = '') {
+  if (!fbAuth) { toast('Go online to sign in.'); return; }
+  const up = mode === 'up';
+  modal(up ? 'Create an account' : 'Sign in',
+    `${err ? `<p class="autherr">${esc(err)}</p>` : ''}<label class="fld" for="authEmail">Email</label><input id="authEmail" type="email" autocomplete="email" inputmode="email" value="${esc(email)}"><label class="fld" for="authPass">Password</label><input id="authPass" type="password" autocomplete="${up ? 'new-password' : 'current-password'}" placeholder="${up ? 'At least 6 characters' : ''}">${up ? '' : '<button type="button" class="linkbtn" id="forgotBtn">Forgot password?</button>'}<p class="hint" style="margin:10px 0 0">${up ? 'Your progress on this device will be saved to your new account.' : 'Signing in loads your account’s save on this device.'} <button type="button" class="linkbtn" id="authSwap">${up ? 'Have an account? Sign in' : 'New here? Create an account'}</button></p>`,
+    [{ label: 'Cancel' }, { label: up ? 'Create account' : 'Sign in', cls: 'primary', fn: () => doAuth(mode) }]);
+  $('authSwap').onclick = () => openAuth(up ? 'in' : 'up', $('authEmail').value);
+  if (!up) $('forgotBtn').onclick = async () => {
+    const em = $('authEmail').value.trim();
+    if (!em) { openAuth('in', '', 'Type your email first, then tap Forgot password.'); return; }
+    try { await fbAuth.sendPasswordResetEmail(em); $('modal').hidden = true; toast(`If ${em} has an account, a reset email is on its way.`); }
+    catch (e) { openAuth('in', em, authMsg(e)); }
+  };
+  $('authPass').addEventListener('keydown', e => { if (e.key === 'Enter') { $('modal').hidden = true; doAuth(mode); } });
+  setTimeout(() => (email ? $('authPass') : $('authEmail')).focus(), 50);
+}
+async function doAuth(mode) {
+  const email = ($('authEmail').value || '').trim(), pass = $('authPass').value || '';
+  try {
+    if (mode === 'up') await fbAuth.createUserWithEmailAndPassword(email, pass);
+    else await fbAuth.signInWithEmailAndPassword(email, pass);
+    toast(mode === 'up' ? 'Account created! Your progress now saves online.' : 'Signed in');
+  } catch (e) { openAuth(mode, email, authMsg(e)); }
+}
+function signOutAcct() {
+  if (!fbAuth) return;
+  modal('Sign out?', 'Your progress stays on this device, but it stops saving to your account until you sign in again.', [{ label: 'Cancel' }, { label: 'Sign out', cls: 'warn', fn: async () => { await pushCloud(); await fbAuth.signOut(); toast('Signed out'); } }]);
+}
 
 // ---------- routing ----------
 function startGame() {
@@ -1748,7 +1846,7 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 }
 window.addEventListener('offline', () => { if (running) toast('You’re offline. Your game keeps saving on this device.'); });
 window.addEventListener('online', () => { if (running) toast('Back online'); });
-setCloud('local');
+initAccounts();
 </script>
 </body>
 </html>
