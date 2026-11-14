@@ -1,0 +1,12 @@
+{
+  "name": "Pocket Arcade",
+  "short_name": "Pocket Arcade",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#120e0b",
+  "theme_color": "#120e0b",
+  "icons": [
+    { "src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Pocket Arcade</title>
+<meta name="theme-color" content="#120e0b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Pocket Arcade">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one-screen phone app. Arcade = stacked game cabinets; game = mine view on top, upgrade drawer below. Single dark theme by choice. */
+:root {
+  --bg: #120e0b;
+  --panel: #1f1914;
+  --panel-2: #2a221b;
+  --line: #3d3127;
+  --ink: #f4ead8;
+  --muted: #a8988a;
+  --gold: #f5c518;
+  --good: #5ee08a;
+  --bad: #ff6b5e;
+  --display: 'Press Start 2P', ui-monospace, 'Courier New', monospace;
+  --body: 'Rubik', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 15px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  -webkit-user-select: none; user-select: none;
+  overflow: hidden;
+}
+button { font: inherit; color: inherit; }
+button:focus-visible, a:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.app { height: 100%; max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; position: relative; border-left: 1px solid #000; border-right: 1px solid #000; }
+[hidden] { display: none !important; }
+.px { font-family: var(--display); letter-spacing: 0.02em; }
+
+/* ---------- Arcade ---------- */
+#arcade { flex: 1; overflow-y: auto; padding: 24px 16px 32px; display: flex; flex-direction: column; gap: 20px; }
+.logo { display: flex; flex-direction: column; gap: 10px; }
+.logo h1 { font-family: var(--display); font-size: 22px; line-height: 1.4; margin: 0; color: var(--gold); text-shadow: 3px 3px 0 #6b3d00; text-wrap: balance; }
+.logo p { margin: 0; color: var(--muted); max-width: 40ch; line-height: 1.45; }
+.cabinets { display: grid; gap: 12px; }
+.cab { display: grid; grid-template-columns: 88px 1fr; gap: 14px; align-items: center; padding: 12px; background: var(--panel); border: 2px solid var(--line); border-radius: 6px; text-align: left; cursor: pointer; width: 100%; }
+.cab:not(.locked):hover { border-color: var(--gold); }
+.cab:not(.locked):active { transform: translateY(1px); }
+.cab canvas { width: 88px; height: 88px; image-rendering: pixelated; border-radius: 4px; background: #000; }
+.cab h2 { font-family: var(--display); font-size: 12px; margin: 0 0 8px; line-height: 1.5; }
+.cab p { margin: 0 0 10px; color: var(--muted); font-size: 14px; line-height: 1.4; }
+.chip { display: inline-block; font-family: var(--display); font-size: 9px; padding: 6px 8px; border-radius: 3px; }
+.chip.play { background: var(--gold); color: #2a1a00; }
+.chip.soon { background: var(--panel-2); color: var(--muted); border: 1px solid var(--line); }
+.cab.locked { cursor: default; opacity: 0.75; }
+.cab .best { font-size: 12px; color: var(--good); margin-left: 8px; }
+.acct { display: flex; flex-direction: column; gap: 10px; padding: 12px; background: var(--panel); border: 2px solid var(--line); border-radius: 6px; }
+.acct .st { display: flex; gap: 10px; align-items: flex-start; line-height: 1.45; font-size: 14px; }
+.acct .st .dot { flex: 0 0 10px; height: 10px; margin-top: 5px; border-radius: 50%; background: var(--muted); }
+.acct .st.on .dot { background: var(--good); }
+.acct .st.off .dot { background: var(--bad); }
+.acct .st.checking .dot, .acct .st.local .dot { background: var(--gold); }
+.acct .st b { color: var(--ink); }
+.acct .st small { display: block; color: var(--muted); font-size: 13px; }
+.acct .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.acct .btns button { padding: 9px 12px; border-radius: 4px; border: 1px solid var(--line); background: var(--panel-2); cursor: pointer; font-size: 13px; }
+.acct .btns button.wipe { color: var(--bad); border-color: #5a2a24; background: none; }
+.acct .btns button:disabled { opacity: .5; cursor: default; }
+#modal textarea { width: 100%; min-height: 110px; padding: 10px; border-radius: 4px; border: 1px solid var(--line); background: #120e0b; color: var(--ink); font: 12px/1.4 ui-monospace, monospace; margin-top: 10px; word-break: break-all; -webkit-user-select: text; user-select: text; }
+#modal input { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid var(--line); background: #120e0b; color: var(--ink); font: inherit; margin-top: 10px; -webkit-user-select: text; user-select: text; }
+
+/* ---------- Deep Dig ---------- */
+#dig { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.hud { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: #0b0806; border-bottom: 2px solid #000; }
+.hud .back { background: none; border: 1px solid var(--line); border-radius: 4px; padding: 7px 10px; cursor: pointer; font-size: 13px; color: var(--muted); }
+.coins { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: var(--display); font-size: 15px; color: var(--gold); font-variant-numeric: tabular-nums; }
+.coin-ico { width: 16px; height: 16px; image-rendering: pixelated; }
+.hud .mute { background: none; border: 1px solid var(--line); border-radius: 4px; width: 40px; height: 34px; cursor: pointer; font-family: var(--display); font-size: 9px; color: var(--muted); }
+
+.mine { position: relative; flex: 0 0 auto; height: min(50vh, 400px); min-height: 280px; display: flex; flex-direction: column; transition: background 1.2s; }
+.layer-row { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 14px 6px; gap: 10px; }
+.layer-name { font-family: var(--display); font-size: 11px; }
+.lrow { display: flex; align-items: center; gap: 8px; }
+.travel { font-family: var(--display); font-size: 7px; padding: 5px 6px; border-radius: 3px; border: 1px solid rgba(244,234,216,.5); background: rgba(0,0,0,.35); color: var(--ink); cursor: pointer; }
+.trav { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.trav button { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 10px; border-radius: 4px; border: 1px solid var(--line); background: var(--panel-2); cursor: pointer; }
+.trav button b { display: block; font-size: 14px; }
+.trav button small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+.trav button em { font-style: normal; font-family: var(--display); font-size: 9px; color: var(--muted); white-space: nowrap; }
+.trav button.here { border-color: var(--gold); }
+.trav button:disabled { opacity: .45; cursor: default; }
+.trav button.deep { border-color: #d63cff; }
+.depth { font-family: var(--display); font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.depthbar { margin: 0 14px; height: 6px; background: rgba(0,0,0,.45); border-radius: 3px; overflow: hidden; }
+.depthbar div { height: 100%; width: 0; background: var(--ink); opacity: .55; }
+.depthnote { padding: 4px 14px 0; font-size: 12px; color: rgba(244,234,216,.6); }
+.stage { position: relative; flex: 1; min-height: 0; border: 0; background: none; padding: 0; margin: 0; cursor: pointer; display: block; width: 100%; }
+.stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+.hp { margin: 0 14px; height: 14px; background: rgba(0,0,0,.55); border: 2px solid #000; border-radius: 3px; position: relative; overflow: hidden; }
+.hp .fill { position: absolute; inset: 0 auto 0 0; width: 100%; background: linear-gradient(#ff8a5e, #e04a2a); }
+.hp span { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--display); font-size: 8px; color: #fff; text-shadow: 1px 1px 0 #000; }
+.rates { display: flex; justify-content: space-between; gap: 8px; padding: 8px 14px 10px; font-size: 13px; color: rgba(244,234,216,.85); font-variant-numeric: tabular-nums; }
+.rates b { color: var(--ink); }
+#cps { color: var(--gold); display: inline-block; min-width: 2ch; }
+
+.toast { position: absolute; top: 58px; left: 50%; transform: translateX(-50%); background: rgba(10,7,5,.92); border: 2px solid var(--gold); border-radius: 4px; padding: 10px 14px; font-family: var(--display); font-size: 10px; line-height: 1.6; text-align: center; color: var(--gold); pointer-events: none; z-index: 5; width: max-content; max-width: calc(100% - 32px); opacity: 0; transition: opacity .25s; }
+.toast.show { opacity: 1; }
+
+.tabs { display: grid; grid-template-columns: repeat(4, 1fr); background: #0b0806; border-top: 2px solid #000; border-bottom: 1px solid var(--line); }
+.tab { background: none; border: 0; padding: 12px 2px; font-family: var(--display); font-size: 9px; color: var(--muted); cursor: pointer; position: relative; border-bottom: 3px solid transparent; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--gold); }
+.badge { display: inline-block; min-width: 18px; padding: 3px 4px; margin-left: 6px; border-radius: 9px; background: var(--bad); color: #fff; font-size: 8px; vertical-align: 1px; }
+.panel { flex: 1; min-height: 0; overflow-y: auto; padding: 12px; background: var(--panel); display: flex; flex-direction: column; gap: 8px; -webkit-overflow-scrolling: touch; }
+
+.backup { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 2px dashed var(--gold); border-radius: 5px; background: #2a2210; }
+.backup p { margin: 0; flex: 1; font-size: 13px; line-height: 1.4; color: var(--ink); }
+.backup p b { color: var(--gold); }
+.backup p small { display: block; color: var(--muted); margin-top: 2px; }
+.backup.stale { border-style: solid; background: #3a1c14; border-color: var(--bad); }
+.backup.stale p b { color: var(--bad); }
+.backup button { flex: 0 0 auto; padding: 9px 10px; border-radius: 4px; border: 2px solid #000; background: var(--gold); color: #2a1a00; font-family: var(--display); font-size: 8px; line-height: 1.4; cursor: pointer; box-shadow: 0 3px 0 #8a6400; }
+.up.done { opacity: .6; }
+.up { display: grid; grid-template-columns: 40px 1fr auto; gap: 12px; align-items: center; padding: 10px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 5px; }
+.up canvas { width: 40px; height: 40px; image-rendering: pixelated; background: #120e0b; border-radius: 4px; }
+.up .nm { font-weight: 700; font-size: 15px; }
+.up .lv { color: var(--muted); font-weight: 400; font-size: 13px; margin-left: 4px; }
+.up .ds { color: var(--muted); font-size: 13px; margin-top: 3px; line-height: 1.35; }
+.up .ds b { color: var(--good); font-weight: 500; }
+.tog { margin-top: 8px; padding: 6px 10px; border-radius: 4px; border: 1px solid var(--line); background: #120e0b; color: var(--ink); font-family: var(--display); font-size: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.tog .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); }
+.tog.off { color: var(--muted); }
+.tog.off .dot { background: var(--bad); }
+.paused-note { color: var(--bad); }
+.buy { min-width: 92px; padding: 10px 8px; border-radius: 4px; border: 2px solid #000; background: var(--gold); color: #2a1a00; font-family: var(--display); font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; box-shadow: 0 3px 0 #8a6400; }
+.buy:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #8a6400; }
+.buy:disabled { background: #3a3027; color: #8c7d6f; box-shadow: 0 3px 0 #1a140f; cursor: default; }
+.buy.max { background: #23331f; color: var(--good); box-shadow: none; }
+
+.sellbar { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 5px; }
+.sellbar .tot { flex: 1; font-size: 14px; color: var(--muted); line-height: 1.4; }
+.sellbar .tot b { display: block; font-family: var(--display); font-size: 13px; color: var(--gold); margin-top: 4px; }
+.ore { display: grid; grid-template-columns: 32px 1fr auto; gap: 12px; align-items: center; padding: 8px 10px; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.ore canvas { width: 32px; height: 32px; image-rendering: pixelated; }
+.ore .n { font-weight: 500; }
+.ore .v { color: var(--muted); font-size: 13px; }
+.ore .c { font-family: var(--display); font-size: 11px; text-align: right; }
+.ore.unknown { opacity: .45; }
+.hint { color: var(--muted); font-size: 13px; line-height: 1.5; padding: 4px 2px; }
+
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.stat { background: var(--panel-2); border: 1px solid var(--line); border-radius: 5px; padding: 12px; }
+.stat .k { color: var(--muted); font-size: 12px; }
+.stat .v { font-family: var(--display); font-size: 12px; margin-top: 8px; font-variant-numeric: tabular-nums; }
+
+.modal { position: absolute; inset: 0; background: rgba(0,0,0,.7); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 20; }
+.modal .box { background: var(--panel); border: 2px solid var(--gold); border-radius: 6px; padding: 18px; width: 100%; max-width: 360px; max-height: calc(100% - 32px); overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+.modal h3 { font-family: var(--display); font-size: 12px; line-height: 1.6; margin: 0; color: var(--gold); text-wrap: balance; }
+.modal .body { color: var(--ink); line-height: 1.5; font-size: 14px; }
+.modal .body ul { margin: 6px 0 0; padding-left: 18px; color: var(--muted); }
+.modal .row { display: flex; gap: 8px; justify-content: flex-end; }
+.modal .row button { padding: 10px 14px; border-radius: 4px; border: 1px solid var(--line); background: var(--panel-2); cursor: pointer; }
+.modal .row button.primary { background: var(--gold); color: #2a1a00; border-color: #000; font-weight: 700; }
+.modal .row button.warn { background: var(--bad); color: #fff; border-color: #000; font-weight: 700; }
+
+@media (prefers-reduced-motion: reduce) { .toast, .mine { transition: none; } }
+.gemhud { display: inline-flex; align-items: center; gap: 5px; margin-left: 10px; font-size: 11px; color: #f2a6ff; }
+.ability { position: absolute; top: 66px; width: 54px; height: 54px; border-radius: 6px; border: 2px solid #000; background: #2a221b; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-family: var(--display); font-size: 7px; color: var(--ink); cursor: pointer; z-index: 3; box-shadow: 0 3px 0 #000; overflow: hidden; padding: 0; }
+.ability canvas { width: 24px; height: 24px; image-rendering: pixelated; }
+.ability .cd { position: absolute; inset: 0; background: rgba(0,0,0,.7); display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 10px; color: #fff; }
+.ability .nx { position: absolute; top: 3px; right: 4px; font-size: 6px; font-weight: 400; color: var(--muted); }
+.ability.ready { border-color: var(--gold); animation: glow 1.1s infinite alternate; }
+#tntBtn { left: 10px; }
+#dailyBtn { right: 10px; }
+@keyframes glow { from { box-shadow: 0 3px 0 #000, 0 0 0 rgba(245,197,24,0); } to { box-shadow: 0 3px 0 #000, 0 0 16px rgba(245,197,24,.85); } }
+.gemhead { display: flex; gap: 12px; align-items: center; padding: 12px; background: #24142c; border: 1px solid #4a2a5a; border-radius: 5px; }
+.gemhead b { display: block; font-family: var(--display); font-size: 13px; color: #f2a6ff; }
+.gemhead small { display: block; color: var(--muted); font-size: 13px; line-height: 1.4; margin-top: 6px; }
+.prest { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--panel-2); border: 1px dashed var(--line); border-radius: 5px; }
+.prest p { margin: 0; flex: 1; font-size: 14px; line-height: 1.4; }
+.prest small { display: block; color: var(--muted); font-size: 13px; margin-top: 3px; }
+.prest.ready { border: 2px solid #d63cff; background: #2c1636; }
+.prest.ready b { color: #f2a6ff; }
+.buy.gembuy { background: #d63cff; color: #fff; box-shadow: 0 3px 0 #6a1a80; }
+.buy.gembuy:disabled { background: #3a3027; color: #8c7d6f; box-shadow: 0 3px 0 #1a140f; }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; background: #120e0b; padding: 4px; border-radius: 6px; }
+.seg button { border: 0; background: none; padding: 9px 4px; font-family: var(--display); font-size: 9px; color: var(--muted); border-radius: 4px; cursor: pointer; }
+.seg button[aria-selected="true"] { background: var(--panel-2); color: var(--ink); }
+#moreBody { display: flex; flex-direction: column; gap: 8px; }
+.ach { display: grid; grid-template-columns: 32px 1fr auto; gap: 12px; align-items: center; padding: 10px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 5px; }
+.ach canvas { width: 32px; height: 32px; image-rendering: pixelated; }
+.ach .n { font-weight: 700; }
+.ach .v { color: var(--muted); font-size: 13px; margin-top: 2px; }
+.ach .bar { height: 5px; background: #120e0b; border-radius: 3px; margin-top: 6px; overflow: hidden; }
+.ach .bar i { display: block; height: 100%; background: var(--gold); }
+.ach .rw { font-family: var(--display); font-size: 9px; color: #f2a6ff; display: flex; align-items: center; gap: 4px; }
+.ach.got { opacity: .65; }
+.ach.got .rw { color: var(--good); }
+.skins { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.skin { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px; background: var(--panel-2); border: 2px solid var(--line); border-radius: 6px; text-align: center; }
+.skin.on { border-color: var(--gold); }
+.skin .n { font-weight: 700; font-size: 14px; }
+.skin .v { color: var(--muted); font-size: 12px; min-height: 2.6em; }
+.skin .buy { width: 100%; }
+.skinprev { width: 72px; height: 72px; image-rendering: pixelated; background: #120e0b; border-radius: 4px; }
+@media (prefers-reduced-motion: reduce) { .ability.ready { animation: none; } }
+
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- ===== ARCADE MENU ===== -->
+  <main id="arcade">
+    <div class="logo">
+      <h1>POCKET<br>ARCADE</h1>
+      <p>Free games built for your phone. Tap a cabinet to play. New games get added to this page over time.</p>
+    </div>
+    <div class="acct" id="acct-arcade"></div>
+    <div class="cabinets">
+      <button class="cab" id="cab-dig" type="button">
+        <canvas width="16" height="16" id="thumb-dig"></canvas>
+        <div>
+          <h2>DEEP DIG</h2>
+          <p>Tap to mine, sell ores, upgrade your gear and drill toward the planet core.</p>
+          <span class="chip play">PLAY</span><span class="best" id="cab-best"></span>
+        </div>
+      </button>
+      <div class="cab locked">
+        <canvas width="16" height="16" id="thumb-run"></canvas>
+        <div>
+          <h2>ENDLESS RUN</h2>
+          <p>Tap to jump obstacles while the speed keeps climbing.</p>
+          <span class="chip soon">COMING SOON</span>
+        </div>
+      </div>
+      <div class="cab locked">
+        <canvas width="16" height="16" id="thumb-tower"></canvas>
+        <div>
+          <h2>TOWER HOLD</h2>
+          <p>Place towers along the path and stop every wave.</p>
+          <span class="chip soon">COMING SOON</span>
+        </div>
+      </div>
+      <div class="cab locked">
+        <canvas width="16" height="16" id="thumb-horde"></canvas>
+        <div>
+          <h2>HORDE</h2>
+          <p>Dodge, shoot and level up against endless swarms.</p>
+          <span class="chip soon">COMING SOON</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===== DEEP DIG ===== -->
+  <div id="dig" hidden>
+    <header class="hud">
+      <button class="back" id="back" type="button">‹ Arcade</button>
+      <div class="coins"><canvas class="coin-ico" id="coinIco" width="8" height="8"></canvas><span id="coins">0</span><span class="gemhud" id="gemHud" hidden><canvas class="coin-ico" id="gemIco" width="8" height="8"></canvas><span id="gemsTxt">0</span></span></div>
+      <button class="mute" id="mute" type="button" aria-label="Turn sound off">SND</button>
+    </header>
+
+    <section class="mine" id="mine">
+      <div class="layer-row"><span class="lrow"><span class="layer-name" id="layerName">Topsoil</span><button class="travel" id="travelBtn" type="button" hidden>TRAVEL</button></span><span class="depth" id="depth">0 m</span></div>
+      <div class="depthbar"><div id="depthFill"></div></div>
+      <div class="depthnote" id="depthNote">Next layer at 25 m</div>
+      <button class="stage" id="stage" type="button" aria-label="Mine the block"><canvas id="view"></canvas></button>
+      <button class="ability" id="tntBtn" type="button" hidden aria-label="Throw dynamite"><canvas width="8" height="8" id="tntIco"></canvas><span id="tntLbl">3/3</span><b class="nx" id="tntNext"></b><i class="cd" id="tntCd" hidden></i></button>
+      <button class="ability ready" id="dailyBtn" type="button" hidden aria-label="Open your daily chest"><canvas width="8" height="8" id="dailyIco"></canvas><span>DAILY</span></button>
+      <div class="hp"><div class="fill" id="hpFill"></div><span id="hpText">8 / 8</span></div>
+      <div class="rates"><span>Tap <b id="tapDmg">1</b></span><span>Drill <b id="dps">0</b><span id="dpsUnit">/s</span></span></div>
+      <div class="toast" id="toast"></div>
+    </section>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab" role="tab" aria-selected="true" data-tab="upgrades" id="tab-upgrades">UPGRADES</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="bag" id="tab-bag">BAG<span class="badge" id="bagBadge" hidden>0</span></button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="gems" id="tab-gems">GEMS<span class="badge" id="gemBadge" hidden>!</span></button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="more" id="tab-more">MORE</button>
+    </nav>
+    <section class="panel" id="panel-upgrades"></section>
+    <section class="panel" id="panel-bag" hidden></section>
+    <section class="panel" id="panel-gems" hidden></section>
+    <section class="panel" id="panel-more" hidden></section>
+  </div>
+
+  <div class="modal" id="modal" hidden><div class="box"><h3 id="mTitle"></h3><div class="body" id="mBody"></div><div class="row" id="mRow"></div></div></div>
+</div>
+
+<script>
+// ==== BALANCE (checked with an offline simulation) ====
+const ORES = {
+  coal:     { name: 'Coal',      value: 4,      color: '#1b1b1f', shine: '#5a5a66' },
+  copper:   { name: 'Copper',    value: 7,      color: '#c8692f', shine: '#f0a070' },
+  iron:     { name: 'Iron',      value: 18,     color: '#d9b8a0', shine: '#fff0e4' },
+  silver:   { name: 'Silver',    value: 50,     color: '#c9d3dc', shine: '#ffffff' },
+  gold:     { name: 'Gold',      value: 140,    color: '#f5c518', shine: '#fff2a8' },
+  ruby:     { name: 'Ruby',      value: 420,    color: '#e0213f', shine: '#ff9aaa' },
+  emerald:  { name: 'Emerald',   value: 1300,   color: '#1fd17a', shine: '#b5ffd8' },
+  diamond:  { name: 'Diamond',   value: 4500,   color: '#5ff0f0', shine: '#e8ffff' },
+  voidstone:{ name: 'Voidstone', value: 16000,  color: '#8a3cff', shine: '#d6b8ff' },
+  starcore: { name: 'Starcore',  value: 70000,  color: '#ffffff', shine: '#ffe27a' },
+};
+const LAYERS = [
+  { name: 'Topsoil',       from: 0,   base: '#7a5230', dark: '#553620', light: '#9b6c42', sky: ['#3a2a1d', '#17100a'], ores: [['copper', .14], ['coal', .10]] },
+  { name: 'Stone',         from: 25,  base: '#7d7f86', dark: '#55575e', light: '#a0a3aa', sky: ['#2b2d33', '#121317'], ores: [['coal', .18], ['copper', .14], ['iron', .07]] },
+  { name: 'Deepstone',     from: 70,  base: '#4b4d5a', dark: '#30313b', light: '#686b7a', sky: ['#1f2030', '#0b0b12'], ores: [['iron', .16], ['silver', .08], ['gold', .03]] },
+  { name: 'Magma Rock',    from: 130, base: '#5a2a22', dark: '#3a1712', light: '#ff6a2a', sky: ['#3d140c', '#120403'], ores: [['silver', .10], ['gold', .11], ['ruby', .04]] },
+  { name: 'Crystal Caves', from: 210, base: '#2f3d6b', dark: '#1d2647', light: '#7fa8ff', sky: ['#14204a', '#060a1c'], ores: [['gold', .10], ['ruby', .09], ['emerald', .05], ['diamond', .015]] },
+  { name: 'The Abyss',     from: 320, base: '#1c1426', dark: '#0e0914', light: '#5a3a80', sky: ['#120a1c', '#030106'], ores: [['emerald', .10], ['diamond', .06], ['voidstone', .02]] },
+  { name: 'Planet Core',   from: 460, base: '#6b4a10', dark: '#3d2805', light: '#ffd34a', sky: ['#3a2304', '#0d0700'], ores: [['diamond', .10], ['voidstone', .06], ['starcore', .015]] },
+];
+function layerAt(d) { let l = LAYERS[0]; for (const L of LAYERS) if (d >= L.from) l = L; return l; }
+function nextLayer(d) { return LAYERS.find(L => L.from > d) || null; }
+function hp(d) { return Math.ceil(8 * Math.pow(1.042, d) + d * 3); }
+function rubble(d) { return Math.ceil(1 + d * 0.15 + Math.pow(1.045, d) * 0.5); }
+const UP = {
+  pick:     { name: 'Pickaxe',     max: 0,  cost: l => Math.ceil(12 * Math.pow(1.62, l)) },
+  hold:     { name: 'Power Grip',  max: 1,  cost: l => 100 },
+  drill:    { name: 'Auto-Drill',  max: 0,  cost: l => Math.ceil(40 * Math.pow(1.58, l)) },
+  merchant: { name: 'Merchant',    max: 0,  cost: l => Math.ceil(60 * Math.pow(1.75, l)) },
+  luck:     { name: 'Lucky Lamp',  max: 10, cost: l => Math.ceil(90 * Math.pow(2.1, l)) },
+  crit:     { name: 'Power Swing', max: 12, cost: l => Math.ceil(70 * Math.pow(1.9, l)) },
+  tnt:      { name: 'Dynamite',    max: 6,  cost: l => Math.ceil(800 * Math.pow(3, l)) },
+  pouch:    { name: 'TNT Pouch',   max: 7,  cost: l => Math.ceil(2000 * Math.pow(2.2, l)) },
+  cart:     { name: 'Ore Cart',    max: 1,  cost: l => 2500 },
+};
+const CRIT_MULT = 5;
+const MAX_BREAKS = 8; // most blocks that can break per second, however strong you are
+let nextBreakAt = 0;
+const HOLD_RATE = 6.9; // hits per second while holding down on the block
+const PRESTIGE_DEPTH = 460;
+const GEM_UP = {
+  power: { name: 'Ancient Power', icon: 'pick',     max: 0,  cost: l => l + 1 },
+  touch: { name: 'Golden Touch',  icon: 'merchant', max: 0,  cost: l => l + 1 },
+  lamp:  { name: 'Gem Lamp',      icon: 'luck',     max: 10, cost: l => 2 * (l + 1) },
+  start: { name: 'Head Start',    icon: 'cart',     max: 6,  cost: l => 3 * (l + 1) },
+  fuse:  { name: 'Short Fuse',    icon: 'tnt',      max: 5,  cost: l => 2 * (l + 1) },
+};
+function gemDmg(s) { return 1 + 0.25 * s.g.power; }
+function gemVal(s) { return 1 + 0.25 * s.g.touch; }
+function startCoins(l) { return l ? 500 * Math.pow(8, l - 1) : 0; }
+function tntMax(s) { return 3 + (s.up.pouch || 0); } // 3 charges, up to 10 with TNT Pouch
+function tntBlocks(s) { return 1 + 0.5 * s.up.tnt; }
+function tntCooldown(s) { return 15 * (1 - 0.1 * s.g.fuse); } // seconds to refill one charge
+function prestigeGems(d) { return d < PRESTIGE_DEPTH ? 0 : Math.floor(Math.pow((d - 300) / 20, 1.3)); }
+const DRILL_ANGLES = [0, Math.PI / 2, Math.PI / 4, -Math.PI / 4, 3 * Math.PI / 4, -3 * Math.PI / 4];
+function drillCount(l) { return l <= 0 ? 0 : Math.min(DRILL_ANGLES.length, 1 + Math.floor((l - 1) / 5)); }
+const SKINS = {
+  classic: { name: 'Classic',        head: '#c9d3dc', dark: '#7d7f86', handle: '#9b6c42', cost: null,             spark: '#ffffff' },
+  coal:    { name: 'Coal Miner',     head: '#3a3a42', dark: '#18181c', handle: '#6b4a2a', cost: ['coal', 40],     spark: '#8a8a99' },
+  copper:  { name: 'Copper Crafter', head: '#e07a3a', dark: '#8a4418', handle: '#9b6c42', cost: ['copper', 40],   spark: '#f0a070' },
+  golden:  { name: 'Golden Glory',   head: '#f5c518', dark: '#b08400', handle: '#6b3d1a', cost: ['gold', 20],     spark: '#fff2a8' },
+  ruby:    { name: 'Ruby Rager',     head: '#ff3355', dark: '#8a0f22', handle: '#3a2a2a', cost: ['ruby', 15],     spark: '#ff9aaa' },
+  emerald: { name: 'Emerald Edge',   head: '#1fd17a', dark: '#0f7a45', handle: '#4a3010', cost: ['emerald', 10],  spark: '#b5ffd8' },
+  diamond: { name: 'Diamond Deluxe', head: '#5ff0f0', dark: '#1f9a9a', handle: '#2f3d6b', cost: ['diamond', 8],   spark: '#e8ffff' },
+  void:    { name: 'Void Reaper',    head: '#a45cff', dark: '#4a1a99', handle: '#1c1426', cost: ['voidstone', 5], spark: '#d6b8ff' },
+  star:    { name: 'Starbreaker',    head: '#ffffff', dark: '#ffd34a', handle: '#6b4a10', cost: ['starcore', 2],  spark: '#ffe27a', rainbow: true },
+};
+const DRILL_SKINS = {
+  classic: { name: 'Classic',         body: '#e2a23a', hi: '#ffd27a', cap: '#3a2a10', bitA: '#a0a3aa', bitB: '#e8e8ee', cost: null },
+  steel:   { name: 'Steel Driver',    body: '#7d8a99', hi: '#c9d3dc', cap: '#2a2f36', bitA: '#55575e', bitB: '#c9d3dc', cost: ['iron', 25] },
+  copper:  { name: 'Copper Coil',     body: '#c8692f', hi: '#f0a070', cap: '#4a2410', bitA: '#8a4418', bitB: '#f0a070', cost: ['copper', 40] },
+  gold:    { name: 'Gold Rush',       body: '#f5c518', hi: '#fff2a8', cap: '#7a5a00', bitA: '#b08400', bitB: '#fff2a8', cost: ['gold', 20] },
+  ruby:    { name: 'Ruby Rotor',      body: '#b0182f', hi: '#ff9aaa', cap: '#3a0a14', bitA: '#e0213f', bitB: '#ffd0d8', cost: ['ruby', 15] },
+  emerald: { name: 'Emerald Engine',  body: '#0f7a45', hi: '#b5ffd8', cap: '#06301c', bitA: '#1fd17a', bitB: '#d8fff0', cost: ['emerald', 10] },
+  diamond: { name: 'Diamond Driller', body: '#2f3d6b', hi: '#7fa8ff', cap: '#141c38', bitA: '#5ff0f0', bitB: '#e8ffff', cost: ['diamond', 8] },
+  void:    { name: 'Void Bore',       body: '#2a1440', hi: '#a45cff', cap: '#0e0914', bitA: '#8a3cff', bitB: '#d6b8ff', cost: ['voidstone', 5] },
+  star:    { name: 'Star Spinner',    body: '#ffffff', hi: '#ffe27a', cap: '#6b4a10', bitA: '#ffd34a', bitB: '#ffffff', cost: ['starcore', 2], rainbow: true },
+};
+const BGS = {
+  layer:  { name: 'Match the layer', cost: null },
+  night:  { name: 'Starry Night', cost: ['iron', 30],     sky: ['#0b1030', '#1c1440'] },
+  ocean:  { name: 'Deep Sea',     cost: ['silver', 20],   sky: ['#0d4a70', '#041a30'] },
+  sunset: { name: 'Sunset',       cost: ['ruby', 12],     sky: ['#ff9a5a', '#4a2060'] },
+  neon:   { name: 'Neon Grid',    cost: ['emerald', 8],   sky: ['#12002a', '#2a0040'] },
+  galaxy: { name: 'Galaxy',       cost: ['voidstone', 4], sky: ['#0a0014', '#200a3a'] },
+};
+const ACH = [
+  { id: 'blocks10', name: 'Breaking Ground',     desc: 'Mine 10 blocks',                gems: 1, val: s => s.mined,     goal: 10 },
+  { id: 'stone',    name: 'Stone Age',           desc: 'Reach Stone (25 m)',            gems: 1, val: s => s.best,      goal: 25 },
+  { id: 'deep',     name: 'Going Deeper',        desc: 'Reach Deepstone (70 m)',        gems: 1, val: s => s.best,      goal: 70 },
+  { id: 'magma',    name: 'Feel the Heat',       desc: 'Reach Magma Rock (130 m)',      gems: 2, val: s => s.best,      goal: 130 },
+  { id: 'crystal',  name: 'Crystal Clear',       desc: 'Reach Crystal Caves (210 m)',   gems: 2, val: s => s.best,      goal: 210 },
+  { id: 'abyss',    name: 'Into the Abyss',      desc: 'Reach The Abyss (320 m)',       gems: 3, val: s => s.best,      goal: 320 },
+  { id: 'core',     name: 'Journey to the Core', desc: 'Reach Planet Core (460 m)',     gems: 3, val: s => s.best,      goal: 460 },
+  { id: 'cps10',    name: 'Quick Fingers',       desc: 'Hit 10 CPS',                    gems: 1, val: s => s.bestCps,   goal: 10 },
+  { id: 'cps15',    name: 'Speed Demon',         desc: 'Hit 15 CPS',                    gems: 2, val: s => s.bestCps,   goal: 15 },
+  { id: 'chest1',   name: 'Lucky Find',          desc: 'Open a treasure chest',         gems: 1, val: s => s.chests,    goal: 1 },
+  { id: 'chest25',  name: 'Treasure Hunter',     desc: 'Open 25 treasure chests',       gems: 2, val: s => s.chests,    goal: 25 },
+  { id: 'gold',     name: 'Shiny!',              desc: 'Find Gold',                     gems: 1, val: s => s.seen.gold ? 1 : 0,     goal: 1 },
+  { id: 'diamond',  name: 'Diamonds!',           desc: 'Find a Diamond',                gems: 2, val: s => s.seen.diamond ? 1 : 0,  goal: 1 },
+  { id: 'starcore', name: 'Star Collector',      desc: 'Find a Starcore',               gems: 3, val: s => s.seen.starcore ? 1 : 0, goal: 1 },
+  { id: 'million',  name: 'Millionaire',         desc: 'Earn 1M coins in total',        gems: 2, val: s => s.earned,    goal: 1e6 },
+  { id: 'taps',     name: 'Tap Master',          desc: 'Tap 10,000 times',              gems: 2, val: s => s.taps,      goal: 10000 },
+  { id: 'kaboom',   name: 'Kaboom',              desc: 'Throw dynamite',                gems: 1, val: s => s.tntUses || 0, goal: 1 },
+  { id: 'rebirth',  name: 'Rebirth',             desc: 'Prestige once',                 gems: 3, val: s => s.prestiges || 0, goal: 1 },
+  { id: 'streak',   name: 'Daily Digger',        desc: 'Reach a 7-day daily streak',    gems: 2, val: s => s.daily.streak, goal: 7 },
+  { id: 'style',    name: 'Fashionable',         desc: 'Buy any skin or background',    gems: 1, val: s => Object.keys(s.skins).length + Object.keys(s.drillSkins || {}).length + Object.keys(s.bgs || {}).length - 3, goal: 1 },
+];
+function normalize(o) {
+  o = o || {}; const s = Object.assign(fresh(), o);
+  ['up', 'paused', 'g', 'daily'].forEach(k => { s[k] = Object.assign(fresh()[k], o[k] || {}); });
+  s.skins = Object.assign({ classic: 1 }, o.skins || {}); if (!SKINS[s.skin] || !s.skins[s.skin]) s.skin = 'classic';
+  s.drillSkins = Object.assign({ classic: 1 }, o.drillSkins || {}); if (!DRILL_SKINS[s.drillSkin] || !s.drillSkins[s.drillSkin]) s.drillSkin = 'classic';
+  s.bgs = Object.assign({ layer: 1 }, o.bgs || {}); if (!BGS[s.bg] || !s.bgs[s.bg]) s.bg = 'layer';
+  s.ach = o.ach || {}; s.seen = o.seen || {}; s.inv = o.inv || {};
+  if (typeof o.runMax !== 'number') s.runMax = s.depth || 0;
+  return s;
+}
+
+function tapDmg(s) { const l = s.up.pick; return Math.max(1, Math.round((1 + l) * Math.pow(1.22, l) * gemDmg(s))); }
+function drillDpsAt(s, l) { return l === 0 ? 0 : tapDmg(s) * l * 0.45 * Math.pow(1.04, l); }
+function drillDps(s) { return drillDpsAt(s, s.up.drill); }
+function liveDps() { return S.paused.drill ? 0 : drillDps(S); }
+function critChance(s) { return Math.min(0.6, s.up.crit * 0.05); }
+function luckMult(s) { return (1 + s.up.luck * 0.15) * (1 + 0.1 * s.g.lamp); }
+function priceMult(s) { return (1 + s.up.merchant * 0.25) * gemVal(s); }
+function roll(s, d, rnd = Math.random) {
+  if (d > 3 && rnd() < 0.02) return 'chest';
+  const L = layerAt(d), m = luckMult(s);
+  for (let i = L.ores.length - 1; i >= 0; i--) { const [id, p] = L.ores[i]; if (rnd() < p * m) return id; }
+  return null;
+}
+function chestReward(s, d) { return Math.ceil(rubble(d) * 30 * priceMult(s)); }
+function oreValue(s, id) { return Math.ceil(ORES[id].value * priceMult(s)); }
+function bagValue(s) { let c = 0; for (const id in s.inv) c += oreValue(s, id) * s.inv[id]; return c; }
+function bagCount(s) { let c = 0; for (const id in s.inv) c += s.inv[id]; return c; }
+function fresh() { return { coins: 0, depth: 0, inv: {}, up: { pick: 0, hold: 0, drill: 0, merchant: 0, luck: 0, crit: 0, tnt: 0, pouch: 0, cart: 0 }, g: { power: 0, touch: 0, lamp: 0, start: 0, fuse: 0 }, gems: 0, totalGems: 0, prestiges: 0, ach: {}, skins: { classic: 1 }, skin: 'classic', drillSkins: { classic: 1 }, drillSkin: 'classic', bgs: { layer: 1 }, bg: 'layer', daily: { last: '', streak: 0 }, runMax: 0, farm: null, tntCharges: 3, tntRecharge: 0, tntUses: 0, best: 0, mined: 0, taps: 0, earned: 0, chests: 0, bestCps: 0, seen: {}, paused: { drill: false, cart: false }, cloudStamp: 0, time: 0, blockHp: null, drop: null, sound: true, last: Date.now() }; }
+function fmt(n) {
+  if (n < 1000) return (n < 10 && n % 1 ? n.toFixed(1) : Math.floor(n)).toString();
+  const u = ['K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc'];
+  let i = -1; while (n >= 1000 && i < u.length - 1) { n /= 1000; i++; }
+  return (n < 10 ? n.toFixed(2) : n < 100 ? n.toFixed(1) : Math.floor(n)) + u[i];
+}
+// ==== END BALANCE ====
+
+const $ = id => document.getElementById(id);
+const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+function mulberry(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+// ---------- pixel sprites ----------
+function drawMap(ctx, map, pal, ox = 0, oy = 0, s = 1) {
+  map.forEach((row, y) => [...row].forEach((ch, x) => { if (pal[ch]) { ctx.fillStyle = pal[ch]; ctx.fillRect(ox + x * s, oy + y * s, s, s); } }));
+}
+const ICONS = {
+  pick: { map: ['..HHHH..', '.H.WW.H.', 'H..WW..H', '...WW...', '...WW...', '...WW...', '...WW...', '...WW...'], pal: { H: '#c9d3dc', W: '#9b6c42' } },
+  drill: { map: ['.GGGGGG.', '.GgggGG.', '.GGGGGG.', '..SSSS..', '..SsSS..', '...SS...', '...Ss...', '....S...'], pal: { G: '#e2a23a', g: '#ffd27a', S: '#a0a3aa', s: '#ffffff' } },
+  merchant: { map: ['..YYYY..', '.YyyyyY.', 'YyWyyyyY', 'YWyyyyyY', 'YyyyyyyY', 'YyyyyyyY', '.YyyyyY.', '..YYYY..'], pal: { Y: '#b08400', y: '#f5c518', W: '#fff2a8' } },
+  luck: { map: ['...KK...', '..K..K..', '.GGGGGG.', '.GyyyyG.', '.GyWyyG.', '.GyyyyG.', '.GGGGGG.', '..KKKK..'], pal: { K: '#55575e', G: '#8b5a2b', y: '#ffb347', W: '#fff2a8' } },
+  crit: { map: ['....YY..', '...YY...', '..YY....', '.YYYYY..', '...YY...', '..YY....', '.YY.....', 'Y.......'], pal: { Y: '#f5c518' } },
+  hold: { map: ['..W.W...', '.WWWWW..', '.WWWWWW.', 'WWWWWWW.', '.WWWWWW.', '..WWWW..', '..BBBB..', '..BBBB..'], pal: { W: '#f0c8a0', B: '#4b6cd8' } },
+  tnt: { map: ['....Y...', '...K....', '..RRRR..', '.RRRRRR.', '.RWWWWR.', '.RRRRRR.', '.RRRRRR.', '..RRRR..'], pal: { R: '#e0213f', W: '#f4ead8', K: '#3a2a10', Y: '#f5c518' } },
+  pouch: { map: ['..KK....', '.K..K...', '.BBBBB..', 'BBRBRBB.', 'BRRRRRB.', 'BBRRRBB.', '.BBBBB..', '........'], pal: { B: '#8b5a2b', R: '#e0213f', K: '#3a2a10' } },
+  gift: { map: ['.Y....Y.', '..Y..Y..', 'RRRYYRRR', 'RRRYYRRR', '.rrYYrr.', '.rrYYrr.', '.rrYYrr.', '.rrrrrr.'], pal: { R: '#e0213f', r: '#b0182f', Y: '#f5c518' } },
+  gem: { map: ['..CCCC..', '.CWccCC.', 'CCCCCCCC', '.CccccC.', '..CccC..', '...CC...', '........', '........'], pal: { C: '#d63cff', c: '#f2a6ff', W: '#ffffff' } },
+  trophy: { map: ['YYYYYYYY', 'YyyyyyyY', '.YyyyyY.', '..YyyY..', '...YY...', '...YY...', '..YYYY..', '.YYYYYY.'], pal: { Y: '#f5c518', y: '#fff2a8' } },
+  cart: { map: ['........', 'W.......', '.WBBBBBB', '.BOcOgOB', '.BBBBBBB', '..B..B..', '.SS..SS.', '........'], pal: { W: '#9b6c42', B: '#6b4a2a', O: '#4b4d5a', c: '#c8692f', g: '#f5c518', S: '#a0a3aa' } },
+  coin: { map: ['..YYYY..', '.YyyyyY.', 'YyWyyyyY', 'YWyyyyyY', 'YyyyyyyY', 'YyyyyyyY', '.YyyyyY.', '..YYYY..'], pal: { Y: '#b08400', y: '#f5c518', W: '#fff2a8' } },
+};
+function oreIcon(canvas, id, known = true) {
+  const c = canvas.getContext('2d'); canvas.width = 8; canvas.height = 8; c.clearRect(0, 0, 8, 8);
+  const o = ORES[id];
+  const map = ['..XX....', '.XXXX.X.', 'XXSXXXX.', 'XSXXXX..', '.XXXXXX.', '..XXXXX.', '.XX.XX..', '........'];
+  drawMap(c, map, known ? { X: o.color, S: o.shine } : { X: '#3a3027', S: '#3a3027' });
+  if (known && id === 'coal') drawMap(c, map, { S: '#7a7a88' });
+}
+
+// ---------- block textures ----------
+function makeBlock(depth, drop) {
+  const L = layerAt(depth), r = mulberry(depth * 9973 + 17);
+  const cv = document.createElement('canvas'); cv.width = cv.height = 16;
+  const c = cv.getContext('2d');
+  for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
+    const v = r();
+    c.fillStyle = v < 0.2 ? L.dark : v > 0.86 ? L.light : L.base;
+    if (L.name === 'Magma Rock' && v > 0.86) c.fillStyle = v > 0.95 ? '#ffb02a' : '#c2401c';
+    if (L.name === 'Crystal Caves' && v > 0.93) c.fillStyle = '#c9e0ff';
+    if (L.name === 'Planet Core' && v > 0.9) c.fillStyle = '#fff2a8';
+    c.fillRect(x, y, 1, 1);
+  }
+  c.fillStyle = 'rgba(255,255,255,.12)'; c.fillRect(0, 0, 16, 1); c.fillRect(0, 0, 1, 16);
+  c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(0, 15, 16, 1); c.fillRect(15, 0, 1, 16);
+  if (drop === 'chest') {
+    drawMap(c, ['................', '................', '................', '....OOOOOOOO....', '...OllllllllO...', '...OlLLLLLLlO...', '...OOOOGGOOOO...', '...OwwwGgwwwO...', '...OwWWGGWWwO...', '...OwWWWWWWwO...', '...OwWWWWWWwO...', '...OOOOOOOOOO...', '................', '................', '................', '................'],
+      { O: '#2a170a', l: '#b07a3a', L: '#c98d45', w: '#7a4a20', W: '#8b5a2b', G: '#f5c518', g: '#fff2a8' });
+  } else if (drop) {
+    const o = ORES[drop], n = 3 + Math.floor(r() * 2);
+    for (let i = 0; i < n; i++) {
+      const cx = 2 + Math.floor(r() * 11), cy = 2 + Math.floor(r() * 11);
+      const pts = [[0, 0], [1, 0], [0, 1], [1, 1], [-1, 0], [0, -1]].slice(0, 3 + Math.floor(r() * 3));
+      c.fillStyle = 'rgba(0,0,0,.35)'; pts.forEach(([dx, dy]) => c.fillRect(cx + dx + 1, cy + dy + 1, 1, 1));
+      c.fillStyle = o.color; pts.forEach(([dx, dy]) => c.fillRect(cx + dx, cy + dy, 1, 1));
+      c.fillStyle = o.shine; c.fillRect(cx, cy, 1, 1);
+    }
+  }
+  // crack path: random walks from the middle, revealed as damage grows
+  const cracks = []; const cr = mulberry(depth * 31 + 5);
+  for (let k = 0; k < 4; k++) {
+    let x = 7 + Math.floor(cr() * 3), y = 7 + Math.floor(cr() * 3);
+    const dx = cr() < .5 ? -1 : 1, dy = cr() < .5 ? -1 : 1;
+    for (let i = 0; i < 9; i++) { cracks.push([x, y]); if (cr() < .55) x += dx; else y += dy; if (x < 0 || y < 0 || x > 15 || y > 15) break; }
+  }
+  return { cv, cracks };
+}
+
+// ---------- state ----------
+const SAVE_KEY = 'pocketArcade.deepDig.v1';
+let S = fresh();
+function load() {
+  try { const raw = localStorage.getItem(SAVE_KEY); if (raw) { const d = JSON.parse(raw); S = normalize(d); } } catch (e) { }
+}
+function save() { S.last = Date.now(); try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { } }
+load();
+
+// ---------- audio ----------
+let AC = null;
+function audio() { if (!S.sound) return null; try { if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); } catch (e) { AC = null; } return AC; }
+function tone(freq, dur, type = 'square', vol = 0.05, slide = 0) {
+  const a = audio(); if (!a) return;
+  const o = a.createOscillator(), g = a.createGain(), t = a.currentTime;
+  o.type = type; o.frequency.setValueAtTime(freq, t); if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, freq + slide), t + dur);
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t + dur + 0.02);
+}
+function noise(dur, vol = 0.08, freq = 900) {
+  const a = audio(); if (!a) return;
+  const len = Math.floor(a.sampleRate * dur), buf = a.createBuffer(1, len, a.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+  const src = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+  f.type = 'lowpass'; f.frequency.value = freq; g.gain.value = vol; src.buffer = buf;
+  src.connect(f).connect(g).connect(a.destination); src.start();
+}
+const sfx = {
+  hit() { noise(0.06, 0.07, 1400 + Math.random() * 600); tone(140 + Math.random() * 60, 0.05, 'square', 0.025); },
+  crit() { noise(0.08, 0.1, 2400); tone(520, 0.1, 'square', 0.04, 400); },
+  brk() { noise(0.22, 0.14, 600); tone(110, 0.18, 'triangle', 0.08, -50); },
+  ore() { tone(988, 0.07, 'square', 0.035); setTimeout(() => tone(1319, 0.12, 'square', 0.035), 70); },
+  coin() { tone(1319, 0.06, 'square', 0.03); setTimeout(() => tone(1760, 0.14, 'square', 0.03), 60); },
+  buy() { tone(523, 0.06, 'square', 0.04); setTimeout(() => tone(784, 0.1, 'square', 0.04), 60); },
+  layer() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => tone(f, 0.14, 'square', 0.04), i * 90)); },
+  boom() { noise(0.7, 0.3, 380); tone(70, 0.6, 'sawtooth', 0.12, -40); },
+  chest() { [784, 988, 1175, 1568].forEach((f, i) => setTimeout(() => tone(f, 0.12, 'square', 0.04), i * 70)); },
+};
+
+// ---------- game state for current block ----------
+let block = null;
+function spawnBlock() {
+  if (S.blockHp === null || S.drop === null) { S.drop = roll(S, S.depth) || ''; S.blockHp = hp(S.depth); }
+  block = Object.assign(makeBlock(S.depth, S.drop), { max: hp(S.depth) });
+  setLayerLook();
+}
+function setLayerLook() {
+  const L = layerAt(S.depth);
+  const sky = skyFor(S.bg); $('mine').style.background = `linear-gradient(${sky[0]}, ${sky[1]})`;
+  $('layerName').textContent = L.name;
+  $('layerName').style.color = L.light;
+}
+
+// ---------- canvas / fx ----------
+const view = $('view'), vx = view.getContext('2d');
+let W = 0, H = 0, DPR = 1, BS = 160, BX = 0, BY = 0;
+function resize() {
+  const r = view.getBoundingClientRect(); DPR = Math.min(2, window.devicePixelRatio || 1);
+  W = r.width; H = r.height; view.width = Math.round(W * DPR); view.height = Math.round(H * DPR);
+  BS = Math.max(96, Math.floor(Math.min(W * 0.5, H * 0.82, 224) / 16) * 16);
+  BX = Math.round((W - BS) / 2); BY = Math.round((H - BS) / 2);
+}
+window.addEventListener('resize', () => { if (!$('dig').hidden) resize(); });
+
+const parts = [], floats = [];
+let cpsBump = 0, bump = 0, shake = 0, combo = 0, comboT = 0, drillFloatT = 0, drillAcc = 0;
+function chips(n, x, y, colors, power = 1) {
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2, sp = (60 + Math.random() * 180) * power;
+    parts.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 120 * power, life: 0.5 + Math.random() * 0.5, t: 0, s: 3 + Math.floor(Math.random() * 4), c: colors[Math.floor(Math.random() * colors.length)] });
+  }
+}
+function floatText(text, x, y, color = '#fff', size = 12, vy = -60) { floats.push({ text, x, y, color, size, vy, t: 0, life: 1.0 }); if (floats.length > 40) floats.shift(); }
+
+// ---------- actions ----------
+const hitTimes = [];
+// clicks per second, to one decimal: uses the real time between your recent hits
+function currentCps() {
+  const now = performance.now();
+  while (hitTimes.length && now - hitTimes[0] > 1000) hitTimes.shift();
+  const n = hitTimes.length;
+  if (n < 3) return n;
+  const span = (hitTimes[n - 1] - hitTimes[0]) / 1000, rate = (n - 1) / span;
+  return (now - hitTimes[n - 1]) / 1000 > 2 / rate ? Math.min(n, rate) : rate;
+}
+function hitBlock(px, py, ts) {
+  S.taps++;
+  const now = performance.now();
+  hitTimes.push(ts || now); cpsBump = 1;
+  combo = (now - comboT < 800) ? combo + 1 : 1; comboT = now;
+  const mult = 1 + Math.min(combo, 50) * 0.01;
+  const crit = Math.random() < critChance(S);
+  const dmg = tapDmg(S) * mult * (crit ? CRIT_MULT : 1);
+  S.blockHp -= dmg;
+  bump = 1; if (crit && !reduceMotion) shake = 0.18;
+  const L = layerAt(S.depth);
+  chips(crit ? 9 : 4, px, py, [L.base, L.dark, L.light], crit ? 1.3 : 0.8);
+  chips(crit ? 4 : 2, px, py, [(SKINS[S.skin] || SKINS.classic).spark], 0.9);
+  floatText((crit ? 'CRIT ' : '') + fmt(dmg), px + (Math.random() * 30 - 15), py - 10, crit ? '#f5c518' : '#ffffff', crit ? 14 : 11);
+  crit ? sfx.crit() : sfx.hit();
+}
+function breakBlock(silent = false) {
+  const d = S.depth, drop = S.drop, L = layerAt(d);
+  const cx = BX + BS / 2, cy = BY + BS / 2;
+  const rb = Math.ceil(rubble(d) * gemVal(S)); S.coins += rb; S.earned += rb; S.mined++;
+  if (!silent) { chips(20, cx, cy, [L.base, L.dark, L.light], 1.4); floatText('+' + fmt(rb), BX + BS * 0.82, BY + 18, '#f5c518', 11, -30); sfx.brk(); }
+  if (drop === 'chest') {
+    const c = chestReward(S, d); S.coins += c; S.earned += c; S.chests++;
+    if (!silent) { chips(26, cx, cy, ['#f5c518', '#fff2a8', '#c98d45'], 1.6); toast(`Treasure chest! +${fmt(c)} coins`); sfx.chest(); }
+  } else if (drop) {
+    S.inv[drop] = (S.inv[drop] || 0) + 1;
+    if (!silent) {
+      chips(10, cx, cy, [ORES[drop].color, ORES[drop].shine], 1.2);
+      floatText('+1 ' + ORES[drop].name, cx, cy - 20, ORES[drop].shine, 13, -70);
+      if (!S.seen[drop]) toast(`New ore found: ${ORES[drop].name}`); else sfx.ore();
+    }
+    if (!S.seen[drop]) { S.seen[drop] = 1; if (!silent) sfx.layer(); }
+  }
+  S.depth++;
+  if (S.farm) { const FL = LAYERS.find(x => x.name === S.farm), FN = FL && nextLayer(FL.from); if (!FL) S.farm = null; else if (FN && S.depth >= FN.from) S.depth = FL.from; }
+  S.best = Math.max(S.best, S.depth); S.runMax = Math.max(S.runMax || 0, S.depth);
+  if (!silent && layerAt(S.depth) !== L) { toast(`You reached ${layerAt(S.depth).name}!` + (cloud.state === 'on' ? '' : ' Back up your save code in More > Stats.')); sfx.layer(); }
+  S.drop = null; S.blockHp = null;
+  if (!silent) { spawnBlock(); markDirty(); }
+}
+function sellAll(silent = false) {
+  const v = bagValue(S); if (v <= 0) return 0;
+  S.coins += v; S.earned += v; S.inv = {};
+  if (!silent) { sfx.coin(); floatText('+' + fmt(v) + ' coins', W / 2, 40, '#f5c518', 14, -30); }
+  markDirty(); return v;
+}
+function buy(id) {
+  const u = UP[id], l = S.up[id];
+  if (u.max && l >= u.max) return;
+  const c = u.cost(l); if (S.coins < c || (id === 'pouch' && !S.up.tnt)) return;
+  S.coins -= c; S.up[id]++;
+  if (id === 'pouch') { tntTick(); S.tntCharges = Math.min(tntMax(S), S.tntCharges + 1); } sfx.buy(); markDirty(); renderUpgrades(true); sortUpgrades(); save();
+}
+
+// ---------- toast & modal ----------
+let toastTimer = 0;
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), msg.length > 40 ? 3800 : 2200); }
+function modal(title, bodyHtml, buttons) {
+  $('mTitle').textContent = title; $('mBody').innerHTML = bodyHtml; const row = $('mRow'); row.innerHTML = '';
+  buttons.forEach(b => { const el = document.createElement('button'); el.type = 'button'; el.textContent = b.label; if (b.cls) el.className = b.cls; el.onclick = () => { $('modal').hidden = true; b.fn && b.fn(); }; row.appendChild(el); });
+  $('modal').hidden = false; row.lastChild && row.lastChild.focus();
+}
+
+// ---------- panels ----------
+const PICK_NAMES = ['Wooden', 'Stone', 'Iron', 'Gold', 'Diamond', 'Void', 'Star'];
+function upInfo(id) {
+  const l = S.up[id], nx = Object.assign({}, S, { up: Object.assign({}, S.up, { [id]: l + 1 }) });
+  switch (id) {
+    case 'pick': return { title: `${PICK_NAMES[Math.min(6, Math.floor(l / 6))]} Pickaxe`, desc: `Tap damage ${fmt(tapDmg(S))} <b>→ ${fmt(tapDmg(nx))}</b>` };
+    case 'drill': return { title: 'Auto-Drill', desc: l ? `Digs ${fmt(drillDps(S))}/s <b>→ ${fmt(drillDps(nx))}/s</b>, even while you're away` : `Digs <b>${fmt(drillDps(nx))}/s</b> for you, even while you're away` };
+    case 'merchant': return { title: 'Merchant', desc: `Ore prices +${l * 25}% <b>→ +${(l + 1) * 25}%</b>` };
+    case 'luck': return { title: 'Lucky Lamp', desc: `Ore chance x${luckMult(S).toFixed(2)} <b>→ x${luckMult(nx).toFixed(2)}</b>` };
+    case 'crit': return { title: 'Power Swing', desc: `Crit chance ${Math.round(critChance(S) * 100)}% <b>→ ${Math.round(critChance(nx) * 100)}%</b>. Crits hit 5x.` };
+    case 'hold': return { title: 'Power Grip', desc: l ? `Hold down on the block to mine ${HOLD_RATE} times a second.` : `Hold down on the block to mine <b>${HOLD_RATE} times a second</b>.` };
+    case 'tnt': return { title: 'Dynamite', desc: l ? `Each charge blasts ${tntBlocks(S)} <b>→ ${tntBlocks(nx)}</b> blocks. ${tntMax(S)} charges, one refills every ${Math.round(tntCooldown(S))}s.` : `Unlocks a <b>TNT button</b> with ${tntMax(S)} charges. Each blasts ${tntBlocks(nx)} blocks, and one refills every ${Math.round(tntCooldown(S))}s.` };
+    case 'pouch': return { title: 'TNT Pouch', desc: !S.up.tnt ? 'Holds more dynamite. Buy Dynamite first.' : `Dynamite charges ${tntMax(S)} <b>→ ${tntMax(nx)}</b>. You get the new charge right away.` };
+    case 'cart': return { title: 'Ore Cart', desc: l ? 'Sells your ores every 5 seconds.' : 'Sells your ores for you <b>every 5 seconds</b>.' };
+  }
+}
+let upRows = null, upOrderKey = '';
+function renderUpgrades(force) {
+  const p = $('panel-upgrades');
+  if (!upRows || force === 'build') {
+    p.innerHTML = ''; upRows = {}; upOrderKey = '';
+    for (const id of Object.keys(UP)) {
+      const row = document.createElement('div'); row.className = 'up';
+      const cv = document.createElement('canvas'); cv.width = cv.height = 8; drawMap(cv.getContext('2d'), ICONS[id].map, ICONS[id].pal);
+      const mid = document.createElement('div'); mid.innerHTML = `<div class="nm"><span></span><span class="lv"></span></div><div class="ds"></div>`;
+      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'buy'; btn.id = 'buy-' + id;
+      btn.addEventListener('click', () => buy(id));
+      let tog = null;
+      if (id === 'drill' || id === 'cart') {
+        tog = document.createElement('button'); tog.type = 'button'; tog.className = 'tog'; tog.id = 'pause-' + id;
+        tog.addEventListener('click', () => { S.paused[id] = !S.paused[id]; sfx.buy(); toast(`${UP[id].name} ${S.paused[id] ? 'paused' : 'running'}`); renderUpgrades(true); markDirty(); save(); });
+        mid.appendChild(tog);
+      }
+      row.append(cv, mid, btn); p.appendChild(row);
+      upRows[id] = { row, nm: mid.querySelector('.nm span'), lv: mid.querySelector('.lv'), ds: mid.querySelector('.ds'), btn, tog, key: '' };
+    }
+    const bk = document.createElement('div'); bk.className = 'backup'; bk.id = 'backupBanner'; bk.innerHTML = '<p></p><button type="button">COPY SAVE CODE</button>'; bk.querySelector('button').onclick = copyCode; p.prepend(bk); updateBackupBanner();
+    const h = document.createElement('p'); h.className = 'hint'; h.textContent = 'Tap the block fast to build a combo. Tapping still beats holding if you’re quick. Ores show up as colored flecks in the block before you break it.'; p.appendChild(h);
+  }
+  for (const id of Object.keys(UP)) {
+    const r = upRows[id], u = UP[id], l = S.up[id], maxed = u.max && l >= u.max, c = u.cost(l);
+    const info = upInfo(id);
+    const key = l + '|' + maxed + '|' + (S.coins >= c) + '|' + S.up.pick + '|' + (S.paused[id] || '') + '|' + S.up.tnt;
+    if (r.key === key && force !== true) continue; r.key = key;
+    r.row.classList.toggle('done', !!maxed);
+    r.nm.textContent = info.title;
+    r.lv.textContent = u.max === 1 ? (l ? 'Owned' : '') : `Lv ${l}${u.max ? '/' + u.max : ''}`;
+    r.ds.innerHTML = info.desc;
+    if (r.tog) {
+      r.tog.hidden = l === 0;
+      const off = !!S.paused[id];
+      r.tog.className = 'tog' + (off ? ' off' : '');
+      r.tog.innerHTML = `<span class="dot"></span>${off ? 'PAUSED · TAP TO RESUME' : 'RUNNING · TAP TO PAUSE'}`;
+      r.tog.setAttribute('aria-pressed', off ? 'true' : 'false');
+    }
+    if (maxed) { r.btn.className = 'buy max'; r.btn.disabled = true; r.btn.textContent = u.max === 1 ? 'OWNED' : 'MAX'; r.btn.setAttribute('aria-label', info.title + ' maxed'); }
+    else { r.btn.className = 'buy'; r.btn.disabled = S.coins < c || (id === 'pouch' && !S.up.tnt); r.btn.innerHTML = ''; const ci = document.createElement('canvas'); ci.className = 'coin-ico'; ci.width = ci.height = 8; ci.style.width = ci.style.height = '12px'; drawMap(ci.getContext('2d'), ICONS.coin.map, ICONS.coin.pal); r.btn.append(ci, fmt(c)); r.btn.setAttribute('aria-label', `Buy ${info.title} for ${fmt(c)} coins`); }
+  }
+}
+function sortUpgrades() {
+  const p = $('panel-upgrades'), ids = Object.keys(UP);
+  const grp = id => { const u = UP[id], l = S.up[id]; if (u.max && l >= u.max) return 2; if (u.max === 1) return 1; return 0; };
+  const order = ids.slice().sort((a, b) => grp(a) - grp(b) || ids.indexOf(a) - ids.indexOf(b));
+  const k = order.join(); if (k === upOrderKey) return; upOrderKey = k;
+  const hint = p.querySelector('.hint');
+  order.forEach(id => p.insertBefore(upRows[id].row, hint));
+}
+function renderBag() {
+  const p = $('panel-bag'); p.innerHTML = '';
+  const bar = document.createElement('div'); bar.className = 'sellbar';
+  const v = bagValue(S);
+  bar.innerHTML = `<div class="tot">${bagCount(S)} ores in your bag<b>Worth ${fmt(v)}</b></div>`;
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'buy'; b.id = 'sellAll'; b.textContent = 'SELL ALL'; b.disabled = v <= 0;
+  b.onclick = () => { sellAll(); renderBag(); };
+  bar.appendChild(b); p.appendChild(bar);
+  for (const id of Object.keys(ORES)) {
+    const known = !!S.seen[id], n = S.inv[id] || 0;
+    const row = document.createElement('div'); row.className = 'ore' + (known ? '' : ' unknown');
+    const cv = document.createElement('canvas'); oreIcon(cv, id, known);
+    const where = LAYERS.find(L => L.ores.some(o => o[0] === id));
+    const mid = document.createElement('div');
+    mid.innerHTML = known ? `<div class="n">${ORES[id].name}</div><div class="v">${fmt(oreValue(S, id))} each</div>` : `<div class="n">???</div><div class="v">Found from ${where.name}</div>`;
+    const cnt = document.createElement('div'); cnt.className = 'c'; cnt.textContent = known ? 'x' + fmt(n) : '';
+    row.append(cv, mid, cnt); p.appendChild(row);
+  }
+  if (!S.up.cart) { const h = document.createElement('p'); h.className = 'hint'; h.textContent = 'Buy the Ore Cart upgrade to sell automatically.'; p.appendChild(h); }
+}
+function fmtTime(sec) { sec = Math.floor(sec); const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60); return h ? `${h}h ${m}m` : m ? `${m}m ${sec % 60}s` : `${sec}s`; }
+function renderStatsOld() {
+  const p = $('panel-more');
+  const rows = [['Best depth', S.best + ' m'], ['Blocks mined', fmt(S.mined)], ['Taps', fmt(S.taps)], ['Best CPS', fmt(S.bestCps || 0)], ['Coins earned', fmt(S.earned)], ['Chests found', fmt(S.chests)], ['Ores discovered', Object.keys(S.seen).length + ' / ' + Object.keys(ORES).length], ['Play time', fmtTime(S.time)], ['Layers reached', (LAYERS.indexOf(layerAt(S.best)) + 1) + ' / ' + LAYERS.length]];
+  p.innerHTML = `<div class="stats">${rows.map(([k, v]) => `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('')}</div>`;
+  const a = document.createElement('div'); a.className = 'acct'; a.id = 'acct-stats'; p.prepend(a); renderAcct();
+}
+let tab = 'upgrades';
+function setTab(t) {
+  tab = t;
+  document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === t ? 'true' : 'false'));
+  ['upgrades', 'bag', 'gems', 'more'].forEach(k => $('panel-' + k).hidden = k !== t);
+  if (t === 'bag') renderBag(); if (t === 'gems') renderGems(); if (t === 'more') renderMore(); if (t === 'upgrades') renderUpgrades(true);
+}
+document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
+
+// ---------- dynamite ----------
+function tntTick() {
+  const now = Date.now(), per = tntCooldown(S) * 1000;
+  if (S.tntCharges >= tntMax(S)) { S.tntCharges = tntMax(S); S.tntRecharge = 0; return; }
+  if (!S.tntRecharge) S.tntRecharge = now + per;
+  while (S.tntCharges < tntMax(S) && now >= S.tntRecharge) { S.tntCharges++; S.tntRecharge += per; }
+  if (S.tntCharges >= tntMax(S)) S.tntRecharge = 0;
+}
+function tntLeft() { tntTick(); return S.tntCharges >= tntMax(S) ? 0 : Math.max(0, (S.tntRecharge - Date.now()) / 1000); }
+function throwTnt() {
+  tntTick();
+  if (!S.up.tnt || S.tntCharges <= 0 || !block) return;
+  const power = tntBlocks(S), L0 = layerAt(S.depth), chests0 = S.chests, seen0 = Object.keys(S.seen).length, d0 = S.depth;
+  const cx = BX + BS / 2, cy = BY + BS / 2;
+  // spend "power" in whole-block units: breaking the current block costs whatever fraction of it is left
+  let budget = power, guard = 0;
+  while (budget > 0 && guard++ < 50) {
+    if (S.blockHp === null) { S.drop = roll(S, S.depth) || ''; S.blockHp = hp(S.depth); }
+    const max = hp(S.depth), frac = Math.max(0, S.blockHp) / max;
+    if (budget >= frac) { budget -= frac; breakBlock(true); }
+    else { S.blockHp -= budget * max; budget = 0; }
+  }
+  if (S.blockHp === null) spawnBlock(); else { const keepHp = S.blockHp; spawnBlock(); S.blockHp = keepHp; }
+  if (S.tntCharges === tntMax(S)) S.tntRecharge = Date.now() + tntCooldown(S) * 1000;
+  S.tntCharges--; S.tntUses = (S.tntUses || 0) + 1;
+  chips(55, cx, cy, ['#ff6a2a', '#f5c518', '#e0213f', '#3a3027', '#fff2a8'], 2.2);
+  if (!reduceMotion) shake = 0.4;
+  sfx.boom();
+  floatText(`KABOOM! ${power} blocks`, cx, cy - 10, '#ff8a3d', 14, -40);
+  if (layerAt(S.depth) !== L0) toast(`Dynamite blasted you into ${layerAt(S.depth).name}!`);
+  else if (Object.keys(S.seen).length > seen0) toast('Dynamite uncovered a new ore!');
+  else if (S.chests > chests0) toast('Dynamite blew open a treasure chest!');
+  markDirty(); save();
+}
+
+// ---------- daily chest ----------
+function dayStr(off = 0) { const d = new Date(); d.setDate(d.getDate() + off); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function dailyReady() { return S.daily.last !== dayStr(); }
+function nextStreak() { return S.daily.last === dayStr(-1) ? S.daily.streak + 1 : 1; }
+function dailyReward(st) {
+  const coins = Math.ceil((100 + rubble(Math.max(S.best, 10)) * 40) * (1 + 0.25 * (Math.min(st, 7) - 1)) * gemVal(S));
+  return { coins, gems: st % 7 === 0 ? 2 : 0 };
+}
+function openDaily() {
+  if (!dailyReady()) return;
+  const st = nextStreak(), r = dailyReward(st);
+  modal(`Daily chest · Day ${st}`, `Open it for:<ul><li>+${fmt(r.coins)} coins</li>${r.gems ? `<li>+${r.gems} gems (7-day bonus)</li>` : ''}</ul>Come back tomorrow to keep your streak going. Rewards grow each day in a row, and every 7th day gives bonus gems.`,
+    [{ label: 'Later' }, { label: 'Open chest', cls: 'primary', fn: claimDaily }]);
+}
+function claimDaily() {
+  if (!dailyReady()) return;
+  const st = nextStreak(), r = dailyReward(st);
+  S.coins += r.coins; S.earned += r.coins; S.gems += r.gems; S.totalGems += r.gems;
+  S.daily = { last: dayStr(), streak: st };
+  chips(40, BX + BS / 2, BY + BS / 2, ['#f5c518', '#fff2a8', '#e0213f'], 1.8); sfx.chest();
+  toast(`Daily chest: +${fmt(r.coins)} coins` + (r.gems ? ` and +${r.gems} gems!` : '!'));
+  markDirty(); save(); if (cloud.state === 'on') pushCloud();
+}
+
+// ---------- prestige & gems ----------
+function gemIcon(px = 12) { const c = document.createElement('canvas'); c.width = c.height = 8; c.className = 'coin-ico'; c.style.width = c.style.height = px + 'px'; drawMap(c.getContext('2d'), ICONS.gem.map, ICONS.gem.pal); return c; }
+function gemInfo(id) {
+  const l = S.g[id], nx = Object.assign({}, S, { g: Object.assign({}, S.g, { [id]: l + 1 }) });
+  switch (id) {
+    case 'power': return `All damage x${gemDmg(S).toFixed(2)} <b>→ x${gemDmg(nx).toFixed(2)}</b>`;
+    case 'touch': return `Coins and ore prices x${gemVal(S).toFixed(2)} <b>→ x${gemVal(nx).toFixed(2)}</b>`;
+    case 'lamp': return `Ore chance x${(1 + 0.1 * l).toFixed(1)} <b>→ x${(1 + 0.1 * (l + 1)).toFixed(1)}</b>`;
+    case 'start': return `Start each run with ${fmt(startCoins(l))} <b>→ ${fmt(startCoins(l + 1))}</b> coins`;
+    case 'fuse': return `A dynamite charge refills in ${Math.round(tntCooldown(S))}s <b>→ ${Math.round(tntCooldown(nx))}s</b>`;
+  }
+}
+function buyGem(id) {
+  const u = GEM_UP[id], l = S.g[id]; if (u.max && l >= u.max) return;
+  const c = u.cost(l); if (S.gems < c) return;
+  S.gems -= c; S.g[id]++; sfx.buy(); markDirty(); renderGems(); save();
+}
+function askPrestige() {
+  const n = prestigeGems(S.runMax); if (!n) return;
+  modal('Prestige?', `You’ll get <b>+${n} gems</b> and start over from 0 m${S.g.start ? ` with ${fmt(startCoins(S.g.start))} coins` : ''}.<ul><li>You keep: gems, gem upgrades, achievements, skins, stats and your daily streak.</li><li>You lose: coins, normal upgrades, ores in your bag and your depth.</li></ul>Going deeper first gives more gems.`,
+    [{ label: 'Not yet' }, { label: `Prestige +${n}`, cls: 'primary', fn: doPrestige }]);
+}
+function doPrestige() {
+  const n = prestigeGems(S.runMax); if (!n) return;
+  S.gems += n; S.totalGems += n; S.prestiges = (S.prestiges || 0) + 1;
+  const f = fresh();
+  S.coins = startCoins(S.g.start); S.depth = 0; S.runMax = 0; S.farm = null; S.inv = {}; S.up = f.up; S.paused = f.paused; S.blockHp = null; S.drop = null; S.tntCharges = tntMax(S); S.tntRecharge = 0;
+  spawnBlock(); renderUpgrades('build'); setTab('upgrades');
+  chips(60, BX + BS / 2, BY + BS / 2, ['#d63cff', '#f2a6ff', '#ffffff'], 2); sfx.layer();
+  toast(`Prestige complete! +${n} gems`);
+  markDirty(); save(); if (cloud.state === 'on') pushCloud();
+}
+let gemsKey = '';
+function renderGems() {
+  const p = $('panel-gems'); p.innerHTML = '';
+  gemsKey = S.gems + '|' + JSON.stringify(S.g) + '|' + (S.runMax >= PRESTIGE_DEPTH);
+  const head = document.createElement('div'); head.className = 'gemhead';
+  head.append(gemIcon(28));
+  const ht = document.createElement('div'); ht.innerHTML = `<b>${fmt(S.gems)} gems</b><small>Gem upgrades last forever, even after you prestige. Earn gems from prestige, achievements and 7-day daily streaks.</small>`;
+  head.append(ht); p.append(head);
+  const pr = document.createElement('div');
+  const n = prestigeGems(S.runMax);
+  if (n) {
+    pr.className = 'prest ready';
+    pr.innerHTML = `<p><b>Prestige for +${n} gems</b><small>Start over from 0 m and keep everything gem-related. Deeper means more gems.</small></p>`;
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'buy'; b.id = 'prestigeBtn'; b.textContent = 'PRESTIGE'; b.onclick = askPrestige; pr.append(b);
+  } else {
+    pr.className = 'prest';
+    pr.innerHTML = `<p><b>Prestige unlocks at Planet Core (${PRESTIGE_DEPTH} m)</b><small>Your deepest this run is ${S.runMax} m. Reaching ${PRESTIGE_DEPTH} m gives ${prestigeGems(PRESTIGE_DEPTH)} gems, and 600 m gives ${prestigeGems(600)}.</small></p>`;
+  }
+  p.append(pr);
+  for (const id of Object.keys(GEM_UP)) {
+    const u = GEM_UP[id], l = S.g[id], maxed = u.max && l >= u.max, c = u.cost(l);
+    const row = document.createElement('div'); row.className = 'up' + (maxed ? ' done' : '');
+    const cv = document.createElement('canvas'); cv.width = cv.height = 8; drawMap(cv.getContext('2d'), ICONS[u.icon].map, ICONS[u.icon].pal);
+    const mid = document.createElement('div');
+    mid.innerHTML = `<div class="nm"><span>${u.name}</span><span class="lv">Lv ${l}${u.max ? '/' + u.max : ''}</span></div><div class="ds">${maxed ? gemInfo(id).replace(/<b>.*<\/b>/, '') + '(max)' : gemInfo(id)}</div>`;
+    const btn = document.createElement('button'); btn.type = 'button'; btn.id = 'gem-' + id;
+    if (maxed) { btn.className = 'buy max'; btn.disabled = true; btn.textContent = 'MAX'; }
+    else { btn.className = 'buy gembuy'; btn.disabled = S.gems < c; btn.append(gemIcon(12), String(c)); btn.setAttribute('aria-label', `Buy ${u.name} for ${c} gems`); btn.onclick = () => buyGem(id); }
+    row.append(cv, mid, btn); p.append(row);
+  }
+}
+
+// ---------- achievements ----------
+function checkAch() {
+  let got = [], gems = 0;
+  for (const a of ACH) if (!S.ach[a.id] && a.val(S) >= a.goal) { S.ach[a.id] = Date.now(); got.push(a); gems += a.gems; }
+  if (!got.length) return;
+  S.gems += gems; S.totalGems += gems; sfx.layer();
+  toast(got.length === 1 ? `Achievement: ${got[0].name} (+${gems} gem${gems > 1 ? 's' : ''})` : `${got.length} achievements unlocked (+${gems} gems)`);
+  markDirty(); save();
+}
+
+// ---------- skins ----------
+function buySkin(id) {
+  const k = SKINS[id]; if (S.skins[id] || !k.cost) return;
+  const [ore, n] = k.cost; if ((S.inv[ore] || 0) < n) return;
+  S.inv[ore] -= n; if (!S.inv[ore]) delete S.inv[ore];
+  S.skins[id] = 1; S.skin = id; sfx.buy(); toast(`Equipped ${k.name}`); markDirty(); renderMore(); save();
+}
+function equipSkin(id) { if (!S.skins[id]) return; S.skin = id; sfx.buy(); renderMore(); save(); }
+
+// ---------- MORE tab ----------
+let moreSub = 'goals', moreKey = '';
+function moreStateKey() { return moreSub + '|' + Object.keys(S.ach).length + '|' + (moreSub === 'skins' ? JSON.stringify(S.inv) + skinCat + S.skin + S.drillSkin + S.bg + Object.keys(S.skins).length + Object.keys(S.drillSkins).length + Object.keys(S.bgs).length : ''); }
+function renderMore() {
+  const p = $('panel-more'); p.innerHTML = ''; moreKey = moreStateKey();
+  const seg = document.createElement('div'); seg.className = 'seg'; seg.setAttribute('role', 'tablist');
+  [['goals', 'GOALS'], ['skins', 'SKINS'], ['stats', 'STATS']].forEach(([k, label]) => {
+    const b = document.createElement('button'); b.type = 'button'; b.id = 'sub-' + k; b.textContent = label; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', k === moreSub ? 'true' : 'false');
+    b.onclick = () => { moreSub = k; renderMore(); }; seg.append(b);
+  });
+  p.append(seg);
+  const body = document.createElement('div'); body.id = 'moreBody'; p.append(body);
+  if (moreSub === 'goals') {
+    const done = ACH.filter(a => S.ach[a.id]).length;
+    const h = document.createElement('p'); h.className = 'hint'; h.textContent = `${done} of ${ACH.length} done. Each achievement gives gems.`; body.append(h);
+    const list = ACH.slice().sort((a, b) => (!!S.ach[a.id]) - (!!S.ach[b.id]));
+    for (const a of list) {
+      const ok = !!S.ach[a.id], v = Math.min(a.val(S), a.goal);
+      const row = document.createElement('div'); row.className = 'ach' + (ok ? ' got' : '');
+      const cv = document.createElement('canvas'); cv.width = cv.height = 8; drawMap(cv.getContext('2d'), ICONS.trophy.map, ok ? ICONS.trophy.pal : { Y: '#4a3f35', y: '#3a3027' });
+      const mid = document.createElement('div'); mid.innerHTML = `<div class="n">${a.name}</div><div class="v">${a.desc}</div>` + (ok || a.goal <= 1 ? '' : `<div class="bar"><i style="width:${(v / a.goal * 100).toFixed(1)}%"></i></div>`);
+      const rw = document.createElement('div'); rw.className = 'rw'; rw.append(gemIcon(12), ok ? ' DONE' : ' +' + a.gems);
+      row.append(cv, mid, rw); body.append(row);
+    }
+  } else if (moreSub === 'skins') {
+    renderCosmetics(body);
+  } else {
+    const rows = [['Best depth', S.best + ' m'], ['Blocks mined', fmt(S.mined)], ['Taps', fmt(S.taps)], ['Best CPS', fmt(S.bestCps || 0)], ['Coins earned', fmt(S.earned)], ['Chests found', fmt(S.chests)], ['Ores discovered', Object.keys(S.seen).length + ' / ' + Object.keys(ORES).length], ['Play time', fmtTime(S.time)], ['Prestiges', fmt(S.prestiges || 0)], ['Gems earned', fmt(S.totalGems || 0)], ['Daily streak', (S.daily.last === dayStr() || S.daily.last === dayStr(-1) ? S.daily.streak : 0) + ' days'], ['Dynamite thrown', fmt(S.tntUses || 0)]];
+    const a = document.createElement('div'); a.className = 'acct'; a.id = 'acct-stats'; body.append(a);
+    const g = document.createElement('div'); g.className = 'stats'; g.innerHTML = rows.map(([k, v]) => `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`).join(''); body.append(g);
+    renderAcct();
+  }
+}
+
+// ---------- pickaxe drawing ----------
+function drawPickOn(c, px, py, p, angle, skin, t) {
+  c.save(); c.translate(px, py); c.rotate(angle);
+  const head = skin.rainbow ? `hsl(${(t / 8) % 360},90%,72%)` : skin.head;
+  // handle
+  c.fillStyle = '#000'; c.fillRect(-p * 1.5, -p * 12.5, p * 3, p * 13);
+  c.fillStyle = skin.handle; c.fillRect(-p, -p * 12, p * 2, p * 12);
+  c.fillStyle = 'rgba(255,255,255,.18)'; c.fillRect(-p, -p * 12, p * 0.7, p * 12);
+  // head: a bar with tips bending down toward the handle
+  const rows = [[-14, -4, 4], [-13, -6, 6], [-12, -7, -5], [-12, 5, 7], [-11, -7, -6], [-11, 6, 7]];
+  c.fillStyle = '#000';
+  for (const [y, a, b] of rows) c.fillRect((a - 0.5) * p, (y - 0.5) * p, (b - a + 2) * p, p * 2);
+  for (const [y, a, b] of rows) { c.fillStyle = y === -14 ? head : y === -13 ? head : skin.dark; c.fillRect(a * p, y * p, (b - a + 1) * p, p); }
+  c.fillStyle = 'rgba(255,255,255,.55)'; c.fillRect(-3 * p, -14 * p, 2 * p, p);
+  c.restore();
+}
+
+// ---------- backgrounds & drill skins ----------
+function hnum(str) { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function bgKeyFor(id) { return id === 'layer' ? 'layer:' + layerAt(S.depth).name : id; }
+function skyFor(id) { return id === 'layer' ? layerAt(S.depth).sky : BGS[id].sky; }
+function buildScene(key, w, h, p) {
+  const cv = document.createElement('canvas'); cv.width = Math.max(1, Math.round(w)); cv.height = Math.max(1, Math.round(h));
+  const c = cv.getContext('2d'), r = mulberry(hnum(key));
+  const px = (x, y, col, s = 1) => { c.fillStyle = col; c.fillRect(Math.round(x / p) * p, Math.round(y / p) * p, p * s, p * s); };
+  const seeds = Array.from({ length: 48 }, () => [r(), r(), r(), r()]);
+  const glow = (x, y, rad, col) => { const g = c.createRadialGradient(x, y, 0, x, y, rad); g.addColorStop(0, col); g.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = g; c.fillRect(x - rad, y - rad, rad * 2, rad * 2); };
+  const walk = (x, y, len, col, dx, dy) => { for (let i = 0; i < len; i++) { px(x, y, col); if (r() < .55) x += dx * p; else y += dy * p; if (r() < .2) dx = -dx; } };
+  const pixCircle = (cx, cy, rad, col) => { for (let y = -rad; y <= rad; y += p) for (let x = -rad; x <= rad; x += p) if (x * x + y * y <= rad * rad) px(cx + x, cy + y, col); };
+  const S2 = n => seeds.slice(0, n);
+  let dyn = () => { };
+  switch (key) {
+    case 'layer:Topsoil':
+      for (let k = 0; k < 7; k++) { let x = r() * w, y = 0; const len = 8 + r() * 22; for (let i = 0; i < len; i++) { px(x, y, i > len - 3 ? '#7a5a3a' : '#3b2a1d'); y += p; if (r() < .3) x += r() < .5 ? -p : p; } }
+      for (let k = 0; k < 26; k++) px(r() * w, h - r() * h * 0.22, r() < .5 ? '#5a3e28' : '#8a6a4a', r() < .3 ? 2 : 1);
+      dyn = (c, t) => { c.fillStyle = 'rgba(255,230,200,.28)'; for (const s of S2(22)) { const x = s[0] * w + Math.sin(t / 1500 + s[1] * 6) * 10, y = (s[2] * h + t * 0.01 * (0.5 + s[3])) % h; c.fillRect(x, y, 2, 2); } };
+      break;
+    case 'layer:Stone':
+      for (let k = 0; k < 8; k++) walk(r() * w, r() * h, 8 + r() * 12, 'rgba(0,0,0,.3)', r() < .5 ? -1 : 1, 1);
+      for (let k = 0; k < 22; k++) px(r() * w, h - r() * h * 0.2, r() < .5 ? '#55575e' : '#a0a3aa', r() < .3 ? 2 : 1);
+      for (const s of S2(6)) { const x = s[0] * w; for (let i = 0; i < 4; i++) for (let j = -(3 - i); j <= 3 - i; j++) px(x + j * p, i * p, '#5c5e66'); }
+      dyn = (c, t) => { c.fillStyle = 'rgba(140,190,255,.7)'; for (const s of S2(6)) { const per = 2200 + s[1] * 2600, ph = ((t + s[2] * per) % per) / per; c.fillRect(Math.round(s[0] * w / p) * p, 4 * p + ph * (h - 4 * p), 2, 5); } };
+      break;
+    case 'layer:Deepstone':
+      for (let k = 0; k < 7; k++) {
+        const x = r() * w, sh = 2 + Math.floor(r() * 3), cw = 1 + Math.floor(r() * 2);
+        glow(x, h - sh * p - p, 34, 'rgba(79,209,255,.22)');
+        for (let i = 0; i < sh; i++) px(x, h - (i + 1) * p, '#c9e0ff');
+        for (let j = -cw; j <= cw; j++) px(x + j * p, h - (sh + 1) * p, '#4fd1ff');
+        for (let j = -cw + 1; j <= cw - 1; j++) px(x + j * p, h - (sh + 2) * p, '#9feaff');
+      }
+      dyn = (c, t) => { for (const s of S2(24)) { const a = 0.35 + 0.35 * Math.sin(t / 500 + s[1] * 20); c.fillStyle = `rgba(120,220,255,${a.toFixed(2)})`; const y = h - ((t * 0.012 * (0.5 + s[3]) + s[2] * h) % h), x = s[0] * w + Math.sin(t / 1200 + s[1] * 6) * 8; c.fillRect(x, y, 2, 2); } };
+      break;
+    case 'layer:Magma Rock': {
+      const g = c.createLinearGradient(0, h, 0, h * 0.55); g.addColorStop(0, 'rgba(255,90,30,.4)'); g.addColorStop(1, 'rgba(255,90,30,0)'); c.fillStyle = g; c.fillRect(0, h * 0.55, w, h * 0.45);
+      for (let x = 0; x < w; x += p) { const top = h - 4 * p - (r() < .3 ? p : 0); for (let y = top; y < h; y += p) px(x, y, y === top ? '#ffb02a' : r() < .12 ? '#3a1712' : '#ff6a2a'); }
+      dyn = (c, t) => {
+        for (const s of S2(28)) { const y = h - ((t * 0.045 * (0.5 + s[3]) + s[2] * h) % h), x = s[0] * w + Math.sin(t / 600 + s[1] * 6) * 6; c.globalAlpha = Math.min(1, y / h + 0.2); c.fillStyle = s[1] < .5 ? '#ffb02a' : '#ff6a2a'; c.fillRect(x, y, 3, 3); }
+        c.globalAlpha = 1;
+        for (const s of S2(5)) { const ph = ((t / 1400) + s[2]) % 1; if (ph < .5) { c.fillStyle = '#ffd27a'; const rr = Math.round(ph * 8); c.fillRect(s[0] * w - rr, h - 5 * p - rr, rr * 2, rr); } }
+      };
+      break;
+    }
+    case 'layer:Crystal Caves': {
+      const crystal = (x, base, dir, n) => { glow(x, base, 46, 'rgba(127,168,255,.25)'); for (let k = 0; k < n; k++) { const cx = x + (k - n / 2) * 2 * p + (r() - .5) * p * 2, ht = 3 + Math.floor(r() * 6); for (let i = 0; i < ht; i++) { const wd = i > ht - 2 ? 0 : 1; for (let j = 0; j <= wd; j++) px(cx + j * p, base + dir * i * p, j === 0 ? '#c9e0ff' : '#7fa8ff'); } } };
+      crystal(w * 0.12, h - p, -1, 4); crystal(w * 0.88, h - p, -1, 4); crystal(w * 0.3, 0, 1, 3); crystal(w * 0.72, 0, 1, 3);
+      dyn = (c, t) => { for (const s of S2(18)) { const a = Math.max(0, Math.sin(t / 650 + s[2] * 30)); if (a < .2) continue; c.globalAlpha = a; c.fillStyle = '#ffffff'; const x = s[0] * w, y = s[1] * h; c.fillRect(x, y - 3, 1.5, 7); c.fillRect(x - 3, y, 7, 1.5); } c.globalAlpha = 1; };
+      break;
+    }
+    case 'layer:The Abyss': {
+      for (let x = 0; x < w; x += p) { const hh = 2 + Math.floor(Math.abs(Math.sin(x / 37 + r())) * 6); for (let i = 0; i < hh; i++) px(x, h - (i + 1) * p, '#0a0610'); }
+      const v = c.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.3, w / 2, h / 2, Math.max(w, h) * 0.7); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.55)'); c.fillStyle = v; c.fillRect(0, 0, w, h);
+      const eyes = S2(3).map(s => [s[0] < .5 ? s[0] * w * 0.4 + 10 : w - s[0] * w * 0.4 - 10, h * (0.2 + s[1] * 0.6), s[2] * 10]);
+      dyn = (c, t) => {
+        for (const s of S2(26)) { const a = 0.3 + 0.3 * Math.sin(t / 700 + s[1] * 20); c.fillStyle = `rgba(179,136,255,${a.toFixed(2)})`; c.fillRect((s[0] * w + t * 0.006 * (s[3] - .5) * 4 + w) % w, s[2] * h + Math.sin(t / 1600 + s[1] * 9) * 10, 2, 2); }
+        for (const [x, y, o] of eyes) { const cyc = (t / 1000 + o) % 7; if (cyc > 4 || cyc % 2.3 < 0.15) continue; const a = Math.min(1, Math.min(cyc, 4 - cyc) * 2); c.globalAlpha = a; c.fillStyle = '#c9a0ff'; c.fillRect(x, y, 4, 3); c.fillRect(x + 10, y, 4, 3); c.globalAlpha = 1; }
+      };
+      break;
+    }
+    case 'layer:Planet Core':
+      glow(w / 2, h / 2, Math.max(w, h) * 0.6, 'rgba(255,211,74,.22)');
+      dyn = (c, t) => { const pulse = 0.08 + 0.06 * Math.sin(t / 500); c.fillStyle = `rgba(255,180,40,${pulse.toFixed(3)})`; c.fillRect(0, 0, w, h); for (const s of S2(34)) { const y = h - ((t * 0.07 * (0.4 + s[3]) + s[2] * h) % h), x = s[0] * w + Math.sin(t / 400 + s[1] * 6) * 4; c.fillStyle = s[1] < .3 ? '#ffffff' : '#ffd34a'; c.fillRect(x, y, 2, 4); } };
+      break;
+    case 'night':
+      pixCircle(w * 0.82, h * 0.2, Math.max(8, w * 0.06), '#f4ead8'); px(w * 0.8, h * 0.19, '#cfc4b0', 2); px(w * 0.85, h * 0.23, '#cfc4b0');
+      for (let x = 0; x < w; x += p) { const hh = 3 + Math.floor((Math.sin(x / 23) + 1) * 3 + r() * 2); for (let i = 0; i < hh; i++) px(x, h - (i + 1) * p, '#070a1e'); }
+      dyn = (c, t) => { for (const s of S2(44)) { const a = 0.3 + 0.7 * Math.abs(Math.sin(t / 900 + s[2] * 20)); c.fillStyle = `rgba(255,255,255,${a.toFixed(2)})`; const sz = s[3] < .2 ? 3 : 2; c.fillRect(s[0] * w, s[1] * h * 0.8, sz, sz); } };
+      break;
+    case 'ocean':
+      for (let x = 0; x < w; x += p) { px(x, h - p, '#c2a46a'); px(x, h - 2 * p, r() < .5 ? '#c2a46a' : '#a88a50'); }
+      dyn = (c, t) => {
+        for (const s of S2(8)) { const bx = s[0] * w, ht = 6 + Math.floor(s[1] * 8); for (let j = 0; j < ht; j++) { const ox = Math.sin(t / 700 + j * 0.6 + s[2] * 6) * j * 0.6; c.fillStyle = j % 3 ? '#1f9a5a' : '#2fc070'; c.fillRect(Math.round(bx + ox), h - 2 * p - (j + 1) * p, p, p); } }
+        c.strokeStyle = 'rgba(200,240,255,.6)'; c.lineWidth = 1;
+        for (const s of S2(18)) { const y = h - ((t * 0.03 * (0.5 + s[3]) + s[2] * h) % h), x = s[0] * w + Math.sin(t / 500 + s[1] * 6) * 4, rr = 1.5 + s[1] * 2.5; c.beginPath(); c.arc(x, y, rr, 0, Math.PI * 2); c.stroke(); }
+      };
+      break;
+    case 'sunset': {
+      const sr = Math.max(14, w * 0.16), sx = w / 2, sy = h * 0.82;
+      for (let y = -sr; y <= 0; y += p) for (let x = -sr; x <= sr; x += p) if (x * x + y * y <= sr * sr && Math.floor((-y) / p) % 3 !== 1) px(sx + x, sy + y, y > -sr * 0.5 ? '#ff7a3a' : '#ffd34a');
+      c.fillStyle = '#3a1a40'; c.fillRect(0, sy, w, h - sy);
+      dyn = (c, t) => { c.fillStyle = 'rgba(255,170,190,.45)'; for (const s of S2(6)) { const len = 30 + s[1] * 60, x = ((s[0] * (w + len) + t * 0.008 * (0.5 + s[3])) % (w + len)) - len; c.fillRect(Math.round(x), Math.round(s[2] * h * 0.5), Math.round(len), 3); } };
+      break;
+    }
+    case 'neon': {
+      const hy = h * 0.55, vx0 = w / 2;
+      c.strokeStyle = 'rgba(255,60,200,.7)'; c.lineWidth = 1;
+      for (let i = -10; i <= 10; i++) { c.beginPath(); c.moveTo(vx0, hy); c.lineTo(vx0 + i * w * 0.14, h); c.stroke(); }
+      c.fillStyle = '#5ff0f0'; c.fillRect(0, hy, w, 2);
+      dyn = (c, t) => {
+        c.fillStyle = 'rgba(255,60,200,.8)';
+        for (let k = 0; k < 9; k++) { const z = ((k + (t / 900) % 1) / 9); c.fillRect(0, hy + (h - hy) * z * z, w, 1.5); }
+        for (const s of S2(20)) { const a = 0.4 + 0.4 * Math.sin(t / 600 + s[2] * 20); c.fillStyle = `rgba(95,240,240,${a.toFixed(2)})`; c.fillRect(s[0] * w, s[1] * hy * 0.9, 2, 2); }
+      };
+      break;
+    }
+    case 'galaxy':
+      glow(w * 0.3, h * 0.35, w * 0.45, 'rgba(160,60,255,.35)'); glow(w * 0.72, h * 0.62, w * 0.4, 'rgba(60,120,255,.3)'); glow(w * 0.55, h * 0.25, w * 0.25, 'rgba(255,80,180,.25)');
+      dyn = (c, t) => { for (const s of S2(44)) { const a = 0.3 + 0.7 * Math.abs(Math.sin(t / 800 + s[2] * 20)); c.fillStyle = s[3] < .15 ? `rgba(255,200,255,${a.toFixed(2)})` : `rgba(255,255,255,${a.toFixed(2)})`; const ang = t / 60000 + s[0] * 6.28, rad = s[1] * Math.max(w, h) * 0.6; c.fillRect(w / 2 + Math.cos(ang) * rad, h / 2 + Math.sin(ang) * rad * 0.6, 2, 2); } };
+      break;
+  }
+  return { cv, dyn };
+}
+const sceneCache = { k: '', s: null };
+function getScene(w, h, p) {
+  const k = bgKeyFor(S.bg) + '|' + Math.round(w) + '|' + Math.round(h) + '|' + p;
+  if (sceneCache.k !== k) { sceneCache.k = k; sceneCache.s = buildScene(bgKeyFor(S.bg), w, h, p); }
+  return sceneCache.s;
+}
+function drawDrillOn(c, r, tt, sk, t) {
+  const body = sk.rainbow ? `hsl(${(t / 8) % 360},90%,70%)` : sk.body;
+  for (let i = 0; i < 4; i++) { const w = 5 + i * 3; c.fillStyle = (Math.floor(tt / 60) + i) % 2 ? sk.bitA : sk.bitB; c.fillRect(r + i * 4, -w / 2, 4, w); }
+  c.fillStyle = '#000'; c.fillRect(r + 15, -11, 24, 22);
+  c.fillStyle = body; c.fillRect(r + 16, -10, 22, 20);
+  c.fillStyle = sk.hi; c.fillRect(r + 18, -8, 8, 4);
+  c.fillStyle = sk.cap; c.fillRect(r + 38, -4, 10, 8);
+}
+// cosmetics: pickaxes, drills and backgrounds share one shop
+const COS = {
+  pick: { list: SKINS, owned: 'skins', eq: 'skin', label: 'PICKAXES' },
+  drill: { list: DRILL_SKINS, owned: 'drillSkins', eq: 'drillSkin', label: 'DRILLS' },
+  bg: { list: BGS, owned: 'bgs', eq: 'bg', label: 'BACKGROUNDS' },
+};
+let skinCat = 'pick';
+function buyCos(cat, id) {
+  const C = COS[cat], k = C.list[id]; if (S[C.owned][id] || !k.cost) return;
+  const [ore, n] = k.cost; if ((S.inv[ore] || 0) < n) return;
+  S.inv[ore] -= n; if (!S.inv[ore]) delete S.inv[ore];
+  S[C.owned][id] = 1; S[C.eq] = id; sfx.buy(); toast(`Equipped ${k.name}`); afterCos();
+}
+function equipCos(cat, id) { const C = COS[cat]; if (!S[C.owned][id]) return; S[C.eq] = id; sfx.buy(); afterCos(); }
+function afterCos() { setLayerLook(); markDirty(); renderMore(); save(); }
+function cosPreview(cat, id) {
+  const cv = document.createElement('canvas'); cv.width = cv.height = 96; cv.className = 'skinprev';
+  const c = cv.getContext('2d'); c.imageSmoothingEnabled = false;
+  if (cat === 'pick') drawPickOn(c, 30, 84, 4, 0.55, SKINS[id], 0);
+  else if (cat === 'drill') { c.save(); c.translate(8, 48); c.scale(1.65, 1.65); drawDrillOn(c, 0, 0, DRILL_SKINS[id], 0); c.restore(); }
+  else {
+    const sky = skyFor(id), g = c.createLinearGradient(0, 0, 0, 96); g.addColorStop(0, sky[0]); g.addColorStop(1, sky[1]); c.fillStyle = g; c.fillRect(0, 0, 96, 96);
+    const sc = buildScene(bgKeyFor(id), 96, 96, 2); c.drawImage(sc.cv, 0, 0); sc.dyn(c, 1200);
+  }
+  return cv;
+}
+function renderCosmetics(body) {
+  const chips = document.createElement('div'); chips.className = 'seg';
+  Object.keys(COS).forEach(cat => { const b = document.createElement('button'); b.type = 'button'; b.id = 'cat-' + cat; b.textContent = COS[cat].label; b.setAttribute('aria-selected', cat === skinCat ? 'true' : 'false'); b.onclick = () => { skinCat = cat; renderMore(); }; chips.append(b); });
+  body.append(chips);
+  const h = document.createElement('p'); h.className = 'hint';
+  h.textContent = skinCat === 'bg' ? '“Match the layer” changes the scenery as you dig deeper. The others stay the same everywhere. Backgrounds cost ores from your bag.' : 'Skins cost ores from your bag, so pause the Ore Cart to save some up.';
+  body.append(h);
+  const C = COS[skinCat], grid = document.createElement('div'); grid.className = 'skins'; body.append(grid);
+  for (const id of Object.keys(C.list)) {
+    const k = C.list[id], owned = !!S[C.owned][id], on = S[C.eq] === id;
+    const card = document.createElement('div'); card.className = 'skin' + (on ? ' on' : '');
+    const nm = document.createElement('div'); nm.className = 'n'; nm.textContent = k.name;
+    const cost = document.createElement('div'); cost.className = 'v';
+    const btn = document.createElement('button'); btn.type = 'button'; btn.id = `cos-${skinCat}-${id}`;
+    if (owned) { cost.textContent = on ? 'Equipped' : 'Owned'; btn.className = on ? 'buy max' : 'buy'; btn.textContent = on ? 'EQUIPPED' : 'EQUIP'; btn.disabled = on; const cat = skinCat; btn.onclick = () => equipCos(cat, id); }
+    else {
+      const [ore, n] = k.cost, have = S.inv[ore] || 0, oreName = S.seen[ore] ? ORES[ore].name : '???';
+      cost.textContent = `${n} ${oreName} · you have ${have}`;
+      btn.className = 'buy'; btn.textContent = 'BUY'; btn.disabled = have < n; const cat = skinCat; btn.onclick = () => buyCos(cat, id);
+      btn.setAttribute('aria-label', `Buy ${k.name} for ${n} ${oreName}`);
+    }
+    card.append(cosPreview(skinCat, id), nm, cost, btn); grid.append(card);
+  }
+}
+
+// ---------- travel between layers ----------
+function travelTo(d) {
+  d = Math.max(0, Math.min(d, S.runMax));
+  $('modal').hidden = true;
+  if (d === S.depth && !(S.farm && layerAt(d) === layerAt(S.runMax))) return;
+  S.depth = d; S.blockHp = null; S.drop = null; spawnBlock();
+  S.farm = layerAt(d) !== layerAt(S.runMax) ? layerAt(d).name : null;
+  sfx.layer(); toast(S.farm ? `Farming ${S.farm}. Use Travel to go back down.` : `Traveled to ${layerAt(d).name} (${d} m)`);
+  markDirty(); save();
+}
+function openTravel() {
+  const here = layerAt(S.depth);
+  let html = 'Go back to any layer you’ve reached to farm its ores. While farming, you stay in that layer: when you reach its bottom, you loop back to its top. Your deepest point is saved, so tap Back to deepest when you’re done.<div class="trav" id="travList">';
+  if (S.runMax > S.depth) html += `<button type="button" class="deep" data-d="${S.runMax}"><span><b>Back to deepest</b><small>${layerAt(S.runMax).name}</small></span><em>${S.runMax} m</em></button>`;
+  for (const L of LAYERS) {
+    const ok = L.from <= S.runMax, ores = L.ores.map(o => S.seen[o[0]] ? ORES[o[0]].name : '???').join(', ');
+    html += `<button type="button" data-d="${L.from}" ${ok ? '' : 'disabled'} class="${L === here ? 'here' : ''}"><span><b>${L.name}${L === here ? ' (you’re here)' : ''}</b><small>${ok ? ores : 'Reach ' + L.from + ' m to unlock'}</small></span><em>${L.from} m</em></button>`;
+  }
+  html += '</div>';
+  modal('Travel', html, [{ label: 'Close' }]);
+  $('travList').querySelectorAll('button[data-d]').forEach(b => b.onclick = () => travelTo(+b.dataset.d));
+}
+$('travelBtn').addEventListener('click', openTravel);
+
+// ---------- HUD ----------
+let dirty = true; function markDirty() { dirty = true; }
+let lastBagKey = '';
+function renderHud() {
+  $('coins').textContent = fmt(S.coins);
+  $('depth').textContent = S.depth + ' m' + (S.runMax > S.depth ? ` / ${S.runMax}` : '');
+  $('travelBtn').hidden = S.runMax < LAYERS[1].from;
+  const L = layerAt(S.depth), N = nextLayer(S.depth);
+  $('depthFill').style.width = N ? ((S.depth - L.from) / (N.from - L.from) * 100) + '%' : '100%';
+  $('depthNote').textContent = S.farm ? `Farming ${S.farm} · loops back to ${L.from} m` : N ? `Next layer at ${N.from} m` : 'You reached the deepest layer';
+  const frac = Math.max(0, S.blockHp / block.max);
+  $('hpFill').style.width = (frac * 100) + '%';
+  $('hpText').textContent = `${fmt(Math.max(0, Math.ceil(S.blockHp)))} / ${fmt(block.max)}`;
+  $('tapDmg').textContent = fmt(tapDmg(S));
+  const dp = $('dps'); if (S.up.drill && S.paused.drill) { dp.textContent = 'paused'; dp.className = 'paused-note'; $('dpsUnit').hidden = true; } else { dp.textContent = fmt(drillDps(S)); dp.className = ''; $('dpsUnit').hidden = false; }
+  const cps = Math.round(currentCps() * 10) / 10; if (cps > (S.bestCps || 0)) S.bestCps = cps;
+  const n = bagCount(S); const bb = $('bagBadge'); bb.hidden = n === 0; bb.textContent = n > 99 ? '99+' : n;
+  if (tab === 'upgrades') { renderUpgrades(); sortUpgrades(); }
+  checkAch();
+  $('gemHud').hidden = !S.gems && !S.totalGems; $('gemsTxt').textContent = fmt(S.gems);
+  $('gemBadge').hidden = !(S.runMax >= PRESTIGE_DEPTH);
+  const tb = $('tntBtn'); tb.hidden = !S.up.tnt;
+  if (S.up.tnt) { const left = tntLeft(), ch = S.tntCharges; $('tntLbl').textContent = `${ch}/${tntMax(S)}`; $('tntCd').hidden = ch > 0; $('tntCd').textContent = Math.ceil(left) + 's'; $('tntNext').textContent = ch < tntMax(S) && ch > 0 ? Math.ceil(left) + 's' : ''; tb.classList.toggle('ready', ch > 0); }
+  $('dailyBtn').hidden = !dailyReady();
+  if (tab === 'gems') { const k = S.gems + '|' + JSON.stringify(S.g) + '|' + (S.runMax >= PRESTIGE_DEPTH); if (k !== gemsKey) renderGems(); }
+  if (tab === 'more' && moreSub !== 'stats' && moreStateKey() !== moreKey) renderMore();
+  if (tab === 'bag') { const k = n + '|' + S.up.merchant; if (k !== lastBagKey) { lastBagKey = k; renderBag(); } }
+}
+
+// ---------- draw ----------
+function draw(t) {
+  vx.setTransform(DPR, 0, 0, DPR, 0, 0); vx.clearRect(0, 0, W, H);
+  vx.imageSmoothingEnabled = false;
+  { const sc = getScene(W, H, Math.max(2, Math.round(BS / 64))); vx.drawImage(sc.cv, 0, 0, W, H); sc.dyn(vx, t); }
+  const sx = shake > 0 ? (Math.random() - .5) * 10 * shake / .18 : 0, sy = shake > 0 ? (Math.random() - .5) * 10 * shake / .18 : 0;
+  const sc = 1 - bump * 0.07, size = BS * sc, x = BX + (BS - size) / 2 + sx, y = BY + (BS - size) / 2 + sy;
+  // shadow
+  vx.fillStyle = 'rgba(0,0,0,.35)'; vx.fillRect(BX + 8, BY + BS + 4, BS - 16, 8);
+  vx.drawImage(block.cv, x, y, size, size);
+  // cracks
+  const frac = 1 - Math.max(0, S.blockHp) / block.max, show = Math.floor(block.cracks.length * frac), p = size / 16;
+  vx.fillStyle = 'rgba(0,0,0,.6)';
+  for (let i = 0; i < show; i++) vx.fillRect(x + block.cracks[i][0] * p, y + block.cracks[i][1] * p, p, p);
+  // drills: one more appears every 5 Auto-Drill levels (up to 6)
+  if (S.up.drill > 0) {
+    const on = !S.paused.drill, n = drillCount(S.up.drill), ccx = BX + BS / 2, ccy = BY + BS / 2, L = layerAt(S.depth);
+    for (let k = 0; k < n; k++) {
+      const a = DRILL_ANGLES[k], ca = Math.cos(a), sa = Math.sin(a), edge = BS / 2 / Math.max(Math.abs(ca), Math.abs(sa));
+      const r = edge + (on ? 2 + Math.sin(t / 30 + k) * 1.5 : 12), tt = on ? t + k * 37 : 0;
+      vx.save(); vx.translate(ccx, ccy); vx.rotate(a);
+      drawDrillOn(vx, r, tt, DRILL_SKINS[S.drillSkin] || DRILL_SKINS.classic, t);
+      vx.restore();
+      if (on && Math.random() < 0.15) chips(1, ccx + ca * edge, ccy + sa * edge, [L.base, L.light], 0.5);
+    }
+  }
+  // pickaxe on the left, swings when you hit
+  {
+    const pp = Math.max(2, Math.round(BS / 64)), px = BX - pp * 11, py = BY + BS * 0.62;
+    drawPickOn(vx, px, py, pp, -0.35 + bump * 1.15, SKINS[S.skin] || SKINS.classic, t);
+  }
+  // CPS counter and combo meter above the block
+  {
+    const nowT = performance.now(), cps = Math.round(currentCps() * 10) / 10, cx = BX + BS / 2;
+    const room = BY, cy = room >= 46 ? BY - 32 : Math.max(14, BY - 18), sz = Math.round((room >= 46 ? 16 : 12) * (1 + cpsBump * 0.15));
+    const col = cps === 0 ? 'rgba(244,234,216,.4)' : cps >= 10 ? '#ff8a3d' : cps >= 6 ? '#f5c518' : '#f4ead8';
+    vx.textAlign = 'center'; vx.textBaseline = 'middle'; vx.font = `${sz}px 'Press Start 2P', monospace`;
+    const txt = `${cps ? cps.toFixed(1) : 0} CPS`;
+    vx.fillStyle = '#000'; vx.fillText(txt, cx + 2, cy + 2);
+    vx.fillStyle = col; vx.fillText(txt, cx, cy);
+    if (combo > 1 && nowT - comboT < 800 && room >= 46) {
+      const ct = `COMBO x${(1 + Math.min(combo, 50) * 0.01).toFixed(2)}`;
+      vx.font = `9px 'Press Start 2P', monospace`;
+      vx.fillStyle = '#000'; vx.fillText(ct, cx + 1, BY - 11);
+      vx.fillStyle = '#f5c518'; vx.fillText(ct, cx, BY - 12);
+    }
+  }
+  // particles
+  for (const q of parts) { vx.globalAlpha = Math.max(0, 1 - q.t / q.life); vx.fillStyle = q.c; vx.fillRect(q.x, q.y, q.s, q.s); }
+  vx.globalAlpha = 1;
+  vx.textAlign = 'center'; vx.textBaseline = 'middle';
+  for (const f of floats) {
+    vx.globalAlpha = Math.max(0, 1 - f.t / f.life);
+    vx.font = `${f.size}px 'Press Start 2P', monospace`;
+    vx.fillStyle = '#000'; vx.fillText(f.text, f.x + 2, f.y + 2);
+    vx.fillStyle = f.color; vx.fillText(f.text, f.x, f.y);
+  }
+  vx.globalAlpha = 1;
+}
+
+// ---------- loop ----------
+let lastT = 0, uiT = 0, saveT = 0, cartT = 0, cloudT = 0, running = false;
+function loop(t) {
+  if (!running) return;
+  const dt = Math.min(0.1, (t - (lastT || t)) / 1000); lastT = t;
+  S.time += dt;
+  // drill
+  const dps = liveDps();
+  if (dps > 0) {
+    S.blockHp -= dps * dt; drillAcc += dps * dt; drillFloatT += dt;
+    if (drillFloatT > 1) { drillFloatT = 0; floatText('-' + fmt(drillAcc), BX + BS + 20, BY + BS * 0.45, '#c9c2b8', 9, -40); drillAcc = 0; }
+  }
+  if (hold.down && hold.over && S.up.hold && $('modal').hidden) { const iv = 1000 / HOLD_RATE, nowP = performance.now(); if (!hold.last) hold.last = nowP; while (nowP - hold.last >= iv) { hold.last += iv; hitBlock(hold.x + (Math.random() * 16 - 8), hold.y + (Math.random() * 16 - 8), hold.last); } } else hold.last = 0;
+  if (S.blockHp !== null && S.blockHp <= 0) { const nb = performance.now(); if (nb >= nextBreakAt) { nextBreakAt = nb + 1000 / MAX_BREAKS; breakBlock(); } }
+  if (S.up.cart && !S.paused.cart) { cartT += dt; if (cartT > 5) { cartT = 0; if (bagCount(S)) sellAll(); } }
+  bump = Math.max(0, bump - dt * 8); cpsBump = Math.max(0, cpsBump - dt * 6); shake = Math.max(0, shake - dt);
+  for (let i = parts.length - 1; i >= 0; i--) { const q = parts[i]; q.t += dt; q.vy += 600 * dt; q.x += q.vx * dt; q.y += q.vy * dt; if (q.t > q.life) parts.splice(i, 1); }
+  for (let i = floats.length - 1; i >= 0; i--) { const f = floats[i]; f.t += dt; f.y += f.vy * dt; if (f.t > f.life) floats.splice(i, 1); }
+  if (parts.length > 300) parts.splice(0, parts.length - 300);
+  draw(t);
+  uiT += dt; if (uiT > 0.1 || dirty) { uiT = 0; dirty = false; renderHud(); }
+  saveT += dt; if (saveT > 5) { saveT = 0; save(); }
+  cloudT += dt; if (cloudT > 20) { cloudT = 0; if (cloud.state === 'on') pushCloud(); }
+  requestAnimationFrame(loop);
+}
+
+// ---------- input ----------
+const stage = $('stage');
+const hold = { down: false, over: false, x: 0, y: 0, t: 0, id: null };
+function onBlock(e) {
+  const r = view.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+  return { x, y, inside: x >= BX - 20 && x <= BX + BS + 20 && y >= BY - 20 && y <= BY + BS + 20 };
+}
+stage.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  let { x, y, inside } = onBlock(e);
+  if (!inside) { x = BX + BS / 2; y = BY + BS / 2; }
+  hitBlock(x, y);
+  hold.down = true; hold.over = inside; hold.x = x; hold.y = y; hold.last = performance.now(); hold.id = e.pointerId;
+  try { stage.setPointerCapture(e.pointerId); } catch (err) { }
+});
+stage.addEventListener('pointermove', e => {
+  if (!hold.down || e.pointerId !== hold.id) return;
+  const o = onBlock(e); hold.over = o.inside; if (o.inside) { hold.x = o.x; hold.y = o.y; }
+});
+['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => stage.addEventListener(ev, e => { if (e.pointerId === hold.id) { hold.down = false; hold.id = null; } }));
+window.addEventListener('blur', () => { hold.down = false; });
+stage.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); hitBlock(BX + BS / 2, BY + BS / 2); } });
+stage.addEventListener('click', e => e.preventDefault());
+document.addEventListener('contextmenu', e => e.preventDefault());
+$('tntBtn').addEventListener('click', () => { audio(); throwTnt(); });
+$('dailyBtn').addEventListener('click', () => { audio(); openDaily(); });
+document.addEventListener('keydown', e => { if ((e.key === 't' || e.key === 'T') && running && $('modal').hidden && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)) throwTnt(); });
+$('mute').addEventListener('click', () => { S.sound = !S.sound; updateMute(); save(); });
+function updateMute() { const m = $('mute'); m.textContent = S.sound ? 'SND' : 'OFF'; m.setAttribute('aria-label', S.sound ? 'Turn sound off' : 'Turn sound on'); m.style.color = S.sound ? '' : '#ff6b5e'; }
+
+// ---------- offline progress ----------
+function offlineProgress() {
+  const away = (Date.now() - (S.last || Date.now())) / 1000;
+  const dps = liveDps();
+  if (away < 60 || dps <= 0) return;
+  const secs = Math.min(away, 4 * 3600);
+  let dmg = dps * secs, startDepth = S.depth, startCoins = S.coins, before = Object.assign({}, S.inv), chestsBefore = S.chests, guard = 0;
+  if (S.blockHp === null) { S.blockHp = hp(S.depth); S.drop = roll(S, S.depth) || ''; }
+  while (dmg >= S.blockHp && guard++ < Math.min(20000, secs * MAX_BREAKS)) { dmg -= S.blockHp; breakBlock(true); S.drop = roll(S, S.depth) || ''; S.blockHp = hp(S.depth); }
+  S.blockHp -= dmg;
+  spawnBlock(); markDirty(); save();
+  const got = Object.keys(S.inv).filter(k => (S.inv[k] || 0) > (before[k] || 0)).map(k => `<li>${(S.inv[k] - (before[k] || 0))} ${ORES[k].name}</li>`).join('');
+  const chests = S.chests - chestsBefore;
+  modal('Welcome back!', `Your drill kept digging for ${fmtTime(secs)}${away > secs ? ' (4h max)' : ''}.<ul><li>${S.depth - startDepth} m deeper</li><li>+${fmt(S.coins - startCoins)} coins</li>${chests ? `<li>${chests} treasure chests</li>` : ''}${got}</ul>`, [{ label: 'Nice', cls: 'primary' }]);
+}
+
+// ---------- cloud save (Claude account) ----------
+const cloud = { state: 'checking', msg: '', name: '', ref: null, ready: false, writing: false, pending: false, lastPushedAt: 0, lastSync: 0, unsub: null };
+function setCloud(state, msg = '') { cloud.state = state; cloud.msg = msg; renderAcct(); updateBackupBanner(); maybeWarnBackup(); }
+function ago(ms) { const s = Math.round((Date.now() - ms) / 1000); return s < 5 ? 'just now' : s < 60 ? s + 's ago' : s < 3600 ? Math.floor(s / 60) + 'm ago' : Math.floor(s / 3600) + 'h ago'; }
+function renderAcct() {
+  ['acct-arcade', 'acct-stats'].forEach(id => {
+    const el = $(id); if (!el) return;
+    let head = '', sub = '';
+    if (cloud.state === 'checking') { head = 'Connecting to cloud save…'; sub = 'Your progress is saving on this device in the meantime.'; }
+    else if (cloud.state === 'on') { head = `Signed in${cloud.name ? ' as <b></b>' : ''}. Cloud save is on.`; sub = 'Your progress follows your Claude account to any device.' + (cloud.lastSync ? ' Last synced ' + ago(cloud.lastSync) + '.' : ''); }
+    else if (cloud.state === 'local') { head = 'Your progress autosaves on this device.'; sub = 'Copy your save code to back it up or to move your game to another phone or computer.'; }
+    else { head = 'Cloud save is off.'; sub = (cloud.msg || 'Open this page while signed in to Claude to sync your progress.') + ' Progress saves on this device only, and your browser can clear it. Copy your save code to keep a backup.'; }
+    el.innerHTML = `<div class="st ${cloud.state}"><span class="dot"></span><div><span class="hd">${head}</span><small>${sub}</small></div></div><div class="btns"><button type="button" class="sync">Sync now</button><button type="button" class="copy">Copy save code</button><button type="button" class="load">Load save code</button><button type="button" class="wipe">Wipe all progress</button></div>`;
+    const nb = el.querySelector('b'); if (nb) nb.textContent = cloud.name;
+    const sy = el.querySelector('.sync'); sy.hidden = cloud.state !== 'on'; sy.onclick = async () => { sy.disabled = true; await pushCloud(); toast('Progress synced'); renderAcct(); };
+    el.querySelector('.wipe').onclick = askWipe;
+    el.querySelector('.copy').onclick = copyCode;
+    el.querySelector('.load').onclick = askLoadCode;
+  });
+}
+function updateBackupBanner() {
+  const bk = $('backupBanner'); if (!bk) return;
+  bk.hidden = cloud.state === 'on' || cloud.state === 'checking';
+  if (bk.hidden) return;
+  const unsaved = S.time - (S.backupPlay || 0);
+  const stale = !S.lastBackup || unsaved > 600;
+  bk.className = 'backup' + (stale ? ' stale' : '');
+  bk.querySelector('p').innerHTML = S.lastBackup
+    ? `<b>Back up your progress.</b><small>Last backup ${ago(S.lastBackup)}. Your browser can clear your save, so copy a new code often.</small>`
+    : `<b>Back up your progress.</b><small>It autosaves on this device. Copy your save code and keep it in Notes in case you switch devices or clear your browser.</small>`;
+}
+function maybeWarnBackup() {
+  if (cloud.state === 'on' || cloud.state === 'checking' || !running || S.warned || !$('modal').hidden) return;
+  S.warned = true; save();
+  modal('Keep your progress safe',
+    'Your progress autosaves on <b>this device</b>. To keep it extra safe:<ul><li>Add the game to your Home Screen (in Safari: Share, then Add to Home Screen) so it opens like an app.</li><li>Tap <b>Copy save code</b> and paste it in your Notes app every so often.</li><li>If your progress ever disappears, or you switch devices, open <b>More</b>, then <b>Stats</b>, and tap <b>Load save code</b> and paste it in.</li></ul>',
+    [{ label: 'Later' }, { label: 'Copy save code', cls: 'primary', fn: copyCode }]);
+}
+function snapshotState() { return JSON.parse(JSON.stringify(S)); }
+async function pushCloud() {
+  if (cloud.state !== 'on' && cloud.state !== 'checking') return;
+  if (!cloud.ref || !cloud.ready) { cloud.pending = true; return; }
+  if (cloud.writing) { cloud.pending = true; return; }
+  cloud.writing = true;
+  const now = Math.max(Date.now(), (S.cloudStamp || 0) + 1, cloud.lastPushedAt + 1); cloud.lastPushedAt = now; S.last = Date.now();
+  const body = { v: 1, updatedAt: now, state: snapshotState() };
+  try {
+    await cloud.ref.set(body);
+    S.cloudStamp = now; cloud.lastSync = now; save(); renderAcct();
+  } catch (e) {
+    const code = e && e.code;
+    if (code === 'invalid_argument' || code === 'not_granted' || code === 'revoked' || code === 'capability_disabled' || code === 'capability_removed') setCloud('off', 'Online saving only works for the game’s owner, not on shared links.');
+    else if (code === 'quota_exceeded') setCloud('off', 'The cloud save is full.');
+    else { cloud.pending = true; }
+  } finally {
+    cloud.writing = false;
+    if (cloud.pending && cloud.state === 'on') { cloud.pending = false; setTimeout(pushCloud, 1500); }
+  }
+}
+function adoptCloud(d) {
+  const sound = S.sound;
+  S = normalize(d.state);
+  S.sound = sound; S.cloudStamp = d.updatedAt; cloud.lastSync = d.updatedAt; save();
+  $('cab-best').textContent = S.best > 0 ? `Best: ${S.best} m` : '';
+  if (running) { spawnBlock(); renderUpgrades('build'); setTab(tab); markDirty(); offlineProgress(); }
+  toast(d.state.mined || d.state.earned ? 'Loaded your cloud save' : 'Progress was wiped');
+}
+function onCloudSnap(snap) {
+  const d = snap.exists ? snap.data() : null;
+  const u = d && d.updatedAt || 0;
+  if (d && d.state && u > Math.max(S.cloudStamp || 0, cloud.lastPushedAt || 0)) adoptCloud(d);
+  if (!snap.metadata.fromCache && !cloud.ready) {
+    cloud.ready = true; clearTimeout(cloud.timer); setCloud('on');
+    if (!d || u < (S.cloudStamp || 0) || cloud.pending || !d.state) { cloud.pending = false; pushCloud(); }
+    else { cloud.lastSync = u; renderAcct(); }
+  }
+}
+async function initCloud() {
+  cloud.timer = setTimeout(() => { if (!cloud.ready) setCloud('off', 'Couldn’t reach cloud save right now.'); }, 10000);
+  for (let i = 0; i < 40 && !(window.claude && window.claude.use); i++) await new Promise(r => setTimeout(r, 250));
+  if (!(window.claude && window.claude.use)) { clearTimeout(cloud.timer); setCloud('off'); return; }
+  try {
+    const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+    if (!db || !user) { clearTimeout(cloud.timer); setCloud('off'); return; }
+    const uid = await user.id();
+    if (!uid) { clearTimeout(cloud.timer); setCloud('off'); return; }
+    try { const me = await user.me(); cloud.name = (me && me.name) || ''; } catch (e) { }
+    cloud.ref = db.collection('data/users/' + uid).doc('deepdig');
+    renderAcct();
+    cloud.unsub = cloud.ref.onSnapshot(onCloudSnap, () => { clearTimeout(cloud.timer); cloud.ready = false; setCloud('off', 'Cloud save stopped responding.'); });
+  } catch (e) { clearTimeout(cloud.timer); setCloud('off'); }
+}
+function askWipe() {
+  const where = cloud.state === 'on' ? 'on every device signed in to your account' : 'on this device';
+  modal('Wipe all progress?', `This permanently deletes your Deep Dig coins, upgrades, ores, depth and stats ${where}. It can’t be undone.<br>Type <b>WIPE</b> to confirm.<input id="wipeInput" autocomplete="off" aria-label="Type WIPE to confirm">`,
+    [{ label: 'Cancel' }, { label: 'Wipe everything', cls: 'warn', fn: () => { if (($('wipeInput').value || '').trim().toUpperCase() === 'WIPE') wipeAll(); else toast('Nothing was wiped. Type WIPE to confirm.'); } }]);
+  setTimeout(() => $('wipeInput') && $('wipeInput').focus(), 50);
+}
+function hashStr(str) { let h = 5381; for (let i = 0; i < str.length; i++) h = (Math.imul(h, 33) ^ str.charCodeAt(i)) >>> 0; return h.toString(36); }
+function saveCode() {
+  const st = snapshotState(); delete st.sound; delete st.cloudStamp;
+  const j = JSON.stringify(st);
+  return 'DEEPDIG-' + hashStr(j) + '-' + btoa(unescape(encodeURIComponent(j)));
+}
+function parseCode(c) {
+  const m = /^DEEPDIG-([a-z0-9]+)-([A-Za-z0-9+/=]+)$/i.exec((c || '').replace(/\s+/g, ''));
+  if (!m) return null;
+  try {
+    const j = decodeURIComponent(escape(atob(m[2])));
+    if (hashStr(j) !== m[1].toLowerCase()) return null;
+    const o = JSON.parse(j);
+    return o && typeof o === 'object' && typeof o.depth === 'number' && o.up ? o : null;
+  } catch (e) { return null; }
+}
+async function copyCode() {
+  save();
+  const code = saveCode();
+  S.lastBackup = Date.now(); S.backupPlay = S.time; save(); updateBackupBanner();
+  try { await navigator.clipboard.writeText(code); toast('Save code copied. Paste it somewhere safe, like your Notes app.'); }
+  catch (e) {
+    modal('Your save code', 'Select all of this code, copy it and keep it somewhere safe, like your Notes app.<textarea id="codeOut" readonly></textarea>', [{ label: 'Done', cls: 'primary' }]);
+    const t = $('codeOut'); t.value = code; t.onfocus = () => t.select(); setTimeout(() => { t.focus(); t.select(); }, 50);
+  }
+}
+function askLoadCode() {
+  modal('Load a save code', 'Paste a Deep Dig save code. It replaces the progress you have right now.<textarea id="codeIn" autocomplete="off" spellcheck="false" aria-label="Save code"></textarea>',
+    [{ label: 'Cancel' }, { label: 'Load save', cls: 'primary', fn: () => {
+      const o = parseCode($('codeIn').value);
+      if (!o) { toast('That save code didn’t work. Copy the whole code and try again.'); return; }
+      const sound = S.sound, stamp = Math.max(S.cloudStamp || 0, cloud.lastPushedAt);
+      S = normalize(o);
+      S.sound = sound; S.cloudStamp = stamp; S.last = Date.now(); save();
+      $('cab-best').textContent = S.best > 0 ? `Best: ${S.best} m` : '';
+      if (running) { spawnBlock(); renderUpgrades('build'); setTab(tab); markDirty(); }
+      if (cloud.state === 'on') pushCloud();
+      toast(`Save loaded: ${S.depth} m deep`);
+    } }]);
+  setTimeout(() => $('codeIn') && $('codeIn').focus(), 50);
+}
+async function wipeAll() {
+  const sound = S.sound, stamp = Math.max(S.cloudStamp || 0, cloud.lastPushedAt);
+  try { localStorage.removeItem(SAVE_KEY); } catch (e) { }
+  S = fresh(); S.sound = sound; S.cloudStamp = stamp; save();
+  $('cab-best').textContent = '';
+  if (running) { spawnBlock(); renderUpgrades('build'); setTab(tab); markDirty(); }
+  if (cloud.state === 'on') await pushCloud();
+  toast('All progress wiped'); renderAcct();
+}
+setInterval(() => { if (cloud.state === 'on') renderAcct(); updateBackupBanner(); }, 30000);
+
+// ---------- routing ----------
+function startGame() {
+  $('arcade').hidden = true; $('dig').hidden = false;
+  resize(); spawnBlock(); offlineProgress(); renderUpgrades('build'); updateMute(); setTab(tab);
+  if (!running) { running = true; lastT = 0; requestAnimationFrame(loop); }
+  maybeWarnBackup();
+}
+function showArcade() {
+  if (running) { running = false; save(); if (cloud.state === 'on') pushCloud(); }
+  $('dig').hidden = true; $('arcade').hidden = false;
+  $('cab-best').textContent = S.best > 0 ? `Best: ${S.best} m` : '';
+}
+function route() { if (location.hash === '#deep-dig') startGame(); else showArcade(); }
+$('cab-dig').addEventListener('click', () => { audio(); if (location.hash === '#deep-dig') startGame(); else location.hash = 'deep-dig'; });
+$('back').addEventListener('click', () => { if (location.hash) location.hash = ''; showArcade(); });
+window.addEventListener('hashchange', route);
+document.addEventListener('visibilitychange', () => { if (document.hidden) { save(); if (running && cloud.state === 'on') pushCloud(); } else if (running) offlineProgress(); });
+window.addEventListener('pagehide', save);
+
+// ---------- thumbnails ----------
+(function thumbs() {
+  const d = $('thumb-dig').getContext('2d'); d.drawImage(makeBlock(140, 'gold').cv, 0, 0);
+  drawMap($('thumb-run').getContext('2d'), ['1111111111111111', '1111111111111111', '1111111111111111', '1111111111111111', '1111111111111111', '1111111QQ1111111', '111111QQQQ111111', '1111111QQ1111111', '111111QQQQ111111', '11111Q1QQ1Q11111', '1111111QQ1111111', '111111Q11Q11R111', '11111Q1111Q1RR11', '2222222222222222', '3333333333333333', '3333333333333333'], { 1: '#1d2647', Q: '#f4ead8', R: '#ff6b5e', 2: '#5ee08a', 3: '#2a6b3a' });
+  drawMap($('thumb-tower').getContext('2d'), ['1111111111111111', '1111111111111111', '11111S1S1S111111', '11111SSSSS111111', '111111SSS1111111', '111111SYS1111111', '111111SSS1111111', '111111SSS11RR111', '2222222222RR2222', '2222222222222222', '3333333333333333', '3333RR3333333333', '3333RR3333333333', '3333333333333333', '2222222222222222', '2222222222222222'], { 1: '#14204a', S: '#a0a3aa', Y: '#f5c518', R: '#ff6b5e', 2: '#2a6b3a', 3: '#7a5230' });
+  drawMap($('thumb-horde').getContext('2d'), ['1111111111111111', '1R11111111111R11', '1111111R11111111', '1111111111111111', '1111R11111111R11', '1111111Y11111111', '1111111111111111', '1111111Y11111111', '1111111111111111', '1R11111QQ11111R1', '111111QQQQ111111', '11111QQQQQQ11111', '1111111111111111', '11R1111111111R11', '1111111111111111', '1111111111111111'], { 1: '#120a1c', R: '#ff6b5e', Y: '#f5c518', Q: '#5ff0f0' });
+  drawMap($('coinIco').getContext('2d'), ICONS.coin.map, ICONS.coin.pal);
+  drawMap($('gemIco').getContext('2d'), ICONS.gem.map, ICONS.gem.pal);
+  drawMap($('tntIco').getContext('2d'), ICONS.tnt.map, ICONS.tnt.pal);
+  drawMap($('dailyIco').getContext('2d'), ICONS.gift.map, ICONS.gift.pal);
+})();
+
+route();
+try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) { }
+setCloud('local');
+</script>
+</body>
+</html>
