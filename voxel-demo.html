@@ -61,6 +61,7 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
   </div>
   <div class="controls">
     <div class="chips" id="chips" role="group" aria-label="Material"></div>
+    <div class="chips" id="detail" role="group" aria-label="Detail"></div>
     <div class="opts">
       <label for="chipOpt"><input type="checkbox" id="chipOpt" checked> Chip voxels on every hit</label>
       <button type="button" class="big" id="breakBtn">BREAK IT</button>
@@ -82,84 +83,102 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
     { name: 'Uranium Veins', base: '#2a3a1c', dark: '#16220c', light: '#7dff3a', sky: ['#16260c', '#040801'], ore: ['Uranium', '#7dff3a', '#e0ffc0'] },
     { name: 'Unobtainium Rift', base: '#3a1030', dark: '#1e0618', light: '#ff4fa0', sky: ['#2a0820', '#080006'], ore: ['Unobtainium', '#ff4fa0', '#ffe0f0'] },
   ];
-  let mat = MATS[0];
-  const HITS = 8, N = 6, SIZE = 2, V = SIZE / N;
+  const DETAILS = [6, 10, 14];
+  let mat = MATS[0], N = 10, V = 2 / N;
+  const HITS = 8, SIZE = 2, MAXN = 14, MAXD = 7000;
 
   // ---------- three.js setup ----------
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   stage.prepend(renderer.domElement);
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100);
   const camBase = new THREE.Vector3(4.6, 3.9, 5.4);
-  camera.position.copy(camBase); camera.lookAt(0, 0.9, 0);
-  scene.add(new THREE.HemisphereLight(0xfff4e0, 0x202030, 0.75));
-  const sun = new THREE.DirectionalLight(0xffffff, 0.75); sun.position.set(3, 6, 4); scene.add(sun);
+  scene.add(new THREE.HemisphereLight(0xfff4e0, 0x202030, 0.7));
+  const sun = new THREE.DirectionalLight(0xffffff, 0.85); sun.position.set(3, 7, 4);
+  sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024);
+  Object.assign(sun.shadow.camera, { left: -4, right: 4, top: 4, bottom: -4, near: 1, far: 20 }); sun.shadow.bias = -0.0015;
+  scene.add(sun);
+  const rim = new THREE.DirectionalLight(0x99bbff, 0.25); rim.position.set(-4, 2, -3); scene.add(rim);
   const glow = new THREE.PointLight(0xffffff, 0, 6); glow.position.set(0, 1, 0); scene.add(glow);
-  // soft round shadow under the block
-  const sh = document.createElement('canvas'); sh.width = sh.height = 64; const sg = sh.getContext('2d');
-  const grd = sg.createRadialGradient(32, 32, 4, 32, 32, 32); grd.addColorStop(0, 'rgba(0,0,0,.6)'); grd.addColorStop(1, 'rgba(0,0,0,0)'); sg.fillStyle = grd; sg.fillRect(0, 0, 64, 64);
-  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 4.2), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(sh), transparent: true, depthWrite: false }));
-  shadow.rotation.x = -Math.PI / 2; shadow.position.y = 0.001; scene.add(shadow);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(16, 16), new THREE.ShadowMaterial({ opacity: 0.4 }));
+  floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
 
-  const geo = new THREE.BoxGeometry(V * 0.97, V * 0.97, V * 0.97);
-  const voxMat = new THREE.MeshLambertMaterial();
-  const block = new THREE.InstancedMesh(geo, voxMat, N * N * N); block.instanceMatrix.setUsage(THREE.DynamicDrawUsage); scene.add(block);
-  const MAXD = 2400;
-  const debris = new THREE.InstancedMesh(geo, voxMat, MAXD); debris.instanceMatrix.setUsage(THREE.DynamicDrawUsage); scene.add(debris);
-  // both meshes need per-voxel colors from the start (sized to their full count), since they share one material
-  for (const m of [block, debris]) { m.setColorAt(0, new THREE.Color('#ffffff')); m.instanceColor.setUsage(THREE.DynamicDrawUsage); }
+  // one small texture shared by every voxel: beveled edges and speckles (tinted by each voxel's color)
+  const tc = document.createElement('canvas'); tc.width = tc.height = 16; const tx = tc.getContext('2d');
+  for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
+    let v = 228 + Math.floor(Math.random() * 27);
+    if (Math.random() < 0.12) v -= 40;
+    if (x === 0 || y === 0) v = 255; else if (x === 15 || y === 15) v = 150; else if (x === 1 || y === 1) v = Math.min(255, v + 12); else if (x === 14 || y === 14) v -= 30;
+    tx.fillStyle = `rgb(${v},${v},${v})`; tx.fillRect(x, y, 1, 1);
+  }
+  const tex = new THREE.CanvasTexture(tc); tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.NearestFilter;
+  const voxMat = new THREE.MeshLambertMaterial({ map: tex });
+  let geo = new THREE.BoxGeometry(V, V, V);
+  const block = new THREE.InstancedMesh(geo, voxMat, MAXN * MAXN * MAXN);
+  const debris = new THREE.InstancedMesh(geo, voxMat, MAXD);
+  for (const m of [block, debris]) { m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); m.setColorAt(0, new THREE.Color('#ffffff')); m.instanceColor.setUsage(THREE.DynamicDrawUsage); m.castShadow = true; scene.add(m); }
   debris.count = 0;
 
-  const tmp = new THREE.Object3D(), col = new THREE.Color();
-  let vox = [], hp = HITS, building = 0, punch = 0, shake = 0, lootTimer = 0;
+  const tmp = new THREE.Object3D(), col = new THREE.Color(), P = new THREE.Vector3();
+  let vox = [], hp = HITS, building = 0, punch = 0, shake = 0, lootTimer = 0, seed = 1;
   const parts = [];
-
+  const at = (x, y, z) => (x < 0 || y < 0 || z < 0 || x >= N || y >= N || z >= N) ? null : vox[(x * N + y) * N + z];
+  const DIRS = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
+  const neighbors = o => DIRS.map(([a, b, c]) => at(o.x + a, o.y + b, o.z + c)).filter(q => q && q.alive);
+  const exposed = o => neighbors(o).length < 6;
   function mulberry(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
-  let seed = 1;
+
   function makeBlock() {
-    const r = mulberry(seed++ * 7919);
-    const clusters = Array.from({ length: 4 }, () => [Math.floor(r() * N), Math.floor(r() * N), Math.floor(r() * N)]);
-    const hasOre = r() < 0.75;
+    const r = mulberry(seed++ * 7919), s = N / 6;
     vox = [];
     for (let x = 0; x < N; x++) for (let y = 0; y < N; y++) for (let z = 0; z < N; z++) {
-      const v = r(); let c = v < 0.22 ? mat.dark : v > 0.85 ? mat.light : mat.base, ore = false;
-      if (hasOre && clusters.some(([a, b, d]) => Math.abs(a - x) + Math.abs(b - y) + Math.abs(d - z) <= (r() < .5 ? 1 : 0))) { c = r() < .3 ? mat.ore[2] : mat.ore[1]; ore = true; }
-      vox.push({ x, y, z, c: new THREE.Color(c), alive: true, ore, crack: 0 });
+      const v = r(); const c = new THREE.Color(v < 0.22 ? mat.dark : v > 0.86 ? mat.light : mat.base);
+      c.offsetHSL(0, (r() - .5) * 0.04, (r() - .5) * 0.07);
+      vox.push({ x, y, z, c, alive: true, ore: false, crack: 0 });
+    }
+    const setOre = o => { if (!o) return; o.ore = true; o.c = new THREE.Color(r() < .3 ? mat.ore[2] : mat.ore[1]); o.c.offsetHSL(0, 0, (r() - .5) * 0.08); };
+    if (r() < 0.85) {
+      // blobs
+      for (let k = 0; k < 2 + Math.floor(r() * 3); k++) {
+        const cx = r() * N, cy = r() * N, cz = r() * N, rad = (0.8 + r() * 1.2) * s;
+        for (const o of vox) { const d = Math.hypot(o.x - cx, o.y - cy, o.z - cz) + (r() - .5) * s; if (d < rad) setOre(o); }
+      }
+      // veins that snake through the block
+      for (let k = 0; k < 1 + Math.floor(r() * 2); k++) {
+        let x = Math.floor(r() * N), y = Math.floor(r() * N), z = Math.floor(r() * N);
+        for (let i = 0; i < N * 1.6; i++) { setOre(at(x, y, z)); const [a, b, c] = DIRS[Math.floor(r() * 6)]; x = Math.max(0, Math.min(N - 1, x + a)); y = Math.max(0, Math.min(N - 1, y + b)); z = Math.max(0, Math.min(N - 1, z + c)); }
+      }
     }
     hp = HITS; building = 1; refreshHud();
-    document.getElementById('stage').style.background = `linear-gradient(${mat.sky[0]}, ${mat.sky[1]})`;
+    stage.style.background = `linear-gradient(${mat.sky[0]}, ${mat.sky[1]})`;
   }
-  function voxPos(o, out) { return out.set((o.x - (N - 1) / 2) * V, (o.y + 0.5) * V, (o.z - (N - 1) / 2) * V); }
-  const P = new THREE.Vector3();
-  function drawBlock(t) {
-    let i = 0; const s = 1 + punch * 0.06;
+  const voxPos = (o, out) => out.set((o.x - (N - 1) / 2) * V, (o.y + 0.5) * V, (o.z - (N - 1) / 2) * V);
+  function drawBlock() {
+    let i = 0; const sc = 1 + punch * 0.05;
     for (const o of vox) {
       if (!o.alive) continue;
       voxPos(o, P);
-      // build-in animation: rows rise up from the floor
-      const k = building > 0 ? Math.min(1, Math.max(0, (1 - building) * 2.4 - o.y * 0.12)) : 1;
-      tmp.position.set(P.x * s, P.y * s - (1 - k) * 0.6, P.z * s);
-      tmp.scale.setScalar(Math.max(0.0001, k)); tmp.rotation.set(0, 0, 0); tmp.updateMatrix();
+      const k = building > 0 ? Math.min(1, Math.max(0, (1 - building) * 2.4 - (o.y / N) * 0.75)) : 1;
+      tmp.position.set(P.x * sc, P.y * sc - (1 - k) * 0.6, P.z * sc);
+      tmp.scale.setScalar(Math.max(0.0001, k * 0.985)); tmp.rotation.set(0, 0, 0); tmp.updateMatrix();
       block.setMatrixAt(i, tmp.matrix);
-      col.copy(o.c).multiplyScalar(1 - o.crack * 0.55); block.setColorAt(i, col);
+      col.copy(o.c).multiplyScalar(1 - o.crack * 0.7); block.setColorAt(i, col);
       o.idx = i; i++;
     }
-    block.count = i; block.instanceMatrix.needsUpdate = true; if (block.instanceColor) block.instanceColor.needsUpdate = true;
+    block.count = i; block.instanceMatrix.needsUpdate = true; block.instanceColor.needsUpdate = true;
   }
-  function spawnDebris(o, vel, life) {
+  function spawnDebris(o, vel, life, size = 1, color = null) {
     if (parts.length >= MAXD) parts.shift();
-    voxPos(o, P);
-    parts.push({ p: P.clone(), v: vel, r: new THREE.Euler(), w: new THREE.Vector3((Math.random() - .5) * 12, (Math.random() - .5) * 12, (Math.random() - .5) * 12), c: o.c.clone(), life, t: 0, ore: o.ore, s: 1 });
+    parts.push({ p: (o.p || voxPos(o, new THREE.Vector3())).clone(), v: vel, r: new THREE.Euler(Math.random() * 3, Math.random() * 3, 0), w: new THREE.Vector3((Math.random() - .5) * 12, (Math.random() - .5) * 12, (Math.random() - .5) * 12), c: (color || o.c).clone(), life, t: 0, ore: !!o.ore, size });
   }
-  function neighbors(o) { return vox.filter(q => q.alive && Math.abs(q.x - o.x) + Math.abs(q.y - o.y) + Math.abs(q.z - o.z) === 1); }
-  function exposed(o) { return o.x === 0 || o.y === 0 || o.z === 0 || o.x === N - 1 || o.y === N - 1 || o.z === N - 1 || neighbors(o).length < 6; }
 
   // ---------- hitting ----------
   const ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
   function hit(clientX, clientY) {
     if (building > 0.15 || hp <= 0) return;
-    let target = null, normal = new THREE.Vector3(0, 1, 0);
+    let target = null; const normal = new THREE.Vector3(0, 1, 0);
     if (clientX !== undefined) {
       const rc = renderer.domElement.getBoundingClientRect();
       mouse.set(((clientX - rc.left) / rc.width) * 2 - 1, -((clientY - rc.top) / rc.height) * 2 + 1);
@@ -171,16 +190,29 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
     } else { const surf = vox.filter(o => o.alive && exposed(o)); target = surf[Math.floor(Math.random() * surf.length)]; }
     if (!target) return;
     hp--; punch = 1; sfx.hit();
-    // crack spreads around the hit
-    for (const o of vox) if (o.alive) { const d = Math.abs(o.x - target.x) + Math.abs(o.y - target.y) + Math.abs(o.z - target.z); if (d <= 2) o.crack = Math.min(1, o.crack + (d === 0 ? .6 : d === 1 ? .35 : .15)); }
-    // chip a few voxels off the surface where you hit
-    if (document.getElementById('chipOpt').checked) {
-      const chip = [target, ...neighbors(target).filter(exposed).sort(() => Math.random() - .5).slice(0, 1 + Math.floor(Math.random() * 2))];
-      for (const o of chip) {
-        o.alive = false;
-        spawnDebris(o, normal.clone().multiplyScalar(2.2 + Math.random() * 1.6).add(new THREE.Vector3((Math.random() - .5) * 2.4, 2.4 + Math.random() * 1.8, (Math.random() - .5) * 2.4)), 1.2 + Math.random() * .6);
-        if (o.ore) loot(`+1 ${mat.ore[0]}`);
+    // cracks: a few random walks across the surface starting at the hit
+    for (let k = 0; k < 3; k++) {
+      let o = target;
+      for (let i = 0; i < 2 + Math.floor(N / 2.5); i++) {
+        o.crack = 1;
+        for (const q of neighbors(o)) q.crack = Math.max(q.crack, 0.25);
+        const next = neighbors(o).filter(exposed); if (!next.length) break;
+        o = next[Math.floor(Math.random() * next.length)];
       }
+    }
+    voxPos(target, P);
+    // dust puff
+    for (let i = 0; i < 8; i++) spawnDebris({ p: P }, normal.clone().multiplyScalar(1 + Math.random() * 1.5).add(new THREE.Vector3((Math.random() - .5) * 2, 1 + Math.random() * 2, (Math.random() - .5) * 2)), 0.5 + Math.random() * 0.4, 0.35, new THREE.Color(mat.dark));
+    // chip voxels off around the hit
+    if (document.getElementById('chipOpt').checked) {
+      const want = Math.round(2 + N / 3 + Math.random() * 2), chip = [target], seen = new Set([target]);
+      for (let i = 0; i < chip.length && chip.length < want; i++) for (const q of neighbors(chip[i])) if (!seen.has(q) && exposed(q) && chip.length < want && Math.random() < 0.7) { seen.add(q); chip.push(q); }
+      let gotOre = false;
+      for (const o of chip) {
+        o.alive = false; if (o.ore) gotOre = true;
+        spawnDebris(o, normal.clone().multiplyScalar(2 + Math.random() * 1.6).add(new THREE.Vector3((Math.random() - .5) * 2.4, 2.4 + Math.random() * 1.8, (Math.random() - .5) * 2.4)), 1.2 + Math.random() * .6);
+      }
+      if (gotOre) loot(`+1 ${mat.ore[0]}`);
     }
     if (hp <= 0) shatter();
     refreshHud();
@@ -191,42 +223,40 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
     for (const o of vox) {
       if (!o.alive) continue; o.alive = false; voxPos(o, P);
       const dir = P.clone().sub(new THREE.Vector3(0, 0.6, 0)).normalize();
-      const spd = 1.8 + Math.random() * 2.4;
-      const vel = dir.multiplyScalar(spd).add(new THREE.Vector3((Math.random() - .5) * 1.5, 2.5 + Math.random() * 3, (Math.random() - .5) * 1.5));
-      // keep pieces from flying into the camera
+      const vel = dir.multiplyScalar(1.8 + Math.random() * 2.4).add(new THREE.Vector3((Math.random() - .5) * 1.5, 2.5 + Math.random() * 3, (Math.random() - .5) * 1.5));
       const toCam = vel.x * 0.6 + vel.z * 0.7; if (toCam > 1.5) { vel.x *= 0.5; vel.z *= 0.5; }
       if (o.ore) { vel.y += 3.5; ores++; }
       spawnDebris(o, vel, 1.4 + Math.random() * 1.2);
     }
-    loot(ores ? `Block broken! +${Math.max(1, Math.round(ores / 4))} ${mat.ore[0]}` : 'Block broken!');
+    loot(ores ? `Block broken! +${Math.max(1, Math.round(ores / (N * N / 9)))} ${mat.ore[0]}` : 'Block broken!');
     refreshHud();
     setTimeout(makeBlock, 650);
   }
   function loot(text) { const l = document.getElementById('loot'); l.textContent = text; lootTimer = 1.6; if (/\+/.test(text)) sfx.ore(); }
   function refreshHud() {
-    document.getElementById('matName').textContent = mat.name;
+    document.getElementById('matName').textContent = `${mat.name} · ${N}×${N}×${N}`;
     document.getElementById('hpText').textContent = `${Math.max(0, hp)} / ${HITS} hits`;
     document.getElementById('hpFill').style.width = (Math.max(0, hp) / HITS * 100) + '%';
   }
 
   // ---------- debris physics ----------
-  const FLOOR = V / 2;
   function stepDebris(dt) {
-    let n = 0;
+    let n = 0; const floorY = V / 2;
     for (let i = parts.length - 1; i >= 0; i--) {
       const q = parts[i]; q.t += dt;
       if (q.t > q.life) { parts.splice(i, 1); continue; }
       q.v.y -= (q.ore ? 9 : 16) * dt;
       q.p.addScaledVector(q.v, dt);
-      if (q.p.y < FLOOR) { q.p.y = FLOOR; q.v.y = Math.abs(q.v.y) * 0.32; q.v.x *= 0.7; q.v.z *= 0.7; q.w.multiplyScalar(0.6); }
+      const fy = floorY * q.size;
+      if (q.p.y < fy) { q.p.y = fy; q.v.y = Math.abs(q.v.y) * 0.3; q.v.x *= 0.7; q.v.z *= 0.7; q.w.multiplyScalar(0.6); }
       q.r.x += q.w.x * dt; q.r.y += q.w.y * dt; q.r.z += q.w.z * dt;
       const fade = Math.min(1, (q.life - q.t) / 0.35);
-      tmp.position.copy(q.p); tmp.rotation.copy(q.r); tmp.scale.setScalar(Math.max(0.0001, fade * (q.ore ? 1.15 : 1))); tmp.updateMatrix();
+      tmp.position.copy(q.p); tmp.rotation.copy(q.r); tmp.scale.setScalar(Math.max(0.0001, fade * q.size * (q.ore ? 1.1 : 0.985))); tmp.updateMatrix();
       debris.setMatrixAt(n, tmp.matrix);
       col.copy(q.c); if (q.ore) col.multiplyScalar(1 + 0.4 * Math.abs(Math.sin(q.t * 14)));
       debris.setColorAt(n, col); n++;
     }
-    debris.count = n; debris.instanceMatrix.needsUpdate = true; if (debris.instanceColor) debris.instanceColor.needsUpdate = true;
+    debris.count = n; debris.instanceMatrix.needsUpdate = true; debris.instanceColor.needsUpdate = true;
   }
 
   // ---------- sound ----------
@@ -248,7 +278,7 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
     camera.position.copy(camBase); if (shake > 0) camera.position.add(new THREE.Vector3((Math.random() - .5) * shake * .5, (Math.random() - .5) * shake * .5, 0));
     camera.lookAt(0, 0.9, 0);
     if (lootTimer > 0) { lootTimer -= dt; if (lootTimer <= 0) document.getElementById('loot').textContent = ''; }
-    drawBlock(t); stepDebris(dt);
+    drawBlock(); stepDebris(dt);
     renderer.render(scene, camera);
     requestAnimationFrame(loop);
   }
@@ -258,7 +288,11 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
   document.getElementById('breakBtn').addEventListener('click', () => { if (hp > 0 && building < 0.15) shatter(); });
   const chips = document.getElementById('chips');
   MATS.forEach((m, i) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = m.name.toUpperCase(); b.setAttribute('aria-pressed', i === 0 ? 'true' : 'false'); b.onclick = () => { mat = m; chips.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false')); makeBlock(); }; chips.append(b); });
-  window.__demo = { hit, shatter, state: () => ({ hp, alive: vox.filter(o => o.alive).length, debris: parts.length, building }) };
+  const det = document.getElementById('detail');
+  DETAILS.forEach(d => { const b = document.createElement('button'); b.type = 'button'; b.textContent = `DETAIL ${d}`; b.setAttribute('aria-pressed', d === N ? 'true' : 'false'); b.onclick = () => {
+    N = d; V = SIZE / N; const g = new THREE.BoxGeometry(V, V, V); block.geometry = g; debris.geometry = g; geo.dispose(); geo = g; parts.length = 0;
+    det.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false')); makeBlock(); }; det.append(b); });
+  window.__demo = { hit, shatter, state: () => ({ N, hp, alive: vox.filter(o => o.alive).length, ore: vox.filter(o => o.ore).length, debris: parts.length, building }) };
   resize(); makeBlock(); requestAnimationFrame(loop);
 })();
 </script>
