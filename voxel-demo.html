@@ -46,6 +46,10 @@ header a { color: var(--muted); font-size: 13px; }
 .big:active { transform: translateY(2px); box-shadow: 0 1px 0 #8a6400; }
 .note { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
 .err { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 24px; text-align: center; color: var(--muted); line-height: 1.5; }
+.pop { position: absolute; transform: translate(-50%, -50%); font-family: var(--display); font-size: 16px; color: var(--gold); text-shadow: 2px 2px 0 #000, 0 0 12px rgba(245,197,24,.8); pointer-events: none; animation: pop .8s ease-out forwards; z-index: 4; }
+@keyframes pop { from { transform: translate(-50%, -50%) scale(1.5); opacity: 1; } to { transform: translate(-50%, -190%) scale(1); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .pop { animation-duration: .01s; } }
+.crits { font-family: var(--display); font-size: 9px; color: var(--gold); }
 button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 </style>
 </head>
@@ -63,10 +67,12 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
     <div class="chips" id="chips" role="group" aria-label="Material"></div>
     <div class="chips" id="detail" role="group" aria-label="Detail"></div>
     <div class="opts">
-      <label for="chipOpt"><input type="checkbox" id="chipOpt" checked> Chip voxels on every hit</label>
+      <label for="chipOpt"><input type="checkbox" id="chipOpt" checked> Chip voxels</label>
+      <label for="critOpt"><input type="checkbox" id="critOpt" checked> Crit spots</label>
+      <span class="crits" id="critCount">CRITS 0</span>
       <button type="button" class="big" id="breakBtn">BREAK IT</button>
     </div>
-    <p class="note">This is only a demo. If you like it, I can swap it in for the flat blocks in Deep Dig.</p>
+    <p class="note">Hit the glowing gold spot for a crit worth 3 hits. It moves after a crit, or every few seconds. This is only a demo. If you like it, I can swap it in for the flat blocks in Deep Dig.</p>
   </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -122,12 +128,35 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
   debris.count = 0;
 
   const tmp = new THREE.Object3D(), col = new THREE.Color(), P = new THREE.Vector3();
+  // pulsing target ring that marks the crit spot
+  const rc2 = document.createElement('canvas'); rc2.width = rc2.height = 64; const rg = rc2.getContext('2d');
+  rg.strokeStyle = '#ffd34a'; rg.lineWidth = 5; rg.beginPath(); rg.arc(32, 32, 24, 0, Math.PI * 2); rg.stroke();
+  rg.lineWidth = 3; for (const a of [0, 1, 2, 3]) { const an = a * Math.PI / 2; rg.beginPath(); rg.moveTo(32 + Math.cos(an) * 16, 32 + Math.sin(an) * 16); rg.lineTo(32 + Math.cos(an) * 30, 32 + Math.sin(an) * 30); rg.stroke(); }
+  const ring = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(rc2), depthTest: false, transparent: true }));
+  ring.renderOrder = 10; ring.visible = false; scene.add(ring);
   let vox = [], hp = HITS, building = 0, punch = 0, shake = 0, lootTimer = 0, seed = 1;
+  const weak = new Set(); let weakT = 0, crits = 0; const CRIT_DMG = 3, WEAK_MOVE = 2.6, GOLD = new THREE.Color('#fff2a8');
   const parts = [];
   const at = (x, y, z) => (x < 0 || y < 0 || z < 0 || x >= N || y >= N || z >= N) ? null : vox[(x * N + y) * N + z];
   const DIRS = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
   const neighbors = o => DIRS.map(([a, b, c]) => at(o.x + a, o.y + b, o.z + c)).filter(q => q && q.alive);
   const exposed = o => neighbors(o).length < 6;
+  const open = (x, y, z) => { const q = at(x, y, z); return !q || !q.alive; };
+  const facesCamera = o => open(o.x + 1, o.y, o.z) || open(o.x, o.y + 1, o.z) || open(o.x, o.y, o.z + 1);
+  function placeWeak() {
+    weak.clear(); weakT = 0;
+    if (!document.getElementById('critOpt').checked || hp <= 0) return;
+    const cand = vox.filter(o => o.alive && facesCamera(o) && o.y > 0);
+    if (!cand.length) return;
+    const c = cand[Math.floor(Math.random() * cand.length)], size = N >= 10 ? 5 : 3;
+    weak.add(c);
+    for (const q of neighbors(c)) if (weak.size < size && facesCamera(q)) weak.add(q);
+  }
+  function popText(text, x, y) {
+    const el = document.createElement('div'); el.className = 'pop'; el.textContent = text;
+    const rc = stage.getBoundingClientRect(); el.style.left = (x - rc.left) + 'px'; el.style.top = (y - rc.top) + 'px';
+    stage.append(el); setTimeout(() => el.remove(), 850);
+  }
   function mulberry(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
   function makeBlock() {
@@ -151,7 +180,7 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
         for (let i = 0; i < N * 1.6; i++) { setOre(at(x, y, z)); const [a, b, c] = DIRS[Math.floor(r() * 6)]; x = Math.max(0, Math.min(N - 1, x + a)); y = Math.max(0, Math.min(N - 1, y + b)); z = Math.max(0, Math.min(N - 1, z + c)); }
       }
     }
-    hp = HITS; building = 1; refreshHud();
+    hp = HITS; building = 1; weak.clear(); refreshHud();
     stage.style.background = `linear-gradient(${mat.sky[0]}, ${mat.sky[1]})`;
   }
   const voxPos = (o, out) => out.set((o.x - (N - 1) / 2) * V, (o.y + 0.5) * V, (o.z - (N - 1) / 2) * V);
@@ -164,7 +193,9 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
       tmp.position.set(P.x * sc, P.y * sc - (1 - k) * 0.6, P.z * sc);
       tmp.scale.setScalar(Math.max(0.0001, k * 0.985)); tmp.rotation.set(0, 0, 0); tmp.updateMatrix();
       block.setMatrixAt(i, tmp.matrix);
-      col.copy(o.c).multiplyScalar(1 - o.crack * 0.7); block.setColorAt(i, col);
+      col.copy(o.c).multiplyScalar(1 - o.crack * 0.7);
+      if (weak.has(o)) { const k = 0.5 + 0.5 * Math.sin(performance.now() / 110); col.setRGB(1.6 + k * 0.8, 1.25 + k * 0.6, 0.15 + k * 0.3); }
+      block.setColorAt(i, col);
       o.idx = i; i++;
     }
     block.count = i; block.instanceMatrix.needsUpdate = true; block.instanceColor.needsUpdate = true;
@@ -189,7 +220,10 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
       if (h.face) normal.copy(h.face.normal);
     } else { const surf = vox.filter(o => o.alive && exposed(o)); target = surf[Math.floor(Math.random() * surf.length)]; }
     if (!target) return;
-    hp--; punch = 1; sfx.hit();
+    const crit = weak.has(target) || neighbors(target).some(q => weak.has(q));
+    hp -= crit ? CRIT_DMG : 1; punch = 1;
+    if (crit) { crits++; shake = Math.max(shake, 0.22); glow.color.set('#f5c518'); glow.intensity = 1.6; sfx.crit(); if (clientX !== undefined) popText('CRIT!', clientX, clientY); document.getElementById('critCount').textContent = `CRITS ${crits}`; }
+    else sfx.hit();
     // cracks: a few random walks across the surface starting at the hit
     for (let k = 0; k < 3; k++) {
       let o = target;
@@ -205,7 +239,7 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
     for (let i = 0; i < 8; i++) spawnDebris({ p: P }, normal.clone().multiplyScalar(1 + Math.random() * 1.5).add(new THREE.Vector3((Math.random() - .5) * 2, 1 + Math.random() * 2, (Math.random() - .5) * 2)), 0.5 + Math.random() * 0.4, 0.35, new THREE.Color(mat.dark));
     // chip voxels off around the hit
     if (document.getElementById('chipOpt').checked) {
-      const want = Math.round(2 + N / 3 + Math.random() * 2), chip = [target], seen = new Set([target]);
+      const want = Math.round((2 + N / 3 + Math.random() * 2) * (crit ? 2 : 1)), chip = [target], seen = new Set([target]);
       for (let i = 0; i < chip.length && chip.length < want; i++) for (const q of neighbors(chip[i])) if (!seen.has(q) && exposed(q) && chip.length < want && Math.random() < 0.7) { seen.add(q); chip.push(q); }
       let gotOre = false;
       for (const o of chip) {
@@ -214,7 +248,8 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
       }
       if (gotOre) loot(`+1 ${mat.ore[0]}`);
     }
-    if (hp <= 0) shatter();
+    for (const q of [...weak]) if (!q.alive) weak.delete(q);
+    if (hp <= 0) { weak.clear(); shatter(); } else if (crit || !weak.size) placeWeak();
     refreshHud();
   }
   function shatter() {
@@ -264,7 +299,7 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
   function ac() { try { if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); } catch (e) { AC = null; } return AC; }
   function noise(dur, vol, freq) { const a = ac(); if (!a) return; const len = Math.floor(a.sampleRate * dur), b = a.createBuffer(1, len, a.sampleRate), d = b.getChannelData(0); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len); const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); f.type = 'lowpass'; f.frequency.value = freq; g.gain.value = vol; s.buffer = b; s.connect(f).connect(g).connect(a.destination); s.start(); }
   function tone(fq, dur, vol) { const a = ac(); if (!a) return; const o = a.createOscillator(), g = a.createGain(), t = a.currentTime; o.type = 'square'; o.frequency.setValueAtTime(fq, t); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); o.connect(g).connect(a.destination); o.start(t); o.stop(t + dur + .02); }
-  const sfx = { hit() { noise(.07, .08, 1500 + Math.random() * 600); }, brk() { noise(.35, .18, 700); tone(90, .25, .06); }, ore() { tone(988, .07, .03); setTimeout(() => tone(1319, .12, .03), 70); } };
+  const sfx = { crit() { noise(.1, .12, 2600); tone(660, .08, .05); setTimeout(() => tone(990, .12, .05), 60); }, hit() { noise(.07, .08, 1500 + Math.random() * 600); }, brk() { noise(.35, .18, 700); tone(90, .25, .06); }, ore() { tone(988, .07, .03); setTimeout(() => tone(1319, .12, .03), 70); } };
 
   // ---------- loop ----------
   function resize() { const r = stage.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); camera.aspect = r.width / Math.max(1, r.height); camera.updateProjectionMatrix(); }
@@ -274,6 +309,8 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
     const dt = Math.min(0.05, (t - (last || t)) / 1000); last = t;
     if (building > 0) building = Math.max(0, building - dt * 1.8);
     punch = Math.max(0, punch - dt * 8); shake = Math.max(0, shake - dt); glow.intensity = Math.max(0, glow.intensity - dt * 4);
+    if (building === 0 && hp > 0) { weakT += dt; if (!weak.size || weakT > WEAK_MOVE) placeWeak(); }
+    { const o = [...weak][0]; ring.visible = !!o && building === 0 && hp > 0; if (o) { voxPos(o, P); ring.position.copy(P.applyMatrix4(block.matrixWorld)); const k = 1 + 0.25 * Math.sin(t / 110); ring.scale.setScalar(V * 3.2 * k); ring.material.opacity = Math.max(0, 1 - weakT / WEAK_MOVE * 0.6); } }
     block.rotation.y = Math.sin(t / 2600) * 0.25;
     camera.position.copy(camBase); if (shake > 0) camera.position.add(new THREE.Vector3((Math.random() - .5) * shake * .5, (Math.random() - .5) * shake * .5, 0));
     camera.lookAt(0, 0.9, 0);
@@ -285,6 +322,7 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
   // ---------- controls ----------
   renderer.domElement.addEventListener('pointerdown', e => { e.preventDefault(); hit(e.clientX, e.clientY); });
+  document.getElementById('critOpt').addEventListener('change', placeWeak);
   document.getElementById('breakBtn').addEventListener('click', () => { if (hp > 0 && building < 0.15) shatter(); });
   const chips = document.getElementById('chips');
   MATS.forEach((m, i) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = m.name.toUpperCase(); b.setAttribute('aria-pressed', i === 0 ? 'true' : 'false'); b.onclick = () => { mat = m; chips.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false')); makeBlock(); }; chips.append(b); });
@@ -292,7 +330,7 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
   DETAILS.forEach(d => { const b = document.createElement('button'); b.type = 'button'; b.textContent = `DETAIL ${d}`; b.setAttribute('aria-pressed', d === N ? 'true' : 'false'); b.onclick = () => {
     N = d; V = SIZE / N; const g = new THREE.BoxGeometry(V, V, V); block.geometry = g; debris.geometry = g; geo.dispose(); geo = g; parts.length = 0;
     det.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false')); makeBlock(); }; det.append(b); });
-  window.__demo = { hit, shatter, state: () => ({ N, hp, alive: vox.filter(o => o.alive).length, ore: vox.filter(o => o.ore).length, debris: parts.length, building }) };
+  window.__demo = { hit, shatter, weakSpot: () => { const o = [...weak][0]; if (!o) return null; voxPos(o, P); const w = P.clone().applyMatrix4(block.matrixWorld).project(camera), rc = renderer.domElement.getBoundingClientRect(); return [rc.left + (w.x + 1) / 2 * rc.width, rc.top + (1 - w.y) / 2 * rc.height]; }, state: () => ({ crits, weak: weak.size, N, hp, alive: vox.filter(o => o.alive).length, ore: vox.filter(o => o.ore).length, debris: parts.length, building }) };
   resize(); makeBlock(); requestAnimationFrame(loop);
 })();
 </script>
