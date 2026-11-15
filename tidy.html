@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Tidy Time</title>
+<meta name="theme-color" content="#eef1f8">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: cozy one-screen puzzle. Level grid on the menu; in play, a fixed 360x600 board scaled to fit, with a slim top bar. Single soft pastel theme. */
+:root {
+  --bg: #eef1f8;
+  --card: #ffffff;
+  --ink: #4a3b52;
+  --soft: #8d7f96;
+  --pink: #ff8fab;
+  --mint: #7fd8be;
+  --sun: #ffd166;
+  --display: 'Fredoka', 'Nunito', system-ui, sans-serif;
+  --body: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); overflow: hidden; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; touch-action: manipulation; }
+.app { height: 100%; max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; }
+[hidden] { display: none !important; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, a:focus-visible { outline: 3px solid var(--pink); outline-offset: 2px; }
+
+/* ---------- menu ---------- */
+#menu { flex: 1; overflow-y: auto; padding: 18px 16px 28px; display: flex; flex-direction: column; gap: 16px; }
+.top { display: flex; justify-content: space-between; align-items: center; }
+.top a { color: var(--soft); font-weight: 700; font-size: 14px; text-decoration: none; }
+.logo { font-family: var(--display); font-weight: 700; font-size: 38px; line-height: 1; margin: 0; color: var(--ink); letter-spacing: .5px; }
+.logo span { color: var(--pink); }
+.tag { margin: 6px 0 0; color: var(--soft); font-size: 15px; line-height: 1.45; max-width: 36ch; }
+.modes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: #dfe4f0; padding: 5px; border-radius: 16px; }
+.modes button { border: 0; background: none; padding: 10px; border-radius: 12px; font-family: var(--display); font-weight: 600; font-size: 16px; color: var(--soft); }
+.modes button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: 0 2px 0 #cfd5e4; }
+.modehint { margin: -6px 2px 0; font-size: 13px; color: var(--soft); }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.lv { position: relative; aspect-ratio: 1 / 1.05; border: 0; border-radius: 20px; background: var(--card); box-shadow: 0 4px 0 #d6dbe8; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 8px; }
+.lv:active { transform: translateY(2px); box-shadow: 0 2px 0 #d6dbe8; }
+.lv .n { font-family: var(--display); font-weight: 700; font-size: 26px; }
+.lv .ty { font-size: 11px; font-weight: 800; color: var(--soft); text-transform: uppercase; letter-spacing: .4px; }
+.lv svg.ic { width: 30px; height: 30px; }
+.stars { font-size: 14px; letter-spacing: 1px; color: #e0c27a; }
+.stars .off { color: #d9dde8; }
+.lv.locked { background: #e3e7f1; box-shadow: none; color: #a9b0c2; }
+.lv.locked .lock { width: 26px; height: 26px; }
+.lv.next { outline: 3px solid var(--pink); outline-offset: -3px; }
+
+/* ---------- play ---------- */
+#play { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.bar { display: flex; align-items: center; gap: 8px; padding: 10px 12px 6px; }
+.iconbtn { width: 40px; height: 40px; border: 0; border-radius: 12px; background: var(--card); box-shadow: 0 3px 0 #d6dbe8; display: grid; place-items: center; }
+.iconbtn svg { width: 20px; height: 20px; }
+.ttl { flex: 1; min-width: 0; }
+.ttl b { display: block; font-family: var(--display); font-weight: 600; font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ttl small { display: block; color: var(--soft); font-size: 13px; font-weight: 700; }
+.timer { height: 8px; margin: 0 12px; border-radius: 4px; background: #dfe4f0; overflow: hidden; }
+.timer div { height: 100%; width: 100%; background: linear-gradient(90deg, var(--mint), #5cc7a8); transition: width .2s linear; }
+.timer.low div { background: linear-gradient(90deg, #ff9f9f, var(--pink)); }
+.wrap { flex: 1; min-height: 0; position: relative; }
+.board { position: absolute; left: 50%; top: 0; width: 360px; height: 600px; transform-origin: top center; touch-action: none; }
+
+/* pieces on the board */
+.it { position: absolute; touch-action: none; cursor: grab; transition: transform .18s ease, opacity .25s; will-change: left, top, transform; }
+.it svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.it.drag { cursor: grabbing; z-index: 50 !important; transition: transform .1s; filter: drop-shadow(0 10px 8px rgba(74,59,82,.25)); }
+.it.done { cursor: default; }
+.it.shake { animation: shake .35s; }
+@keyframes shake { 0%, 100% { translate: 0 0; } 25% { translate: -7px 0; } 75% { translate: 7px 0; } }
+.pop { animation: popin .3s cubic-bezier(.3,1.6,.5,1); }
+@keyframes popin { from { transform: scale(.6); } to { transform: scale(1); } }
+
+.table { position: absolute; border-radius: 26px; background: #f7e3cf; box-shadow: inset 0 -8px 0 #ecd0b4; }
+.bin { position: absolute; border-radius: 22px 22px 28px 28px; border: 3px solid var(--ink); display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 8px; transition: transform .15s; }
+.bin .lbl { font-family: var(--display); font-weight: 600; font-size: 14px; background: rgba(255,255,255,.85); border-radius: 10px; padding: 2px 8px; }
+.bin .cnt { font-size: 12px; font-weight: 800; color: var(--ink); opacity: .7; margin-top: 2px; }
+.bin svg { width: 34px; height: 34px; margin-bottom: 2px; }
+.bin.ok { transform: scale(1.06); }
+.bin.bad { animation: shake .35s; border-color: #e0566f; }
+
+.box { position: absolute; border-radius: 10px; background: #e8c39e; border: 3px solid var(--ink); box-shadow: inset 0 0 0 6px #d9ab80; }
+.cell { position: absolute; border-radius: 6px; background: rgba(255,255,255,.35); }
+.tray { position: absolute; border-radius: 22px; background: #e3e7f1; }
+
+.room { position: absolute; overflow: hidden; border-radius: 22px; border: 3px solid var(--ink); }
+.spot { position: absolute; border: 3px dashed var(--pink); border-radius: 14px; background: rgba(255,143,171,.12); opacity: 0; transition: opacity .2s; pointer-events: none; animation: glowspot 1s infinite alternate; }
+.spot.show { opacity: 1; }
+@keyframes glowspot { from { box-shadow: 0 0 0 0 rgba(255,143,171,.0); } to { box-shadow: 0 0 18px 4px rgba(255,143,171,.55); } }
+.mbox { position: absolute; border: 0; background: none; padding: 0; }
+.mbox svg { width: 100%; height: 100%; overflow: visible; }
+.mbox .flapL, .mbox .flapR { transition: transform .35s cubic-bezier(.3,1.5,.5,1); }
+.mbox.open .flapL { transform: rotate(-38deg); }
+.mbox.open .flapR { transform: rotate(38deg); }
+.note { position: absolute; left: 0; right: 0; text-align: center; font-weight: 800; color: var(--soft); font-size: 14px; pointer-events: none; }
+
+.spark { position: absolute; width: 10px; height: 10px; border-radius: 50%; pointer-events: none; animation: spark .7s ease-out forwards; z-index: 60; }
+@keyframes spark { to { transform: translate(var(--dx), var(--dy)) scale(.2); opacity: 0; } }
+
+/* ---------- win / lose ---------- */
+.overlay { position: fixed; inset: 0; background: rgba(74,59,82,.35); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
+.card { width: 100%; max-width: 330px; background: var(--card); border-radius: 28px; padding: 24px 20px 18px; text-align: center; box-shadow: 0 8px 0 #d6dbe8; animation: popin .35s cubic-bezier(.3,1.6,.5,1); }
+.card h2 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 34px; color: var(--pink); }
+.card p { margin: 8px 0 0; color: var(--soft); font-weight: 700; line-height: 1.4; }
+.bigstars { font-size: 42px; letter-spacing: 6px; margin-top: 8px; color: #f2b84b; }
+.bigstars .off { color: #e1e5ef; }
+.btns { display: grid; gap: 8px; margin-top: 16px; }
+.btn { border: 0; border-radius: 16px; padding: 13px; font-family: var(--display); font-weight: 600; font-size: 18px; background: var(--pink); color: #fff; box-shadow: 0 4px 0 #e06c8b; }
+.btn.alt { background: #e9edf6; color: var(--ink); box-shadow: 0 4px 0 #d0d6e4; }
+.btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #e06c8b; }
+.confetti { position: fixed; top: -10px; width: 9px; height: 14px; border-radius: 3px; z-index: 99; pointer-events: none; animation: fall 1.8s ease-in forwards; }
+@keyframes fall { to { transform: translate(var(--dx), 105vh) rotate(720deg); } }
+@media (prefers-reduced-motion: reduce) { .confetti, .spark { display: none; } .spot { animation: none; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <main id="menu">
+    <div class="top"><a href="./">‹ Pocket Arcade</a></div>
+    <div>
+      <h1 class="logo">Tidy <span>Time</span></h1>
+      <p class="tag">Pack boxes, sort things where they belong and set up cozy rooms. No rush, no ads.</p>
+    </div>
+    <div class="modes" role="group" aria-label="Mode">
+      <button type="button" id="mRelax" aria-pressed="true">Relaxed</button>
+      <button type="button" id="mTimed" aria-pressed="false">Timed</button>
+    </div>
+    <p class="modehint" id="modeHint">No clock. Fewer mistakes means more stars.</p>
+    <div class="grid" id="levels"></div>
+  </main>
+
+  <section id="play" hidden>
+    <div class="bar">
+      <button type="button" class="iconbtn" id="backBtn" aria-label="Back to levels"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="#4a3b52" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="ttl"><b id="lvTitle">Level</b><small id="lvSub"></small></div>
+      <button type="button" class="iconbtn" id="restartBtn" aria-label="Restart level"><svg viewBox="0 0 24 24"><path d="M5 12a7 7 0 1 0 2-5" fill="none" stroke="#4a3b52" stroke-width="3" stroke-linecap="round"/><path d="M4 4v5h5" fill="none" stroke="#4a3b52" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </div>
+    <div class="timer" id="timer" hidden><div id="timerFill"></div></div>
+    <div class="wrap" id="wrap"><div class="board" id="board"></div></div>
+  </section>
+</div>
+<div class="overlay" id="over" hidden><div class="card"><h2 id="oTitle">Spotless!</h2><div class="bigstars" id="oStars"></div><p id="oText"></p><div class="btns" id="oBtns"></div></div></div>
+
+<script>
+(function () {
+'use strict';
+const $ = id => document.getElementById(id);
+const OL = '#5b4a63';
+const S = `stroke="${OL}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"`;
+
+// ---------- art: small items (viewBox 0 0 100 100) ----------
+const ITEMS = {
+  pencil: c => `<g transform="rotate(-35 50 50)"><rect x="16" y="40" width="60" height="20" rx="5" fill="${c}" ${S}/><rect x="20" y="44" width="52" height="4" rx="2" fill="#fff" opacity=".45"/><path d="M76 40 L94 50 L76 60 Z" fill="#f6d7a7" ${S}/><path d="M88 47 L94 50 L88 53 Z" fill="${OL}"/><rect x="8" y="40" width="12" height="20" rx="4" fill="#f4a3b4" ${S}/></g>`,
+  book: c => `<rect x="22" y="12" width="58" height="76" rx="7" fill="${c}" ${S}/><rect x="22" y="12" width="13" height="76" rx="5" fill="#000" opacity=".12"/><rect x="44" y="28" width="26" height="7" rx="3.5" fill="#fff" opacity=".75"/><rect x="44" y="40" width="18" height="5" rx="2.5" fill="#fff" opacity=".55"/>`,
+  apple: () => `<path d="M50 30 C30 18 14 36 20 58 C26 80 40 88 50 82 C60 88 74 80 80 58 C86 36 70 18 50 30 Z" fill="#ff6b6b" ${S}/><path d="M50 30 Q52 18 58 12" fill="none" ${S}/><path d="M56 22 Q70 12 76 22 Q66 30 56 22 Z" fill="#7fd8be" ${S}/><ellipse cx="34" cy="46" rx="6" ry="10" fill="#fff" opacity=".5"/>`,
+  banana: () => `<path d="M18 30 C24 70 60 86 86 66 C88 62 84 58 80 60 C58 72 36 60 30 28 C28 22 18 22 18 30 Z" fill="#ffd166" ${S}/><path d="M18 30 L16 22" ${S}/><path d="M84 62 L90 60" ${S}/>`,
+  grapes: () => `${[[50, 34], [38, 46], [62, 46], [44, 58], [56, 58], [50, 70], [32, 34], [68, 34]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="11" fill="#b58df2" ${S}/>`).join('')}<path d="M50 24 L52 10" ${S}/><path d="M52 14 Q64 6 70 14 Q60 22 52 14 Z" fill="#7fd8be" ${S}/>`,
+  orange: () => `<circle cx="50" cy="54" r="32" fill="#ffa95e" ${S}/><path d="M50 22 Q60 10 70 16 Q62 26 50 22 Z" fill="#7fd8be" ${S}/><circle cx="38" cy="44" r="6" fill="#fff" opacity=".45"/>`,
+  carrot: () => `<path d="M30 30 L70 34 L44 92 Z" fill="#ff9f43" ${S}/><path d="M40 46 L52 46 M38 60 L50 60 M44 74 L50 74" ${S}/><path d="M48 32 Q40 10 30 12 M52 32 Q56 8 66 10 M56 33 Q74 18 80 26" fill="none" stroke="#5cc7a8" stroke-width="6" stroke-linecap="round"/>`,
+  broccoli: () => `<path d="M42 56 L40 90 L60 90 L58 56 Z" fill="#a8e6a1" ${S}/>${[[34, 44], [50, 34], [66, 44], [50, 52], [40, 30], [62, 30]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="15" fill="#5cc78a" ${S}/>`).join('')}`,
+  eggplant: () => `<path d="M58 30 C84 40 80 84 52 88 C26 92 20 64 36 52 C46 44 44 34 58 30 Z" fill="#9b6dd6" ${S}/><path d="M50 30 Q60 18 72 26 Q64 36 50 30 Z" fill="#7fd8be" ${S}/><path d="M60 24 L62 12" ${S}/><ellipse cx="44" cy="66" rx="5" ry="10" fill="#fff" opacity=".35" transform="rotate(30 44 66)"/>`,
+  bread: () => `<path d="M14 54 C14 30 86 30 86 54 L82 82 L18 82 Z" fill="#e9b56f" ${S}/><path d="M36 46 L44 40 M50 46 L58 40 M64 46 L72 40" ${S}/>`,
+  croissant: () => `<path d="M12 64 C22 30 78 30 88 64 C80 70 72 64 70 58 C62 66 38 66 30 58 C28 64 20 70 12 64 Z" fill="#f2b765" ${S}/><path d="M38 44 L42 60 M50 40 L50 60 M62 44 L58 60" ${S}/>`,
+  donut: () => `<circle cx="50" cy="52" r="34" fill="#f2c18d" ${S}/><path d="M18 50 C18 26 82 26 82 50 C84 60 74 60 70 56 C64 64 58 56 50 60 C42 56 36 64 30 56 C24 60 16 60 18 50 Z" fill="#ff9fc0" ${S}/><circle cx="50" cy="52" r="10" fill="#fff" ${S}/><path d="M34 40 l4 3 M60 36 l5 1 M66 46 l2 5 M40 32 l5 -1" stroke="#7fd8be" stroke-width="4" stroke-linecap="round"/>`,
+  ball: () => `<circle cx="50" cy="52" r="34" fill="#ff8fab" ${S}/><path d="M18 46 Q50 60 82 46" fill="none" ${S}/><path d="M50 18 Q36 52 50 86" fill="none" ${S}/>`,
+  duck: () => `<path d="M24 60 C24 44 40 44 46 48 C44 30 60 22 70 34 C76 40 74 50 68 54 C80 54 84 66 76 76 C64 90 30 88 24 60 Z" fill="#ffd166" ${S}/><path d="M72 38 L88 42 L72 46 Z" fill="#ff9f43" ${S}/><circle cx="62" cy="36" r="3" fill="${OL}"/>`,
+  blocks: () => `<rect x="20" y="40" width="40" height="40" rx="6" fill="#7fc8f8" ${S}/><rect x="44" y="20" width="36" height="36" rx="6" fill="#ffd166" ${S}/><text x="40" y="69" font-family="Fredoka, sans-serif" font-weight="700" font-size="24" text-anchor="middle" fill="${OL}">A</text><text x="62" y="46" font-family="Fredoka, sans-serif" font-weight="700" font-size="22" text-anchor="middle" fill="${OL}">B</text>`,
+  shirt: c => `<path d="M30 18 L42 14 Q50 24 58 14 L70 18 L88 34 L76 46 L70 40 L70 86 L30 86 L30 40 L24 46 L12 34 Z" fill="${c}" ${S}/>`,
+  sock: c => `<path d="M34 10 L60 10 L60 58 Q60 70 72 72 L80 74 Q90 78 86 88 Q82 94 70 92 L40 86 Q30 84 32 70 Z" fill="${c}" ${S}/><rect x="34" y="10" width="26" height="12" fill="#fff" opacity=".6"/>`,
+  hat: c => `<path d="M20 70 C20 30 80 30 80 70 Z" fill="${c}" ${S}/><path d="M12 70 L88 70 Q88 80 78 80 L22 80 Q12 80 12 70 Z" fill="${c}" ${S}/><circle cx="50" cy="28" r="7" fill="#fff" ${S}/>`,
+  mug: c => `<rect x="20" y="28" width="48" height="54" rx="8" fill="${c}" ${S}/><path d="M68 40 Q86 40 84 56 Q82 70 68 68" fill="none" ${S}/><path d="M34 20 Q38 12 34 6 M48 20 Q52 12 48 6" fill="none" stroke="${OL}" stroke-width="3" stroke-linecap="round" opacity=".5"/>`,
+  gift: c => `<rect x="18" y="38" width="64" height="48" rx="6" fill="${c}" ${S}/><rect x="14" y="28" width="72" height="16" rx="5" fill="${c}" ${S}/><rect x="44" y="28" width="12" height="58" fill="#fff" opacity=".7"/><path d="M50 28 Q34 8 30 22 Q32 30 50 28 Q66 8 70 22 Q68 30 50 28 Z" fill="#fff" ${S}/>`,
+};
+const svgWrap = (inner, vb = '0 0 100 100') => `<svg viewBox="${vb}" aria-hidden="true">${inner}</svg>`;
+
+// ---------- art: furniture (each has its own size in room units) ----------
+const WOOD = '#d9a273', WOODD = '#b57d52';
+const FURN = {
+  rug: { w: 200, h: 54, layer: 1, d: `<ellipse cx="100" cy="27" rx="96" ry="23" fill="#f7a1c4" ${S}/><ellipse cx="100" cy="27" rx="76" ry="16" fill="#ffd6e7"/><ellipse cx="100" cy="27" rx="52" ry="9" fill="#f7a1c4"/>` },
+  bed: { w: 160, h: 104, layer: 2, d: `<rect x="4" y="6" width="28" height="92" rx="9" fill="${WOOD}" ${S}/><rect x="20" y="58" width="136" height="34" rx="9" fill="${WOOD}" ${S}/><rect x="24" y="42" width="130" height="24" rx="11" fill="#fff" ${S}/><rect x="62" y="38" width="94" height="34" rx="11" fill="#9ad0f5" ${S}/><path d="M74 50 L146 50" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".6"/><rect x="30" y="30" width="36" height="20" rx="9" fill="#fff" ${S}/><rect x="26" y="92" width="10" height="10" rx="3" fill="${WOODD}"/><rect x="140" y="92" width="10" height="10" rx="3" fill="${WOODD}"/>` },
+  sofa: { w: 170, h: 86, layer: 2, d: `<rect x="12" y="8" width="146" height="48" rx="16" fill="#7fd8be" ${S}/><rect x="6" y="42" width="158" height="30" rx="11" fill="#5cc7a8" ${S}/><rect x="0" y="30" width="28" height="44" rx="11" fill="#7fd8be" ${S}/><rect x="142" y="30" width="28" height="44" rx="11" fill="#7fd8be" ${S}/><path d="M85 14 L85 50" ${S} opacity=".5"/><rect x="40" y="18" width="34" height="22" rx="8" fill="#ffd166" ${S}/><rect x="16" y="72" width="8" height="12" rx="3" fill="${WOODD}"/><rect x="146" y="72" width="8" height="12" rx="3" fill="${WOODD}"/>` },
+  table: { w: 112, h: 62, layer: 3, d: `<rect x="0" y="8" width="112" height="14" rx="6" fill="${WOOD}" ${S}/><rect x="12" y="22" width="9" height="38" rx="3" fill="${WOODD}" ${S}/><rect x="91" y="22" width="9" height="38" rx="3" fill="${WOODD}" ${S}/><circle cx="74" cy="2" r="7" fill="#ff8fab" ${S}/><path d="M70 -3 L66 -12 M78 -3 L82 -12" ${S}/>` },
+  chair: { w: 56, h: 92, layer: 3, d: `<rect x="8" y="0" width="40" height="46" rx="9" fill="#ffb4a2" ${S}/><rect x="4" y="44" width="48" height="13" rx="5" fill="${WOOD}" ${S}/><rect x="8" y="57" width="7" height="34" rx="3" fill="${WOODD}" ${S}/><rect x="41" y="57" width="7" height="34" rx="3" fill="${WOODD}" ${S}/>` },
+  lamp: { w: 48, h: 122, layer: 3, d: `<path d="M9 6 L39 6 L47 42 L1 42 Z" fill="#ffd166" ${S}/><rect x="22" y="42" width="5" height="70" fill="${OL}"/><ellipse cx="24" cy="114" rx="17" ry="6" fill="${WOOD}" ${S}/><ellipse cx="24" cy="44" rx="14" ry="3" fill="#fff6c9" opacity=".8"/>` },
+  plant: { w: 58, h: 88, layer: 3, d: `<ellipse cx="18" cy="30" rx="12" ry="24" fill="#5cc78a" ${S} transform="rotate(-25 18 30)"/><ellipse cx="40" cy="28" rx="12" ry="24" fill="#7fd8be" ${S} transform="rotate(25 40 28)"/><ellipse cx="29" cy="22" rx="10" ry="22" fill="#5cc78a" ${S}/><path d="M9 52 L49 52 L42 86 L16 86 Z" fill="#ff9f80" ${S}/><rect x="6" y="48" width="46" height="10" rx="4" fill="#ff9f80" ${S}/>` },
+  shelf: { w: 96, h: 150, layer: 2, d: `<rect x="2" y="2" width="92" height="146" rx="8" fill="${WOOD}" ${S}/><rect x="10" y="10" width="76" height="40" rx="4" fill="#f7e3cf"/><rect x="10" y="56" width="76" height="40" rx="4" fill="#f7e3cf"/><rect x="10" y="102" width="76" height="38" rx="4" fill="#f7e3cf"/>${[[14, 18, '#ff8fab'], [26, 22, '#7fc8f8'], [38, 16, '#ffd166'], [52, 20, '#b58df2'], [16, 64, '#7fd8be'], [30, 60, '#ff9f80'], [60, 66, '#7fc8f8'], [72, 62, '#ff8fab'], [20, 110, '#ffd166'], [34, 108, '#b58df2']].map(([x, y, c]) => `<rect x="${x}" y="${y}" width="11" height="${50 - (y % 46) + (y > 100 ? -6 : 0)}" rx="2" fill="${c}" stroke="${OL}" stroke-width="2"/>`).join('')}<circle cx="70" cy="122" r="10" fill="#7fd8be" ${S}/>` },
+  painting: { w: 86, h: 64, layer: 1, d: `<rect x="2" y="2" width="82" height="60" rx="6" fill="${WOOD}" ${S}/><rect x="10" y="10" width="66" height="44" rx="3" fill="#bfe6ff"/><path d="M10 46 Q30 24 46 44 Q58 32 76 46 L76 54 L10 54 Z" fill="#7fd8be"/><circle cx="60" cy="22" r="6" fill="#ffd166"/>` },
+  clock: { w: 48, h: 48, layer: 1, d: `<circle cx="24" cy="24" r="21" fill="#fff" stroke="${OL}" stroke-width="4"/><path d="M24 24 L24 12 M24 24 L32 28" ${S}/><circle cx="24" cy="24" r="2.5" fill="${OL}"/>` },
+  desk: { w: 132, h: 74, layer: 2, d: `<rect x="0" y="6" width="132" height="14" rx="6" fill="${WOOD}" ${S}/><rect x="84" y="20" width="40" height="52" rx="5" fill="${WOOD}" ${S}/><path d="M90 38 L118 38 M90 54 L118 54" ${S}/><rect x="10" y="20" width="8" height="52" rx="3" fill="${WOODD}" ${S}/><rect x="20" y="-18" width="44" height="26" rx="4" fill="#7fc8f8" ${S}/><rect x="38" y="6" width="8" height="4" fill="${OL}"/>` },
+  fridge: { w: 74, h: 158, layer: 2, d: `<rect x="2" y="2" width="70" height="154" rx="14" fill="#e6f7f2" ${S}/><path d="M2 58 L72 58" ${S}/><rect x="58" y="20" width="6" height="24" rx="3" fill="${OL}"/><rect x="58" y="72" width="6" height="34" rx="3" fill="${OL}"/><circle cx="20" cy="28" r="6" fill="#ff8fab"/><rect x="14" y="84" width="16" height="12" rx="3" fill="#ffd166"/>` },
+  tv: { w: 104, h: 82, layer: 3, d: `<rect x="2" y="2" width="100" height="62" rx="9" fill="#5b4a63" ${S}/><rect x="10" y="10" width="84" height="46" rx="5" fill="#7fc8f8"/><path d="M14 52 L40 26 M30 52 L56 26" stroke="#fff" stroke-width="5" opacity=".35" stroke-linecap="round"/><rect x="44" y="64" width="16" height="10" fill="${OL}"/><rect x="26" y="74" width="52" height="7" rx="3" fill="${OL}"/>` },
+};
+
+// ---------- levels ----------
+const PENC = { red: '#ff6b6b', blue: '#7fc8f8', yellow: '#ffd166', green: '#7fd8be', purple: '#b58df2' };
+const L = [];
+const sortL = (name, bins, items) => L.push({ type: 'sort', name, bins, items });
+const packL = (name, w, h, seed) => L.push({ type: 'pack', name, w, h, seed });
+const roomL = (name, wall, floor, spots) => L.push({ type: 'room', name, wall, floor, spots });
+const rep = (n, f) => Array.from({ length: n }, (_, i) => f(i));
+sortL('Pencil Cup', [['red', 'Red', '#ffd0d0', 'pencil', PENC.red], ['blue', 'Blue', '#d5ecff', 'pencil', PENC.blue], ['yellow', 'Yellow', '#fff0c2', 'pencil', PENC.yellow]],
+  [...rep(3, () => ['pencil', PENC.red, 'red']), ...rep(3, () => ['pencil', PENC.blue, 'blue']), ...rep(3, () => ['pencil', PENC.yellow, 'yellow'])]);
+roomL('Cozy Bedroom', '#cfe6ff', '#f2d1a8', [['rug', 110, 382], ['bed', 22, 300], ['lamp', 212, 284], ['plant', 290, 324], ['painting', 36, 96], ['clock', 262, 104]]);
+packL('Lunch Box', 3, 3, 11);
+sortL('Market Day', [['fruit', 'Fruit', '#ffe1e1', 'apple'], ['veg', 'Veggies', '#dcf6e6', 'carrot']],
+  [['apple', 0, 'fruit'], ['banana', 0, 'fruit'], ['grapes', 0, 'fruit'], ['orange', 0, 'fruit'], ['apple', 0, 'fruit'], ['carrot', 0, 'veg'], ['broccoli', 0, 'veg'], ['eggplant', 0, 'veg'], ['carrot', 0, 'veg'], ['broccoli', 0, 'veg']]);
+roomL('Living Room', '#ffe3d6', '#e9c79d', [['rug', 82, 384], ['lamp', 4, 282], ['sofa', 52, 312], ['table', 228, 346], ['painting', 30, 96], ['clock', 262, 104]]);
+packL('Suitcase', 4, 3, 22);
+sortL('Kitchen Shelf', [['fruit', 'Fruit', '#ffe1e1', 'apple'], ['veg', 'Veggies', '#dcf6e6', 'carrot'], ['bake', 'Bakery', '#fbe8cf', 'bread']],
+  [['apple', 0, 'fruit'], ['banana', 0, 'fruit'], ['grapes', 0, 'fruit'], ['orange', 0, 'fruit'], ['carrot', 0, 'veg'], ['broccoli', 0, 'veg'], ['eggplant', 0, 'veg'], ['carrot', 0, 'veg'], ['bread', 0, 'bake'], ['croissant', 0, 'bake'], ['donut', 0, 'bake'], ['donut', 0, 'bake']]);
+roomL('Study Nook', '#dff3e8', '#e8cfa9', [['rug', 90, 386], ['shelf', 18, 254], ['desk', 136, 330], ['chair', 178, 330], ['lamp', 300, 282], ['clock', 40, 96], ['painting', 252, 92]]);
+packL('Toy Chest', 4, 4, 33);
+sortL('Bookshelf', [['red', 'Red', '#ffd0d0', 'book', PENC.red], ['blue', 'Blue', '#d5ecff', 'book', PENC.blue], ['green', 'Green', '#d8f5ea', 'book', PENC.green], ['purple', 'Purple', '#eadcff', 'book', PENC.purple]],
+  [...rep(3, () => ['book', PENC.red, 'red']), ...rep(3, () => ['book', PENC.blue, 'blue']), ...rep(3, () => ['book', PENC.green, 'green']), ...rep(3, () => ['book', PENC.purple, 'purple'])]);
+roomL('Little Kitchen', '#fff3c9', '#d9e7f5', [['fridge', 22, 250], ['table', 150, 344], ['chair', 102, 314], ['chair', 258, 314], ['clock', 40, 96], ['painting', 244, 92]]);
+packL('Moving Day', 5, 4, 44);
+sortL('Laundry Day', [['toys', 'Toys', '#fff0c2', 'duck'], ['clothes', 'Clothes', '#d5ecff', 'shirt', '#7fc8f8'], ['gifts', 'Gifts', '#ffe1ec', 'gift', '#ff8fab']],
+  [['ball', 0, 'toys'], ['duck', 0, 'toys'], ['blocks', 0, 'toys'], ['ball', 0, 'toys'], ['duck', 0, 'toys'], ['shirt', '#7fc8f8', 'clothes'], ['sock', '#ff8fab', 'clothes'], ['hat', '#b58df2', 'clothes'], ['shirt', '#ffd166', 'clothes'], ['sock', '#7fd8be', 'clothes'], ['gift', '#ff8fab', 'gifts'], ['gift', '#7fc8f8', 'gifts'], ['gift', '#ffd166', 'gifts'], ['mug', '#b58df2', 'gifts'], ['mug', '#7fd8be', 'gifts']]);
+roomL('Dream Room', '#eadcff', '#f2d1a8', [['rug', 90, 388], ['shelf', 14, 254], ['tv', 122, 316], ['bed', 194, 300], ['painting', 30, 96], ['painting', 244, 92], ['clock', 300, 160]]);
+packL('Big Move', 5, 5, 55);
+const TYPE_LABEL = { sort: 'Sort', pack: 'Pack', room: 'Unbox' };
+const TYPE_ICON = { sort: ITEMS.apple(), pack: ITEMS.gift('#ffd166'), room: ITEMS.mug('#7fc8f8') };
+
+// ---------- save ----------
+const KEY = 'pocketArcade.tidy.v1';
+let SV = { best: {}, mode: 'relaxed' };
+try { const raw = localStorage.getItem(KEY); if (raw) SV = Object.assign(SV, JSON.parse(raw)); } catch (e) { }
+function saveSV() { try { localStorage.setItem(KEY, JSON.stringify(SV)); } catch (e) { } }
+const bestOf = i => SV.best[i] || {};
+const cleared = i => !!(bestOf(i).relaxed || bestOf(i).timed);
+const unlocked = i => i === 0 || cleared(i - 1);
+
+// ---------- sound ----------
+let AC = null;
+function ac() { try { if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); } catch (e) { AC = null; } return AC; }
+function tone(f, d = .12, v = .06, type = 'sine') { const a = ac(); if (!a) return; const o = a.createOscillator(), g = a.createGain(), t = a.currentTime; o.type = type; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .01); g.gain.exponentialRampToValueAtTime(0.0001, t + d); o.connect(g).connect(a.destination); o.start(t); o.stop(t + d + .02); }
+let combo = 0;
+const sfx = {
+  pick() { tone(520, .06, .04); },
+  place() { const notes = [523, 587, 659, 698, 784, 880, 988, 1047]; tone(notes[Math.min(combo++, notes.length - 1)], .16, .07); setTimeout(() => tone(1568, .08, .02), 40); try { navigator.vibrate && navigator.vibrate(8); } catch (e) { } },
+  wrong() { combo = 0; tone(220, .14, .05, 'triangle'); },
+  rotate() { tone(700, .05, .03); },
+  open() { tone(330, .1, .05, 'triangle'); setTimeout(() => tone(440, .12, .05, 'triangle'), 90); },
+  win() { [523, 659, 784, 1047, 1319].forEach((f, i) => setTimeout(() => tone(f, .22, .06), i * 110)); },
+};
+
+// ---------- board helpers ----------
+const board = $('board'), wrap = $('wrap');
+let scale = 1;
+function fit() { const r = wrap.getBoundingClientRect(); scale = Math.min(r.width / 360, r.height / 600); board.style.transform = `translateX(-50%) scale(${scale})`; }
+window.addEventListener('resize', fit);
+function el(cls, x, y, w, h, html = '', parent = board) { const d = document.createElement('div'); d.className = cls; Object.assign(d.style, { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px' }); d.innerHTML = html; parent.append(d); return d; }
+function toBoard(e) { const r = board.getBoundingClientRect(); return { x: (e.clientX - r.left) / scale, y: (e.clientY - r.top) / scale }; }
+function sparks(x, y, colors = ['#ff8fab', '#ffd166', '#7fd8be', '#7fc8f8']) {
+  for (let i = 0; i < 10; i++) { const a = Math.random() * Math.PI * 2, d = 30 + Math.random() * 30; const s = el('spark', x - 5, y - 5, 10, 10); s.style.background = colors[i % colors.length]; s.style.setProperty('--dx', Math.cos(a) * d + 'px'); s.style.setProperty('--dy', Math.sin(a) * d + 'px'); setTimeout(() => s.remove(), 750); }
+}
+// generic drag: onDrop(x, y) returns true if handled
+function draggable(node, { onStart, onMove, onDrop, onTap }) {
+  let sx = 0, sy = 0, ox = 0, oy = 0, moved = false, id = null;
+  node.addEventListener('pointerdown', e => {
+    if (node.classList.contains('done') || game.over) return;
+    e.preventDefault(); ac(); id = e.pointerId; node.setPointerCapture(id);
+    const p = toBoard(e); sx = p.x; sy = p.y; ox = p.x - parseFloat(node.style.left); oy = p.y - parseFloat(node.style.top); moved = false;
+  });
+  node.addEventListener('pointermove', e => {
+    if (e.pointerId !== id) return;
+    const p = toBoard(e);
+    if (!moved && Math.hypot(p.x - sx, p.y - sy) > 6) { moved = true; node.classList.add('drag'); sfx.pick(); onStart && onStart(); }
+    if (moved) { node.style.left = (p.x - ox) + 'px'; node.style.top = (p.y - oy) + 'px'; onMove && onMove(p); }
+  });
+  const end = e => {
+    if (e.pointerId !== id) return; id = null; node.classList.remove('drag');
+    if (!moved) { onTap && onTap(); return; }
+    onDrop(toBoard(e));
+  };
+  node.addEventListener('pointerup', end); node.addEventListener('pointercancel', end);
+}
+function glide(node, x, y, after) { node.style.transition = 'left .25s ease, top .25s ease, transform .2s'; node.style.left = x + 'px'; node.style.top = y + 'px'; setTimeout(() => { node.style.transition = ''; after && after(); }, 260); }
+function mulberry(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+// ---------- game state ----------
+const game = { i: 0, mistakes: 0, left: 0, limit: 0, start: 0, over: false, timerId: 0 };
+function mistake() { game.mistakes++; sfx.wrong(); }
+function progress(done, total, word) { $('lvSub').textContent = `${done} / ${total} ${word}${game.mistakes ? ` · ${game.mistakes} oops` : ''}`; }
+
+// ---------- SORT ----------
+function playSort(lv) {
+  const r = mulberry(game.i * 97 + 3);
+  el('table', 12, 8, 336, 420);
+  const nb = lv.bins.length, bw = (336 - (nb - 1) * 10) / nb, bins = [];
+  lv.bins.forEach(([key, label, bg, icon, ic], k) => {
+    const b = el('bin', 12 + k * (bw + 10), 446, bw, 140, `${svgWrap(ITEMS[icon](ic || '#ffd166'))}<span class="lbl">${label}</span><span class="cnt">0</span>`);
+    b.style.background = bg; b.dataset.key = key; b.dataset.n = 0; bins.push(b);
+  });
+  const items = lv.items.slice().sort(() => r() - .5), n = items.length, cols = 4, rows = Math.ceil(n / cols), cw = 336 / cols, ch = Math.min(100, 410 / rows);
+  let done = 0; progress(0, n, 'sorted');
+  items.forEach(([art, c, key], k) => {
+    const cx = 12 + (k % cols) * cw + cw / 2 + (r() - .5) * 14, cy = 18 + Math.floor(k / cols) * ch + ch / 2 + (r() - .5) * 10;
+    const size = 70, x0 = cx - size / 2, y0 = cy - size / 2;
+    const it = el('it', x0, y0, size, size, svgWrap(ITEMS[art](c))); it.dataset.key = key;
+    it.style.transform = `rotate(${(r() - .5) * 30}deg)`; it.style.zIndex = 5;
+    draggable(it, {
+      onStart() { it.style.transform = 'rotate(0deg) scale(1.1)'; },
+      onDrop(p) {
+        const bin = bins.find(b => { const x = parseFloat(b.style.left), y = parseFloat(b.style.top); return p.x > x - 6 && p.x < x + bw + 6 && p.y > y - 30 && p.y < y + 146; });
+        if (bin && bin.dataset.key === key) {
+          it.classList.add('done'); sfx.place();
+          const bx = parseFloat(bin.style.left) + bw / 2 - size / 2, by = parseFloat(bin.style.top) + 10;
+          it.style.transform = 'scale(.55)'; glide(it, bx, by, () => { it.style.opacity = 0; setTimeout(() => it.remove(), 250); });
+          bin.dataset.n = +bin.dataset.n + 1; bin.querySelector('.cnt').textContent = bin.dataset.n;
+          bin.classList.add('ok'); setTimeout(() => bin.classList.remove('ok'), 180);
+          sparks(bx + size / 2, by + 20); done++; progress(done, n, 'sorted');
+          if (done === n) win();
+        } else {
+          if (bin) { bin.classList.remove('bad'); void bin.offsetWidth; bin.classList.add('bad'); mistake(); progress(done, n, 'sorted'); }
+          it.style.transform = `rotate(${(r() - .5) * 30}deg)`; glide(it, x0, y0);
+        }
+      },
+    });
+  });
+  return n;
+}
+
+// ---------- PACK ----------
+function partition(w, h, seed) {
+  const r = mulberry(seed), owner = Array(w * h).fill(-1), pieces = [];
+  const order = rep(w * h, i => i).sort(() => r() - .5);
+  for (const start of order) {
+    if (owner[start] !== -1) continue;
+    const id = pieces.length, cells = [start]; owner[start] = id;
+    const target = 2 + Math.floor(r() * 3);
+    while (cells.length < target) {
+      const opts = [];
+      for (const c of cells) { const x = c % w, y = Math.floor(c / w); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy; if (nx >= 0 && ny >= 0 && nx < w && ny < h && owner[ny * w + nx] === -1) opts.push(ny * w + nx); } }
+      if (!opts.length) break;
+      const pick = opts[Math.floor(r() * opts.length)]; owner[pick] = id; cells.push(pick);
+    }
+    pieces.push(cells.map(c => [c % w, Math.floor(c / w)]));
+  }
+  return pieces.map(p => { const c = norm(p); c.ox = Math.min(...p.map(q => q[0])); c.oy = Math.min(...p.map(q => q[1])); return c; });
+}
+function norm(cells) { const mx = Math.min(...cells.map(c => c[0])), my = Math.min(...cells.map(c => c[1])); return cells.map(([x, y]) => [x - mx, y - my]).sort((a, b) => a[1] - b[1] || a[0] - b[0]); }
+const rot = cells => norm(cells.map(([x, y]) => [-y, x]));
+const dims = cells => [Math.max(...cells.map(c => c[0])) + 1, Math.max(...cells.map(c => c[1])) + 1];
+const PASTEL = ['#ffb4c8', '#a8dcff', '#ffe08a', '#a8ebd3', '#d4bdfb', '#ffc7a8', '#c4e8a0', '#ffd0ec'];
+const PICONS = [['mug', '#fff'], ['book', '#fff'], ['sock', '#fff'], ['gift', '#fff'], ['ball'], ['duck'], ['hat', '#fff'], ['apple'], ['donut'], ['orange']];
+function pieceSVG(cells, C, color, icon) {
+  const [w, h] = dims(cells), set = new Set(cells.map(c => c.join(','))), g = 3;
+  let s = '';
+  for (const [x, y] of cells) {
+    s += `<rect x="${x * C + g}" y="${y * C + g}" width="${C - 2 * g}" height="${C - 2 * g}" rx="10" fill="${color}"/>`;
+    if (set.has(`${x + 1},${y}`)) s += `<rect x="${x * C + C / 2}" y="${y * C + g}" width="${C}" height="${C - 2 * g}" fill="${color}"/>`;
+    if (set.has(`${x},${y + 1}`)) s += `<rect x="${x * C + g}" y="${y * C + C / 2}" width="${C - 2 * g}" height="${C}" fill="${color}"/>`;
+  }
+  // a darker outline drawn under a copy gives a soft border
+  const outline = s.replace(/fill="[^"]+"/g, `fill="${OL}"`).replace(/x="([\d.]+)"/g, (m, v) => `x="${+v - 2}"`).replace(/y="([\d.]+)"/g, (m, v) => `y="${+v - 2}"`).replace(/width="([\d.]+)"/g, (m, v) => `width="${+v + 4}"`).replace(/height="([\d.]+)"/g, (m, v) => `height="${+v + 4}"`);
+  const [ix, iy] = cells[0], ic = ITEMS[icon[0]](icon[1] || color);
+  return `<svg viewBox="-3 -3 ${w * C + 6} ${h * C + 6}" aria-hidden="true">${outline}${s}<svg x="${ix * C + 7}" y="${iy * C + 7}" width="${C - 14}" height="${C - 14}" viewBox="0 0 100 100">${ic}</svg></svg>`;
+}
+function playPack(lv) {
+  const C = Math.min(56, Math.floor(260 / Math.max(lv.w, lv.h))), bx = (360 - lv.w * C) / 2, by = 18;
+  const box = el('box', bx - 10, by - 10, lv.w * C + 20, lv.h * C + 20);
+  for (let y = 0; y < lv.h; y++) for (let x = 0; x < lv.w; x++) el('cell', 10 + x * C + 3, 10 + y * C + 3, C - 6, C - 6, '', box);
+  const trayTop = by + lv.h * C + 30;
+  el('tray', 8, trayTop, 344, 600 - trayTop - 8);
+  const r = mulberry(lv.seed), pieces = partition(lv.w, lv.h, lv.seed), occ = Array(lv.w * lv.h).fill(-1);
+  let placed = 0, total = lv.w * lv.h;
+  const sol = pieces.map(c => ({ cells: c, ox: c.ox, oy: c.oy }));
+  pieces.forEach((cells, k) => { let c = cells; const turns = 1 + Math.floor(r() * 3); for (let t = 0; t < turns; t++) c = rot(c); pieces[k] = c; });
+  // tray slots in a simple flow layout, shrinking pieces until they all fit
+  let TS = 0.62, slots;
+  for (TS of [0.62, 0.55, 0.48, 0.42, 0.36]) {
+    slots = []; let sx = 18, sy = trayTop + 12, rowH = 0;
+    pieces.forEach(c => { const [w, h] = dims(c), pw = w * C * TS, ph = h * C * TS; if (sx + pw > 344) { sx = 18; sy += rowH + 12; rowH = 0; } slots.push([sx, sy]); sx += pw + 14; rowH = Math.max(rowH, ph); });
+    if (sy + rowH < 592) break;
+  }
+  window.__tidy.pack = { C, bx, by, sol, TS };
+  progress(0, total, 'spaces filled');
+  pieces.forEach((cells0, k) => {
+    let cells = cells0, home = slots[k], at = null;
+    const color = PASTEL[k % PASTEL.length], icon = PICONS[k % PICONS.length];
+    const it = el('it', home[0], home[1], 0, 0); it.dataset.k = k;
+    const render = () => { const [w, h] = dims(cells); it.style.width = w * C + 'px'; it.style.height = h * C + 'px'; it.innerHTML = pieceSVG(cells, C, color, icon); it.dataset.cells = JSON.stringify(cells); };
+    const toTray = () => { it.style.transformOrigin = 'top left'; it.style.transform = `scale(${TS})`; glide(it, home[0], home[1]); it.style.zIndex = 5; };
+    const free = () => { if (at) { for (const [x, y] of cells) occ[(at[1] + y) * lv.w + at[0] + x] = -1; placed -= cells.length; at = null; progress(placed, total, 'spaces filled'); } };
+    render(); it.style.transformOrigin = 'top left'; it.style.transform = `scale(${TS})`; it.style.zIndex = 5;
+    draggable(it, {
+      onStart() { free(); it.style.transform = 'scale(1)'; },
+      onTap() { if (at) return; cells = rot(cells); render(); sfx.rotate(); it.classList.remove('pop'); void it.offsetWidth; it.classList.add('pop'); },
+      onDrop() {
+        const gx = Math.round((parseFloat(it.style.left) - bx) / C), gy = Math.round((parseFloat(it.style.top) - by) / C);
+        const fits = cells.every(([x, y]) => { const X = gx + x, Y = gy + y; return X >= 0 && Y >= 0 && X < lv.w && Y < lv.h && occ[Y * lv.w + X] === -1; });
+        if (fits) {
+          at = [gx, gy]; for (const [x, y] of cells) occ[(gy + y) * lv.w + gx + x] = k;
+          placed += cells.length; sfx.place(); it.style.zIndex = 3;
+          glide(it, bx + gx * C, by + gy * C); sparks(bx + gx * C + C / 2, by + gy * C + C / 2);
+          progress(placed, total, 'spaces filled');
+          if (placed === total) { [...board.querySelectorAll('.it')].forEach(n => n.classList.add('done')); win(); }
+        } else {
+          const overBox = parseFloat(it.style.left) > bx - C && parseFloat(it.style.top) < by + lv.h * C;
+          if (overBox) mistake();
+          toTray();
+        }
+      },
+    });
+  });
+  return pieces.length;
+}
+
+// ---------- ROOM ----------
+function roomBG(wall, floor) {
+  return `<svg viewBox="0 0 360 430" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%"><rect width="360" height="430" fill="${floor}"/>${rep(8, i => `<path d="M0 ${238 + i * 26} L360 ${238 + i * 26}" stroke="#000" stroke-opacity=".06" stroke-width="2"/>`).join('')}<rect width="360" height="230" fill="${wall}"/><rect y="222" width="360" height="12" fill="#fff" opacity=".7"/><rect x="128" y="34" width="104" height="96" rx="10" fill="#e9f7ff" stroke="${OL}" stroke-width="4"/><path d="M180 34 L180 130 M128 82 L232 82" stroke="${OL}" stroke-width="4"/><circle cx="210" cy="56" r="10" fill="#ffd166" opacity=".8"/></svg>`;
+}
+function playRoom(lv) {
+  const RY = 8, room = el('room', 0, RY, 360, 430, roomBG(lv.wall, lv.floor));
+  // window stays clear: paintings/clocks sit beside it
+  const spots = lv.spots.map(([name, x, y], k) => ({ name, x, y: y - 50 + RY, k, f: FURN[name] }));
+  window.__tidy.spots = spots;
+  const order = spots.slice().sort((a, b) => a.f.layer - b.f.layer || a.k - b.k);
+  const outlines = spots.map(s => el('spot', s.x - 4, s.y - 4, s.f.w + 8, s.f.h + 8));
+  const mb = document.createElement('button'); mb.type = 'button'; mb.className = 'mbox'; mb.setAttribute('aria-label', 'Open the moving box');
+  Object.assign(mb.style, { left: '232px', top: '470px', width: '112px', height: '100px' });
+  mb.innerHTML = `<svg viewBox="0 0 112 100"><rect x="6" y="34" width="100" height="62" rx="6" fill="#e8c39e" stroke="${OL}" stroke-width="3"/><rect x="48" y="34" width="16" height="62" fill="#d9ab80"/><g class="flapL" style="transform-origin:8px 36px"><path d="M8 36 L56 36 L48 18 L4 22 Z" fill="#d9ab80" stroke="${OL}" stroke-width="3" stroke-linejoin="round"/></g><g class="flapR" style="transform-origin:104px 36px"><path d="M56 36 L104 36 L108 22 L64 18 Z" fill="#d9ab80" stroke="${OL}" stroke-width="3" stroke-linejoin="round"/></g><text x="56" y="74" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="700" font-size="14" fill="${OL}">HOME</text></svg>`;
+  board.append(mb);
+  const note = el('note', 0, 576, 360, 20); note.style.textAlign = 'left'; note.style.left = '18px';
+  let next = 0, out = null, placed = 0; const n = spots.length;
+  const upd = () => { note.textContent = next < n ? `${n - next} left in the box${out ? '' : ' · tap it'}` : 'Box is empty'; progress(placed, n, 'placed'); };
+  upd();
+  mb.addEventListener('click', () => {
+    if (out || next >= n || game.over) return;
+    const s = order[next++]; mb.classList.add('open'); setTimeout(() => mb.classList.remove('open'), 450); sfx.open();
+    const hs = Math.min(1, 150 / Math.max(s.f.w, s.f.h)), hx = 30, hy = 456 + (120 - s.f.h * hs) / 2;
+    const it = el('it', hx, hy, s.f.w, s.f.h, svgWrap(s.f.d, `0 0 ${s.f.w} ${s.f.h}`));
+    it.style.transformOrigin = 'top left'; it.style.transform = `scale(${hs})`; it.style.zIndex = 20; it.classList.add('pop');
+    out = it; it.dataset.name = s.name; upd();
+    const home = () => { it.style.transform = `scale(${hs})`; glide(it, hx, hy); };
+    draggable(it, {
+      onStart() { it.style.transform = 'scale(1)'; outlines[s.k].classList.add('show'); },
+      onDrop() {
+        outlines[s.k].classList.remove('show');
+        const dx = parseFloat(it.style.left) - s.x, dy = parseFloat(it.style.top) - s.y;
+        // the same furniture can have twin spots (two chairs): accept either free one
+        const twin = spots.find(o => o.name === s.name && !o.used && Math.abs(parseFloat(it.style.left) - o.x) < 34 && Math.abs(parseFloat(it.style.top) - o.y) < 34);
+        const target = (Math.abs(dx) < 34 && Math.abs(dy) < 34 && !s.used) ? s : twin;
+        if (target) {
+          target.used = true; it.classList.add('done'); it.style.zIndex = 4 + target.f.layer * 2 + Math.round(target.y / 100);
+          glide(it, target.x, target.y); sfx.place(); sparks(target.x + target.f.w / 2, target.y + target.f.h / 2);
+          placed++; out = null; upd();
+          if (placed === n) { note.textContent = 'All moved in!'; win(); }
+        } else {
+          if (parseFloat(it.style.top) < 440) mistake();
+          home(); upd();
+        }
+      },
+    });
+  });
+  return n;
+}
+
+// ---------- flow ----------
+function startLevel(i) {
+  game.i = i; game.mistakes = 0; game.over = false; combo = 0; clearInterval(game.timerId);
+  const lv = L[i];
+  $('menu').hidden = true; $('play').hidden = false; $('over').hidden = true;
+  board.innerHTML = ''; fit();
+  $('lvTitle').textContent = `${i + 1}. ${lv.name}`;
+  const count = lv.type === 'sort' ? playSort(lv) : lv.type === 'pack' ? playPack(lv) : playRoom(lv);
+  const timed = SV.mode === 'timed';
+  $('timer').hidden = !timed;
+  if (timed) {
+    game.limit = Math.round((lv.type === 'sort' ? 3.2 : lv.type === 'pack' ? 7 : 7.5) * count + 12);
+    game.start = performance.now();
+    const tick = () => {
+      const left = Math.max(0, game.limit - (performance.now() - game.start) / 1000), f = left / game.limit;
+      $('timerFill').style.width = (f * 100) + '%'; $('timer').classList.toggle('low', f < .25);
+      if (left <= 0 && !game.over) lose();
+    };
+    tick(); game.timerId = setInterval(tick, 200);
+  }
+}
+function starsFor() {
+  if (SV.mode === 'timed') { const f = 1 - (performance.now() - game.start) / 1000 / game.limit; return f > .5 ? 3 : f > .25 ? 2 : 1; }
+  return game.mistakes <= 1 ? 3 : game.mistakes <= 3 ? 2 : 1;
+}
+const starHTML = (n, max = 3) => rep(max, k => `<span class="${k < n ? '' : 'off'}">★</span>`).join('');
+function win() {
+  if (game.over) return; game.over = true; clearInterval(game.timerId);
+  const st = starsFor(), b = SV.best[game.i] = SV.best[game.i] || {}; b[SV.mode] = Math.max(b[SV.mode] || 0, st); saveSV();
+  setTimeout(() => {
+    sfx.win(); confetti();
+    const last = game.i >= L.length - 1;
+    showOver(['Spotless!', 'Neat!', 'So tidy!', 'Perfect!'][Math.floor(Math.random() * 4)], st,
+      SV.mode === 'timed' ? `Finished with ${Math.round(game.limit - (performance.now() - game.start) / 1000)}s to spare.` : game.mistakes ? `${game.mistakes} oops. Fewer slips earn more stars.` : 'Not a single slip!',
+      [[last ? 'Back to levels' : 'Next level', () => last ? toMenu() : startLevel(game.i + 1)], ['Play again', () => startLevel(game.i), true], ...(last ? [] : [['Levels', toMenu, true]])]);
+  }, 450);
+}
+function lose() {
+  game.over = true; clearInterval(game.timerId); sfx.wrong();
+  showOver('Time’s up!', 0, 'So close. Try again, or switch to Relaxed mode for no clock.', [['Try again', () => startLevel(game.i)], ['Levels', toMenu, true]]);
+}
+function showOver(title, st, text, btns) {
+  $('oTitle').textContent = title; $('oStars').innerHTML = st ? starHTML(st) : ''; $('oStars').hidden = !st; $('oText').textContent = text;
+  const box = $('oBtns'); box.innerHTML = '';
+  btns.forEach(([label, fn, alt]) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn' + (alt ? ' alt' : ''); b.textContent = label; b.onclick = () => { $('over').hidden = true; fn(); }; box.append(b); });
+  $('over').hidden = false; box.firstChild.focus();
+}
+function confetti() {
+  const cols = ['#ff8fab', '#ffd166', '#7fd8be', '#7fc8f8', '#b58df2'];
+  for (let i = 0; i < 40; i++) { const c = document.createElement('div'); c.className = 'confetti'; c.style.left = Math.random() * 100 + 'vw'; c.style.background = cols[i % 5]; c.style.animationDelay = Math.random() * .4 + 's'; c.style.setProperty('--dx', (Math.random() - .5) * 120 + 'px'); document.body.append(c); setTimeout(() => c.remove(), 2400); }
+}
+function toMenu() { clearInterval(game.timerId); game.over = true; $('play').hidden = true; $('menu').hidden = false; renderMenu(); }
+function renderMenu() {
+  $('mRelax').setAttribute('aria-pressed', SV.mode === 'relaxed'); $('mTimed').setAttribute('aria-pressed', SV.mode === 'timed');
+  $('modeHint').textContent = SV.mode === 'timed' ? 'Beat the clock. Finish faster for more stars.' : 'No clock. Fewer mistakes means more stars.';
+  const g = $('levels'); g.innerHTML = '';
+  const firstOpen = L.findIndex((_, i) => unlocked(i) && !cleared(i));
+  L.forEach((lv, i) => {
+    const b = document.createElement('button'); b.type = 'button'; const open = unlocked(i), st = bestOf(i)[SV.mode] || 0;
+    b.className = 'lv' + (open ? '' : ' locked') + (i === firstOpen ? ' next' : '');
+    b.innerHTML = open ? `<svg class="ic" viewBox="0 0 100 100">${TYPE_ICON[lv.type]}</svg><span class="n">${i + 1}</span><span class="ty">${TYPE_LABEL[lv.type]}</span><span class="stars">${starHTML(st)}</span>`
+      : `<svg class="lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="3" fill="#a9b0c2"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="#a9b0c2" stroke-width="2.5"/></svg><span class="ty">Level ${i + 1}</span>`;
+    b.setAttribute('aria-label', open ? `Level ${i + 1}, ${lv.name}, ${TYPE_LABEL[lv.type]}, ${st} stars` : `Level ${i + 1}, locked`);
+    b.disabled = !open; b.onclick = () => { ac(); startLevel(i); };
+    g.append(b);
+  });
+}
+$('mRelax').onclick = () => { SV.mode = 'relaxed'; saveSV(); renderMenu(); };
+$('mTimed').onclick = () => { SV.mode = 'timed'; saveSV(); renderMenu(); };
+$('backBtn').onclick = toMenu;
+$('restartBtn').onclick = () => startLevel(game.i);
+renderMenu();
+window.__tidy = { L, game, startLevel, SV };
+})();
+</script>
+<script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});</script>
+</body>
+</html>
