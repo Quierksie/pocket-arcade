@@ -278,6 +278,14 @@ a.cab { color: inherit; text-decoration: none; box-sizing: border-box; }
           <span class="chip play">PLAY</span><span class="best" id="cab-tidy-best"></span>
         </div>
       </a>
+      <a class="cab" id="cab-cards" href="./card-shop.html">
+        <canvas width="16" height="16" id="thumb-cards"></canvas>
+        <div>
+          <h2>CARD SHOP</h2>
+          <p>Buy packs, rip them open, chase shiny pulls and sell cards to afford better packs.</p>
+          <span class="chip play">PLAY</span><span class="best" id="cab-cards-best"></span>
+        </div>
+      </a>
       <div class="cab locked">
         <canvas width="16" height="16" id="thumb-run"></canvas>
         <div>
@@ -1844,6 +1852,8 @@ window.addEventListener('pagehide', save);
   const d = $('thumb-dig').getContext('2d'); d.drawImage(makeBlock(140, 'gold').cv, 0, 0);
   drawMap($('thumb-tidy').getContext('2d'), ['1111111111111111', '1111111111111111', '1111P11111Y11111', '111PPP111YYY1111', '1111P11M11Y11111', '111111MMM1111111', '1111111M11111111', '11BBBBBBBBBBBB11', '11BDDDDDDDDDDB11', '11BDDDDDDDDDDB11', '11BBBBBBBBBBBB11', '11BBBBBTTBBBBB11', '11BBBBBTTBBBBB11', '11BBBBBBBBBBBB11', '11BBBBBBBBBBBB11', '1111111111111111'], { 1: '#eef1f8', P: '#ff8fab', Y: '#ffd166', M: '#7fd8be', B: '#e2b07a', D: '#b98552', T: '#fff3c9' });
   try { const t = JSON.parse(localStorage.getItem('pocketArcade.tidy.v1') || '{}'); let n = 0, st = 0; for (const k in (t.best || {})) { const b = t.best[k]; const v = Math.max(b.relaxed || 0, b.timed || 0); if (v) { n++; st += v; } } if (n) $('cab-tidy-best').textContent = `${n} cleared · ★${st}`; } catch (e) {}
+  drawMap($('thumb-cards').getContext('2d'), ['1111111111111111', '1111111111111111', '11112222222211111'.slice(0, 16), '1112333333332111', '1112344443332111', '1112344444432111', '1112334444332111', '1112333443332111', '1112333333332111', '1112355555532111', '1112333333332111', '1112355553332111', '1112333333332111', '1111222222221111', '1111111111111111', '1111111111111111'], { 1: '#14172b', 2: '#ffcf4d', 3: '#fff4e2', 4: '#9a72e0', 5: '#ff7a45' });
+  try { const t = JSON.parse(localStorage.getItem('pocketArcade.cardshop.v1') || '{}'); const n = Object.values(t.own || {}).filter(o => o.n + o.f + o.s > 0).length; if (n) $('cab-cards-best').textContent = `${n}/36 cards`; } catch (e) {}
   drawMap($('thumb-run').getContext('2d'), ['1111111111111111', '1111111111111111', '1111111111111111', '1111111111111111', '1111111111111111', '1111111QQ1111111', '111111QQQQ111111', '1111111QQ1111111', '111111QQQQ111111', '11111Q1QQ1Q11111', '1111111QQ1111111', '111111Q11Q11R111', '11111Q1111Q1RR11', '2222222222222222', '3333333333333333', '3333333333333333'], { 1: '#1d2647', Q: '#f4ead8', R: '#ff6b5e', 2: '#5ee08a', 3: '#2a6b3a' });
   drawMap($('thumb-tower').getContext('2d'), ['1111111111111111', '1111111111111111', '11111S1S1S111111', '11111SSSSS111111', '111111SSS1111111', '111111SYS1111111', '111111SSS1111111', '111111SSS11RR111', '2222222222RR2222', '2222222222222222', '3333333333333333', '3333RR3333333333', '3333RR3333333333', '3333333333333333', '2222222222222222', '2222222222222222'], { 1: '#14204a', S: '#a0a3aa', Y: '#f5c518', R: '#ff6b5e', 2: '#2a6b3a', 3: '#7a5230' });
   drawMap($('thumb-horde').getContext('2d'), ['1111111111111111', '1R11111111111R11', '1111111R11111111', '1111111111111111', '1111R11111111R11', '1111111Y11111111', '1111111111111111', '1111111Y11111111', '1111111111111111', '1R11111QQ11111R1', '111111QQQQ111111', '11111QQQQQQ11111', '1111111111111111', '11R1111111111R11', '1111111111111111', '1111111111111111'], { 1: '#120a1c', R: '#ff6b5e', Y: '#f5c518', Q: '#5ff0f0' });
