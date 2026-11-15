@@ -132,6 +132,19 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--pink); outline-
 .box::before { left: -24px; border-radius: 8px 2px 2px 8px; transform: skewY(-8deg); }
 .box::after { right: -24px; border-radius: 2px 8px 8px 2px; transform: skewY(8deg); }
 .cell { position: absolute; border-radius: 6px; background: rgba(255,240,220,.4); box-shadow: inset 0 4px 5px rgba(90,55,30,.28), 0 1px 0 rgba(255,255,255,.4); }
+.it.piece { filter: drop-shadow(0 4px 2px rgba(40,25,50,.25)); }
+.box.suitcase { background: #ffeef4; border-radius: 22px; box-shadow: inset 0 0 0 9px #7fc8f8, inset 0 0 0 12px var(--outline), inset 0 18px 0 12px rgba(224,108,139,.18), 0 10px 0 #5aa6d6, 0 10px 0 3px var(--outline), 0 22px 22px rgba(40,25,50,.22); }
+.box.suitcase::before { left: 50%; top: -22px; bottom: auto; width: 76px; height: 22px; margin-left: -38px; transform: none; background: none; border: 7px solid var(--outline); border-bottom: 0; border-radius: 16px 16px 0 0; }
+.box.suitcase::after { display: none; }
+.box.suitcase .cell { background: rgba(255,255,255,.55); box-shadow: inset 0 3px 4px rgba(200,110,150,.22); outline: 2px dashed rgba(255,143,171,.4); outline-offset: -5px; }
+.box.lunch { background: #fff6fa; border-radius: 26px; box-shadow: inset 0 0 0 9px #ffb4c8, inset 0 0 0 12px var(--outline), inset 0 16px 0 12px rgba(224,108,139,.18), 0 10px 0 #e06c8b, 0 10px 0 3px var(--outline), 0 22px 22px rgba(40,25,50,.2); }
+.box.lunch::before, .box.lunch::after { top: 35%; bottom: 35%; width: 14px; background: #ffd166; transform: none; border-radius: 6px; }
+.box.lunch::before { left: -17px; } .box.lunch::after { right: -17px; }
+.box.lunch .cell { background: rgba(255,180,200,.18); box-shadow: inset 0 3px 4px rgba(200,110,150,.2); }
+.box.chest { background: repeating-linear-gradient(90deg, #c99a6e 0 26px, #b98552 26px 29px); box-shadow: inset 0 12px 0 #8f6440, inset 10px 0 0 #a8774c, inset -10px 0 0 #a8774c, inset 0 -6px 0 #d9ab80, 0 10px 0 #8f6440, 0 10px 0 3px var(--outline), 0 22px 22px rgba(40,25,50,.22); }
+.box.chest::before, .box.chest::after { top: auto; bottom: -6px; width: 18px; height: 18px; background: #ffd166; transform: none; border-radius: 4px; }
+.box.chest::before { left: -8px; } .box.chest::after { right: -8px; }
+.box.chest .cell { background: rgba(255,235,210,.22); }
 .tray { position: absolute; border-radius: 22px; background: var(--tray); box-shadow: inset 0 6px 12px rgba(40,25,50,.1), inset 0 -2px 0 rgba(255,255,255,.4); }
 
 .room { position: absolute; overflow: visible; }
@@ -237,6 +250,9 @@ const FURN = {
   plant: { w: 58, h: 88, layer: 3, d: `<ellipse cx="18" cy="30" rx="12" ry="24" fill="#5cc78a" ${S} transform="rotate(-25 18 30)"/><ellipse cx="40" cy="28" rx="12" ry="24" fill="#7fd8be" ${S} transform="rotate(25 40 28)"/><ellipse cx="29" cy="22" rx="10" ry="22" fill="#5cc78a" ${S}/><path d="M9 52 L49 52 L42 86 L16 86 Z" fill="#ff9f80" ${S}/><rect x="6" y="48" width="46" height="10" rx="4" fill="#ff9f80" ${S}/>` },
   shelf: { w: 96, h: 150, layer: 2, d: `<rect x="2" y="2" width="92" height="146" rx="8" fill="${WOOD}" ${S}/><rect x="10" y="10" width="76" height="40" rx="4" fill="#f7e3cf"/><rect x="10" y="56" width="76" height="40" rx="4" fill="#f7e3cf"/><rect x="10" y="102" width="76" height="38" rx="4" fill="#f7e3cf"/>${[[14, 18, '#ff8fab'], [26, 22, '#7fc8f8'], [38, 16, '#ffd166'], [52, 20, '#b58df2'], [16, 64, '#7fd8be'], [30, 60, '#ff9f80'], [60, 66, '#7fc8f8'], [72, 62, '#ff8fab'], [20, 110, '#ffd166'], [34, 108, '#b58df2']].map(([x, y, c]) => `<rect x="${x}" y="${y}" width="11" height="${50 - (y % 46) + (y > 100 ? -6 : 0)}" rx="2" fill="${c}" stroke="${OL}" stroke-width="2"/>`).join('')}<circle cx="70" cy="122" r="10" fill="#7fd8be" ${S}/>` },
   painting: { w: 86, h: 64, layer: 1, d: `<rect x="2" y="2" width="82" height="60" rx="6" fill="${WOOD}" ${S}/><rect x="10" y="10" width="66" height="44" rx="3" fill="#bfe6ff"/><path d="M10 46 Q30 24 46 44 Q58 32 76 46 L76 54 L10 54 Z" fill="#7fd8be"/><circle cx="60" cy="22" r="6" fill="#ffd166"/>` },
+  mirror: { w: 60, h: 80, layer: 1, d: `<ellipse cx="30" cy="40" rx="27" ry="37" fill="${WOOD}" ${S}/><ellipse cx="30" cy="40" rx="19" ry="29" fill="#e3f4ff" ${S}/><path d="M19 32 Q22 20 32 15" stroke="#fff" stroke-width="5" stroke-linecap="round" fill="none"/>` },
+  wallshelf: { w: 100, h: 50, layer: 1, d: `<rect x="2" y="34" width="96" height="10" rx="4" fill="${WOOD}" ${S}/><path d="M16 44 L22 49 M84 44 L78 49" ${S}/><rect x="10" y="10" width="9" height="24" rx="2" fill="#ff8fab" ${S}/><rect x="20" y="14" width="9" height="20" rx="2" fill="#7fc8f8" ${S}/><rect x="30" y="8" width="9" height="26" rx="2" fill="#ffd166" ${S}/><ellipse cx="66" cy="16" rx="5" ry="11" fill="#5cc78a" ${S} transform="rotate(-20 66 16)"/><ellipse cx="78" cy="16" rx="5" ry="11" fill="#7fd8be" ${S} transform="rotate(20 78 16)"/><path d="M60 34 L63 22 L81 22 L84 34 Z" fill="#ff9f80" ${S}/>` },
+  poster: { w: 68, h: 92, layer: 1, d: `<rect x="3" y="3" width="62" height="86" rx="4" fill="#fff6e0" ${S}/><path d="M12 70 A22 22 0 0 1 56 70" fill="none" stroke="#ff8fab" stroke-width="7"/><path d="M19 70 A15 15 0 0 1 49 70" fill="none" stroke="#ffd166" stroke-width="7"/><path d="M26 70 A8 8 0 0 1 42 70" fill="none" stroke="#7fd8be" stroke-width="7"/><path d="M34 14 L37 22 L45 22 L39 27 L41 35 L34 30 L27 35 L29 27 L23 22 L31 22 Z" fill="#ffd166" ${S}/><circle cx="12" cy="11" r="3" fill="#ff8fab"/><circle cx="56" cy="11" r="3" fill="#7fc8f8"/>` },
   clock: { w: 48, h: 48, layer: 1, d: `<circle cx="24" cy="24" r="21" fill="#fff" stroke="${OL}" stroke-width="4"/><path d="M24 24 L24 12 M24 24 L32 28" ${S}/><circle cx="24" cy="24" r="2.5" fill="${OL}"/>` },
   desk: { w: 132, h: 74, layer: 2, d: `<rect x="0" y="6" width="132" height="14" rx="6" fill="${WOOD}" ${S}/><rect x="84" y="20" width="40" height="52" rx="5" fill="${WOOD}" ${S}/><path d="M90 38 L118 38 M90 54 L118 54" ${S}/><rect x="10" y="20" width="8" height="52" rx="3" fill="${WOODD}" ${S}/><rect x="20" y="-18" width="44" height="26" rx="4" fill="#7fc8f8" ${S}/><rect x="38" y="6" width="8" height="4" fill="${OL}"/>` },
   fridge: { w: 74, h: 158, layer: 2, d: `<rect x="2" y="2" width="70" height="154" rx="14" fill="#e6f7f2" ${S}/><path d="M2 58 L72 58" ${S}/><rect x="58" y="20" width="6" height="24" rx="3" fill="${OL}"/><rect x="58" y="72" width="6" height="34" rx="3" fill="${OL}"/><circle cx="20" cy="28" r="6" fill="#ff8fab"/><rect x="14" y="84" width="16" height="12" rx="3" fill="#ffd166"/>` },
@@ -272,10 +288,23 @@ const ISOF = {
   shelf: { W: 52, D: 16, H: 80, parts: [['b', 0, 0, 0, 52, 16, 80, WOOD], ...[[6, 26], [31, 51], [56, 75]].flatMap(([z0, z1], r) => [yq(16, 4, 48, z0, z1, WOODD, false), ...[[6, 11, '#ff8fab'], [12, 16, '#7fc8f8'], [17, 23, '#ffd166'], [24, 28, '#b58df2'], [33, 38, '#7fd8be'], [39, 44, '#ff9f80']].filter((b, i) => (i + r) % 3 !== 2).map(([a, b2, c]) => yq(16, a, b2, z0, z1 - 3 - ((a + r) % 4), c, true))])] },
   desk: { W: 56, D: 28, H: 52, parts: [['b', 2, 2, 0, 4, 4, 26, WOODD], ['b', 2, 22, 0, 4, 4, 26, WOODD], ['b', 38, 2, 0, 16, 24, 26, WOOD], yq(26, 40, 52, 15, 15.6, WOODD, true), ['b', 0, 0, 26, 56, 28, 4, WOOD], ['b', 26, 6, 30, 4, 4, 4, PLUM], ['b', 14, 4, 34, 28, 3, 18, PLUM], yq(7, 16, 40, 36, 50, '#7fc8f8', false)] },
   fridge: { W: 32, D: 28, H: 84, parts: [['b', 0, 0, 0, 32, 28, 84, '#e6f7f2'], yq(28, 0, 32, 56, 56.8, PLUM, true), ['b', 25, 28, 62, 3, 2, 14, PLUM], ['b', 25, 28, 28, 3, 2, 20, PLUM], ['e', 8, 28, 70, 3.5, 3.5, '#ff8fab', 0], yq(28, 6, 13, 38, 45, '#ffd166', true)] },
+  nightstand: { W: 22, D: 20, H: 40, parts: [['b', 0, 0, 0, 22, 20, 20, WOOD], yq(20, 3, 19, 10, 10.6, WOODD, true), ['e', 11, 20, 15, 1.8, 1.8, PLUM, 0], ['b', -1, -1, 20, 24, 22, 3, WOODD], ['b', 10, 9, 23, 2, 2, 8, PLUM], ['b', 6, 5, 31, 10, 10, 7, '#ffd166']] },
+  dresser: { W: 48, D: 20, H: 50, parts: [['b', 0, 0, 0, 48, 20, 32, WOOD], yq(20, 3, 45, 21, 21.6, WOODD, true), yq(20, 3, 45, 11, 11.6, WOODD, true), ['e', 24, 20, 26, 1.8, 1.8, PLUM, 0], ['e', 24, 20, 16, 1.8, 1.8, PLUM, 0], ['e', 24, 20, 6, 1.8, 1.8, PLUM, 0], ['b', -1, -1, 32, 50, 22, 3, WOODD], ['b', 6, 6, 35, 8, 6, 8, '#7fc8f8'], ['e', 10, 9, 46, 4, 4, '#ff8fab', 0]] },
+  wardrobe: { W: 44, D: 22, H: 92, parts: [['b', 0, 0, 0, 44, 22, 86, WOOD], yq(22, 21.7, 22.3, 4, 82, WOODD, true), ['e', 19, 22, 44, 1.8, 1.8, PLUM, 0], ['e', 25, 22, 44, 1.8, 1.8, PLUM, 0], ['b', -1, -1, 86, 46, 24, 4, WOODD]] },
+  armchair: { W: 34, D: 32, H: 34, parts: [['b', 0, 0, 0, 34, 9, 32, '#ffb4a2'], ['b', 0, 9, 0, 34, 23, 12, '#f59d88'], ['b', 0, 9, 0, 7, 23, 22, '#ffb4a2'], ['b', 7, 11, 12, 20, 19, 5, '#ffcfc2'], ['b', 27, 9, 0, 7, 23, 22, '#ffb4a2']] },
+  sidetable: { W: 20, D: 20, H: 34, parts: [['b', 8, 8, 0, 4, 4, 20, WOODD], ['b', 0, 0, 20, 20, 20, 3, WOOD], ['b', 4, 5, 23, 11, 8, 3, '#ff8fab'], ['b', 5, 6, 26, 9, 6, 2, '#7fc8f8']] },
+  stove: { W: 34, D: 28, H: 44, parts: [['b', 0, 0, 0, 34, 28, 32, '#f2eee9'], ['b', 0, 0, 32, 34, 3, 10, '#e6e0da'], ['e', 9, 9, 32, 6, 3, PLUM, 0], ['e', 25, 9, 32, 6, 3, PLUM, 0], ['e', 9, 21, 32, 6, 3, PLUM, 0], ['e', 25, 21, 32, 6, 3, PLUM, 0], yq(28, 5, 29, 5, 21, '#c9b8d6', true), ['b', 9, 28, 23, 16, 2, 2, PLUM], ['e', 7, 28, 28, 1.6, 1.6, PLUM, 0], ['e', 13, 28, 28, 1.6, 1.6, PLUM, 0], ['e', 21, 28, 28, 1.6, 1.6, PLUM, 0], ['e', 27, 28, 28, 1.6, 1.6, PLUM, 0]] },
+  sink: { W: 40, D: 26, H: 46, parts: [['b', 0, 0, 0, 40, 26, 30, '#bfe3f5'], yq(26, 19.7, 20.3, 3, 27, '#8cc6e6', true), ['e', 16, 26, 22, 1.6, 1.6, PLUM, 0], ['e', 24, 26, 22, 1.6, 1.6, PLUM, 0], ['b', -1, -1, 30, 42, 28, 3, '#ffffff'], ['e', 20, 15, 33, 10, 5, '#d6eaf5', 0], ['b', 18, 1, 33, 3, 3, 10, PLUM], ['b', 18, 1, 43, 3, 8, 2, PLUM]] },
+  bathtub: { W: 70, D: 34, H: 34, parts: [['b', 0, 0, 0, 70, 34, 24, '#ffffff'], fq(5, 5, 60, 24, 24, '#a8dcff', true), ['e', 20, 14, 24, 5, 3, '#ffffff', 0], ['e', 30, 22, 24, 4, 2.5, '#ffffff', 0], ['e', 48, 12, 24, 4.5, 2.6, '#ffffff', 0], ['b', 33, 0, 24, 4, 4, 8, PLUM], ['b', 33, 0, 32, 4, 7, 2, PLUM]] },
+  toilet: { W: 20, D: 30, H: 36, parts: [['b', 1, 0, 0, 18, 8, 32, '#ffffff'], ['b', 8, 2, 32, 4, 4, 2, '#c9d6e3'], ['b', 3, 8, 0, 14, 18, 14, '#ffffff'], ['e', 10, 17, 14, 7, 4, '#ffe3ec', 0]] },
+  beanbag: { W: 30, D: 30, H: 26, parts: [['e', 15, 15, 8, 19, 12, '#b58df2', 0], ['e', 13, 13, 14, 13, 8, '#c9a8f5', 0], ['e', 20, 9, 18, 8, 6, '#b58df2', 0]] },
+  tallplant: { W: 22, D: 22, H: 96, parts: [['b', 3, 3, 0, 16, 16, 22, '#f2eee9'], ['b', 2, 2, 20, 18, 18, 4, '#f2eee9'], fq(4, 4, 14, 14, 24, '#8a6a52', false), ['b', 10, 10, 24, 2, 2, 34, '#8a6a52'], ['e', 11, 11, 62, 13, 22, '#5cc78a', -25], ['e', 11, 11, 64, 13, 21, '#7fd8be', 25], ['e', 11, 11, 78, 10, 16, '#5cc78a', 0]] },
+  bathmat: { W: 40, D: 26, H: 3, parts: [['b', 0, 0, 0, 40, 26, 2, '#a8dcff'], fq(5, 4, 30, 18, 2, '#d5ecff', false)] },
   tv: { W: 56, D: 22, H: 50, parts: [['b', 0, 0, 0, 56, 22, 18, WOOD], yq(22, 28, 28.6, 2, 16, WOODD, true), ['b', 6, 8, 18, 44, 5, 32, PLUM], yq(13, 9, 47, 21, 47, '#7fc8f8', false), ['q', [[14, 13, 26], [22, 13, 26], [30, 13, 44], [22, 13, 44]], '#ffffff', false]] },
 };
 // furniture hung on a wall uses the flat art, slanted onto that wall
-const WALLF = { painting: { w: 52, h: 39 }, clock: { w: 30, h: 30 } };
+const WALLF = { painting: { w: 52, h: 39 }, clock: { w: 30, h: 30 }, mirror: { w: 30, h: 40 }, wallshelf: { w: 50, h: 25 }, poster: { w: 34, h: 46 } };
+const FLAT = new Set(['rug', 'bathmat']);
 function isoSVG(name, o) {
   const F = ISOF[name], swap = o[0] === 'L', flip = o.includes('f');
   const fw = swap ? F.D : F.W, fd = swap ? F.W : F.D, pad = 8;
@@ -302,29 +331,33 @@ function isoSVG(name, o) {
 const PENC = { red: '#ff6b6b', blue: '#7fc8f8', yellow: '#ffd166', green: '#7fd8be', purple: '#b58df2' };
 const L = [];
 const sortL = (name, bins, items) => L.push({ type: 'sort', name, bins, items });
-const packL = (name, w, h, seed) => L.push({ type: 'pack', name, w, h, seed });
-const roomL = (name, wall, floor, spots) => L.push({ type: 'room', name, wall, floor, spots });
+const packL = (name, w, h, seed, theme) => L.push({ type: 'pack', name, w, h, seed, theme });
+const roomL = (name, wall, floor, spots, opt = {}) => L.push({ type: 'room', name, wall, floor, spots, opt });
 const rep = (n, f) => Array.from({ length: n }, (_, i) => f(i));
 sortL('Pencil Cup', [['red', 'Red', '#ffd0d0', 'pencil', PENC.red], ['blue', 'Blue', '#d5ecff', 'pencil', PENC.blue], ['yellow', 'Yellow', '#fff0c2', 'pencil', PENC.yellow]],
   [...rep(3, () => ['pencil', PENC.red, 'red']), ...rep(3, () => ['pencil', PENC.blue, 'blue']), ...rep(3, () => ['pencil', PENC.yellow, 'yellow'])]);
-roomL('Cozy Bedroom', '#cfe6ff', '#f2d1a8', [['rug', 'R', 96, 62], ['bed', 'L', 0, 50], ['lamp', 'R', 4, 118], ['plant', 'R', 6, 6], ['painting', 'wallL', 54, 70], ['clock', 'wallR', 122, 108]]);
-packL('Lunch Box', 3, 3, 11);
+roomL('Cozy Bedroom', '#cfe6ff', '#f2d1a8', [['rug', 'R', 96, 62], ['bed', 'L', 0, 50], ['nightstand', 'L', 0, 26], ['lamp', 'R', 4, 118], ['plant', 'R', 6, 4], ['painting', 'wallL', 54, 70], ['clock', 'wallR', 122, 108]], { paper: 'dots' });
+packL('Lunch Box', 3, 3, 11, 'lunch');
 sortL('Market Day', [['fruit', 'Fruit', '#ffe1e1', 'apple'], ['veg', 'Veggies', '#dcf6e6', 'carrot']],
   [['apple', 0, 'fruit'], ['banana', 0, 'fruit'], ['grapes', 0, 'fruit'], ['orange', 0, 'fruit'], ['apple', 0, 'fruit'], ['carrot', 0, 'veg'], ['broccoli', 0, 'veg'], ['eggplant', 0, 'veg'], ['carrot', 0, 'veg'], ['broccoli', 0, 'veg']]);
-roomL('Living Room', '#ffe3d6', '#e9c79d', [['rug', 'R', 36, 58], ['sofa', 'R', 40, 0], ['table', 'R', 52, 64], ['lamp', 'R', 14, 6], ['painting', 'wallL', 60, 70], ['clock', 'wallR', 134, 112]]);
-packL('Suitcase', 4, 3, 22);
+roomL('Living Room', '#ffe3d6', '#e9c79d', [['rug', 'R', 36, 58], ['sofa', 'R', 40, 0], ['table', 'R', 52, 64], ['armchair', 'L', 0, 60], ['lamp', 'R', 14, 6], ['tallplant', 'R', 142, 6], ['painting', 'wallL', 60, 70], ['clock', 'wallR', 132, 116]], { paper: 'stripes' });
+packL('Suitcase', 4, 3, 22, 'suitcase');
 sortL('Kitchen Shelf', [['fruit', 'Fruit', '#ffe1e1', 'apple'], ['veg', 'Veggies', '#dcf6e6', 'carrot'], ['bake', 'Bakery', '#fbe8cf', 'bread']],
   [['apple', 0, 'fruit'], ['banana', 0, 'fruit'], ['grapes', 0, 'fruit'], ['orange', 0, 'fruit'], ['carrot', 0, 'veg'], ['broccoli', 0, 'veg'], ['eggplant', 0, 'veg'], ['carrot', 0, 'veg'], ['bread', 0, 'bake'], ['croissant', 0, 'bake'], ['donut', 0, 'bake'], ['donut', 0, 'bake']]);
-roomL('Study Nook', '#dff3e8', '#e8cfa9', [['rug', 'R', 70, 84], ['shelf', 'L', 0, 24], ['desk', 'R', 62, 0], ['chair', 'Rf', 78, 32], ['lamp', 'R', 150, 8], ['clock', 'wallL', 110, 108], ['painting', 'wallL', 22, 96]]);
-packL('Toy Chest', 4, 4, 33);
+roomL('Study Nook', '#dff3e8', '#c9b8d6', [['rug', 'R', 70, 84], ['shelf', 'L', 0, 24], ['desk', 'R', 62, 0], ['chair', 'Rf', 78, 32], ['lamp', 'R', 150, 8], ['beanbag', 'R', 112, 112], ['wallshelf', 'wallR', 104, 78], ['clock', 'wallL', 110, 104], ['painting', 'wallL', 22, 96]], { floor: 'carpet' });
+packL('Toy Chest', 4, 4, 33, 'toys');
 sortL('Bookshelf', [['red', 'Red', '#ffd0d0', 'book', PENC.red], ['blue', 'Blue', '#d5ecff', 'book', PENC.blue], ['green', 'Green', '#d8f5ea', 'book', PENC.green], ['purple', 'Purple', '#eadcff', 'book', PENC.purple]],
   [...rep(3, () => ['book', PENC.red, 'red']), ...rep(3, () => ['book', PENC.blue, 'blue']), ...rep(3, () => ['book', PENC.green, 'green']), ...rep(3, () => ['book', PENC.purple, 'purple'])]);
-roomL('Little Kitchen', '#fff3c9', '#d9e7f5', [['fridge', 'L', 0, 14], ['table', 'R', 72, 72], ['chair', 'R', 86, 48], ['chair', 'Rf', 86, 110], ['clock', 'wallR', 128, 110], ['painting', 'wallL', 74, 78]]);
-packL('Moving Day', 5, 4, 44);
+roomL('Little Kitchen', '#fff3c9', '#d9e7f5', [['fridge', 'L', 0, 14], ['stove', 'L', 0, 50], ['sink', 'R', 46, 0], ['table', 'R', 72, 72], ['chair', 'R', 86, 48], ['chair', 'Rf', 86, 110], ['wallshelf', 'wallR', 104, 84], ['clock', 'wallL', 58, 100]], { floor: 'tiles', door: { wall: 'L', u: 112 } });
+packL('Moving Day', 5, 4, 44, 'moving');
 sortL('Laundry Day', [['toys', 'Toys', '#fff0c2', 'duck'], ['clothes', 'Clothes', '#d5ecff', 'shirt', '#7fc8f8'], ['gifts', 'Gifts', '#ffe1ec', 'gift', '#ff8fab']],
   [['ball', 0, 'toys'], ['duck', 0, 'toys'], ['blocks', 0, 'toys'], ['ball', 0, 'toys'], ['duck', 0, 'toys'], ['shirt', '#7fc8f8', 'clothes'], ['sock', '#ff8fab', 'clothes'], ['hat', '#b58df2', 'clothes'], ['shirt', '#ffd166', 'clothes'], ['sock', '#7fd8be', 'clothes'], ['gift', '#ff8fab', 'gifts'], ['gift', '#7fc8f8', 'gifts'], ['gift', '#ffd166', 'gifts'], ['mug', '#b58df2', 'gifts'], ['mug', '#7fd8be', 'gifts']]);
-roomL('Dream Room', '#eadcff', '#f2d1a8', [['rug', 'R', 40, 100], ['shelf', 'L', 0, 30], ['tv', 'R', 30, 0], ['bed', 'R', 108, 0], ['painting', 'wallL', 96, 90], ['painting', 'wallR', 112, 72], ['clock', 'wallL', 40, 112]]);
-packL('Big Move', 5, 5, 55);
+roomL('Dream Room', '#eadcff', '#f2d1a8', [['rug', 'R', 40, 100], ['shelf', 'L', 0, 30], ['wardrobe', 'L', 0, 108], ['tv', 'R', 30, 0], ['nightstand', 'R', 86, 0], ['bed', 'R', 108, 0], ['painting', 'wallL', 30, 92], ['poster', 'wallL', 108, 98], ['painting', 'wallR', 112, 72]], { paper: 'stripes', floor: 'carpet' });
+packL('Big Move', 5, 5, 55, 'bigmove');
+// newer rooms go at the end so saved stars stay on the right levels
+roomL('Bath Time', '#d6f0ff', '#eef3f8', [['bathtub', 'L', 0, 40], ['sink', 'R', 60, 0], ['toilet', 'R', 114, 0], ['bathmat', 'R', 66, 64], ['plant', 'R', 142, 96], ['mirror', 'wallR', 66, 58], ['wallshelf', 'wallR', 116, 70]], { win: 'L', paper: 'dots', floor: 'tiles' });
+roomL('Play Room', '#fff0c2', '#bfe3f5', [['rug', 'R', 98, 66], ['bed', 'L', 0, 62], ['nightstand', 'L', 0, 38], ['dresser', 'R', 106, 0], ['beanbag', 'R', 112, 122], ['sidetable', 'R', 150, 128], ['poster', 'wallL', 66, 62], ['clock', 'wallR', 114, 70]], { paper: 'stripes', floor: 'carpet' });
+roomL('Reading Den', '#fde2e4', '#d9b08c', [['rug', 'R', 52, 84], ['shelf', 'L', 0, 70], ['shelf', 'R', 110, 0], ['armchair', 'R', 58, 36], ['sidetable', 'R', 96, 44], ['lamp', 'R', 30, 16], ['tallplant', 'R', 142, 120], ['painting', 'wallL', 16, 76], ['clock', 'wallL', 128, 98]], { win: 'none', door: { wall: 'R', u: 44 } });
 const TYPE_LABEL = { sort: 'Sort', pack: 'Pack', room: 'Unbox' };
 const TYPE_ICON = { sort: ITEMS.apple(), pack: ITEMS.gift('#ffd166'), room: ITEMS.mug('#7fc8f8') };
 
@@ -480,19 +513,93 @@ function pieceSVG(cells, C, color, icon) {
   const sideCol = shade(color, -.22), side = s.replace(/fill="[^"]+"/g, `fill="${sideCol}"`), E = 6;
   return `<svg viewBox="-3 -3 ${w * C + 6} ${h * C + 6}" aria-hidden="true"><g transform="translate(0 ${E})" opacity=".22" style="filter:blur(3px)">${outline}</g><g transform="translate(0 ${E})">${outline}${side}</g>${outline}${s}${cells.filter(([x, y]) => !set.has(`${x},${y - 1}`)).map(([x, y]) => `<rect x="${x * C + 9}" y="${y * C + 7}" width="${C - 18 + (set.has(`${x + 1},${y}`) && !set.has(`${x + 1},${y - 1}`) ? 18 : 0)}" height="5" rx="2.5" fill="#fff" opacity=".45"/>`).join('')}<svg x="${ix * C + 7}" y="${iy * C + 7}" width="${C - 14}" height="${C - 14}" viewBox="0 0 100 100">${ic}</svg></svg>`;
 }
+// ---------- art: things to pack (drawn lying flat, landscape; 100 units per grid square) ----------
+const PACK_ART = {
+  // 1 x 1
+  apple: () => ITEMS.apple(), orange: () => ITEMS.orange(), donut: () => ITEMS.donut(), duck: () => ITEMS.duck(), ball: () => ITEMS.ball(), blocks: () => ITEMS.blocks(),
+  mug: c => ITEMS.mug(c), gift: c => ITEMS.gift(c),
+  sockball: c => `<circle cx="50" cy="52" r="38" fill="${c}" ${S}/><path d="M16 44 Q50 58 84 44 M14 64 Q50 78 86 64" stroke="#fff" stroke-width="7" fill="none" opacity=".75" stroke-linecap="round"/><path d="M28 22 Q50 36 72 22" fill="none" ${S}/><circle cx="50" cy="52" r="38" fill="none" ${S}/>`,
+  sunglasses: c => `<path d="M10 40 Q50 30 90 40" fill="none" stroke="${OL}" stroke-width="9" stroke-linecap="round"/><path d="M10 40 Q50 30 90 40" fill="none" stroke="${c}" stroke-width="4" stroke-linecap="round"/><rect x="8" y="38" width="38" height="32" rx="13" fill="#3d3150" ${S}/><rect x="54" y="38" width="38" height="32" rx="13" fill="#3d3150" ${S}/><path d="M16 47 L28 47 M62 47 L74 47" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".7"/>`,
+  perfume: c => `<rect x="22" y="40" width="56" height="50" rx="14" fill="${c}" ${S}/><rect x="42" y="28" width="16" height="13" fill="#ffd166" ${S}/><rect x="34" y="10" width="32" height="19" rx="6" fill="#b58df2" ${S}/><path d="M32 54 Q32 48 38 48" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round" opacity=".7"/>`,
+  plantpot: () => `<ellipse cx="38" cy="34" rx="11" ry="22" fill="#5cc78a" ${S} transform="rotate(-25 38 34)"/><ellipse cx="62" cy="34" rx="11" ry="22" fill="#7fd8be" ${S} transform="rotate(25 62 34)"/><path d="M26 56 L74 56 L68 92 L32 92 Z" fill="#ff9f80" ${S}/><rect x="20" y="50" width="60" height="12" rx="5" fill="#ff9f80" ${S}/>`,
+  // 2 x 1
+  tshirt: c => `<rect x="12" y="12" width="176" height="76" rx="14" fill="${c}" ${S}/><path d="M56 14 L56 86 M144 14 L144 86" stroke="${OL}" stroke-width="2.5" opacity=".3"/><path d="M80 12 Q100 40 120 12" fill="${shade(c, .35)}" ${S}/><rect x="122" y="44" width="22" height="20" rx="4" fill="none" ${S} opacity=".55"/>`,
+  sneaker: c => `<path d="M14 74 L14 40 Q14 26 30 28 L74 34 Q100 40 120 54 L172 60 Q190 64 188 76 Z" fill="${c}" ${S}/><path d="M58 34 Q62 50 86 52" fill="none" ${S}/><path d="M74 42 L82 36 M86 48 L96 42 M98 54 L106 48" ${S}/><rect x="10" y="72" width="182" height="16" rx="8" fill="#ffffff" ${S}/><path d="M150 61 Q174 61 184 70" fill="none" stroke="#fff" stroke-width="5" opacity=".6" stroke-linecap="round"/>`,
+  toiletry: c => `<rect x="12" y="18" width="176" height="70" rx="24" fill="${c}" ${S}/><path d="M30 33 L170 33" stroke="${OL}" stroke-width="3" stroke-dasharray="6 5"/><rect x="150" y="25" width="18" height="15" rx="4" fill="#ffd166" ${S}/><circle cx="100" cy="62" r="11" fill="#fff" opacity=".7"/>`,
+  books: c => `<rect x="10" y="14" width="180" height="72" rx="8" fill="${c}" ${S}/><rect x="10" y="14" width="26" height="72" rx="6" fill="#000" opacity=".12"/><rect x="60" y="34" width="80" height="12" rx="6" fill="#fff" opacity=".75"/><rect x="72" y="54" width="56" height="8" rx="4" fill="#fff" opacity=".55"/>`,
+  banana: () => `<path d="M14 36 Q100 116 186 36 Q182 26 172 30 Q100 84 26 30 Q18 26 14 36 Z" fill="#ffd95e" ${S}/><path d="M36 48 Q100 92 164 50" fill="none" stroke="#fff" stroke-width="5" opacity=".6" stroke-linecap="round"/><rect x="164" y="20" width="12" height="10" rx="3" fill="#8a6a52" ${S} transform="rotate(30 170 25)"/>`,
+  carrot: () => `<path d="M14 52 Q60 40 150 28 Q164 52 150 76 Q60 64 14 52 Z" fill="#ff9f43" ${S}/><path d="M60 45 L66 55 M96 39 L102 51 M126 35 L132 49" ${S}/><path d="M154 40 Q176 20 190 24 M156 52 Q182 52 192 46 M154 64 Q176 82 190 78" fill="none" stroke="#5cc7a8" stroke-width="7" stroke-linecap="round"/>`,
+  juice: c => `<rect x="20" y="16" width="150" height="70" rx="8" fill="${c}" ${S}/><rect x="22" y="18" width="146" height="14" rx="6" fill="#fff" opacity=".45"/><circle cx="96" cy="58" r="16" fill="#ff9f43" ${S}/><path d="M96 42 L100 35" ${S}/><path d="M168 30 L190 30 L190 14" fill="none" stroke="${OL}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><path d="M168 30 L190 30 L190 14" fill="none" stroke="#ff8fab" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>`,
+  car: c => `<path d="M16 66 L16 50 Q16 42 26 40 L54 36 L76 18 L132 18 L156 38 L178 42 Q188 44 188 54 L188 66 Z" fill="${c}" ${S}/><path d="M84 26 L128 26 L144 38 L72 38 Z" fill="#d5ecff" ${S}/><path d="M108 26 L108 38" ${S}/><circle cx="52" cy="70" r="16" fill="${OL}"/><circle cx="52" cy="70" r="6" fill="#fff"/><circle cx="150" cy="70" r="16" fill="${OL}"/><circle cx="150" cy="70" r="6" fill="#fff"/><rect x="176" y="48" width="10" height="8" rx="3" fill="#ffd166"/>`,
+  crayons: () => `<rect x="44" y="16" width="146" height="70" rx="8" fill="#ffd166" ${S}/>${[['#ff6b6b', 26], ['#7fc8f8', 42], ['#7fd8be', 58], ['#b58df2', 74]].map(([c, y]) => `<path d="M46 ${y - 6} L24 ${y - 6} L12 ${y} L24 ${y + 6} L46 ${y + 6} Z" fill="${c}" ${S}/>`).join('')}<rect x="80" y="36" width="76" height="30" rx="6" fill="#fff" opacity=".7"/>`,
+  // 3 x 1
+  towel: c => `<rect x="12" y="16" width="276" height="68" rx="34" fill="${c}" ${S}/><rect x="70" y="18" width="16" height="64" fill="#fff" opacity=".6"/><rect x="200" y="18" width="16" height="64" fill="#fff" opacity=".6"/><circle cx="254" cy="50" r="30" fill="${shade(c, .2)}" ${S}/><path d="M254 50 m-4 0 a4 4 0 1 1 8 0 a10 10 0 1 1 -18 0 a16 16 0 1 1 30 0" fill="none" ${S}/>`,
+  umbrella: c => `<path d="M62 50 L250 26 Q262 50 250 74 Z" fill="${c}" ${S}/><path d="M62 50 L250 38 M62 50 L250 62" stroke="${OL}" stroke-width="2.5" opacity=".4"/><path d="M252 50 L288 50" ${S}/><path d="M62 50 L32 50 Q14 50 14 66 Q14 82 30 82" fill="none" stroke="${OL}" stroke-width="9" stroke-linecap="round"/><path d="M62 50 L32 50 Q14 50 14 66 Q14 82 30 82" fill="none" stroke="#b58df2" stroke-width="4" stroke-linecap="round"/><rect x="236" y="40" width="10" height="20" rx="3" fill="#ffd166" ${S}/>`,
+  baguette: () => `<rect x="12" y="22" width="276" height="56" rx="28" fill="#e9b56f" ${S}/>${[66, 116, 166, 216].map(x => `<path d="M${x} 38 Q${x + 16} 48 ${x + 26} 42" fill="none" ${S}/>`).join('')}<rect x="34" y="30" width="226" height="7" rx="3.5" fill="#fff" opacity=".35"/>`,
+  train: c => `<rect x="12" y="34" width="84" height="40" rx="8" fill="${c}" ${S}/><rect x="22" y="14" width="34" height="24" rx="4" fill="${c}" ${S}/><rect x="66" y="20" width="14" height="16" fill="${OL}"/><rect x="108" y="38" width="84" height="36" rx="8" fill="#ffd166" ${S}/><rect x="204" y="38" width="84" height="36" rx="8" fill="#7fd8be" ${S}/><path d="M96 58 L108 58 M192 58 L204 58" ${S}/>${[34, 74, 130, 170, 226, 266].map(x => `<circle cx="${x}" cy="80" r="10" fill="${OL}"/><circle cx="${x}" cy="80" r="4" fill="#fff"/>`).join('')}`,
+  chopsticks: () => `<path d="M16 36 L284 28 M16 64 L284 56" stroke="${OL}" stroke-width="13" stroke-linecap="round"/><path d="M16 36 L284 28 M16 64 L284 56" stroke="#e9b56f" stroke-width="7" stroke-linecap="round"/><rect x="190" y="18" width="70" height="64" rx="10" fill="#ff8fab" ${S}/><circle cx="225" cy="50" r="12" fill="#fff" opacity=".8"/>`,
+  xylophone: () => `<rect x="14" y="20" width="272" height="10" rx="5" fill="${WOOD}" ${S}/><rect x="14" y="70" width="272" height="10" rx="5" fill="${WOOD}" ${S}/>${['#ff6b6b', '#ff9f43', '#ffd166', '#7fd8be', '#7fc8f8', '#b58df2'].map((c, i) => `<rect x="${30 + i * 42}" y="${14 + i * 3}" width="32" height="${72 - i * 6}" rx="6" fill="${c}" ${S}/>`).join('')}<path d="M232 88 L276 96" stroke="${OL}" stroke-width="5" stroke-linecap="round"/><circle cx="280" cy="96" r="7" fill="#ff8fab" ${S}/>`,
+  tube: c => `<rect x="20" y="24" width="260" height="52" rx="12" fill="${c}" ${S}/><rect x="12" y="20" width="22" height="60" rx="8" fill="${shade(c, -.2)}" ${S}/><rect x="266" y="20" width="22" height="60" rx="8" fill="${shade(c, -.2)}" ${S}/><path d="M60 40 L240 40" stroke="#fff" stroke-width="6" opacity=".5" stroke-linecap="round"/>`,
+  // 2 x 2
+  sweater: c => `<rect x="14" y="18" width="172" height="166" rx="18" fill="${c}" ${S}/><path d="M70 18 Q100 52 130 18" fill="${shade(c, .3)}" ${S}/>${rep(7, i => `<path d="M${30 + i * 22} 92 l11 12 l11 -12" fill="none" stroke="#fff" stroke-width="5" opacity=".7" stroke-linecap="round" stroke-linejoin="round"/>`).join('')}<path d="M14 152 L186 152" stroke="${OL}" stroke-width="2.5" opacity=".35"/><path d="M14 164 L186 164 M14 175 L186 175" stroke="${OL}" stroke-width="2" opacity=".2"/>`,
+  teddy: () => `<circle cx="56" cy="44" r="24" fill="#d9a273" ${S}/><circle cx="144" cy="44" r="24" fill="#d9a273" ${S}/><circle cx="56" cy="44" r="11" fill="#f2d1a8"/><circle cx="144" cy="44" r="11" fill="#f2d1a8"/><circle cx="100" cy="106" r="78" fill="#d9a273" ${S}/><ellipse cx="100" cy="132" rx="34" ry="26" fill="#f2d1a8" ${S}/><circle cx="72" cy="94" r="8" fill="${OL}"/><circle cx="128" cy="94" r="8" fill="${OL}"/><ellipse cx="100" cy="122" rx="11" ry="8" fill="${OL}"/><path d="M90 142 Q100 152 110 142" fill="none" ${S}/><circle cx="60" cy="122" r="8" fill="#ff8fab" opacity=".55"/><circle cx="140" cy="122" r="8" fill="#ff8fab" opacity=".55"/>`,
+  sandwich: () => `<path d="M146 8 L194 8 L194 56 Z" fill="#ffd166" ${S}/><rect x="6" y="12" width="186" height="182" rx="36" fill="#7fd8be" ${S}/><rect x="16" y="16" width="168" height="168" rx="34" fill="#e9b56f" ${S}/><rect x="30" y="30" width="140" height="140" rx="24" fill="#fff3d6"/>${[[70, 70], [120, 60], [90, 120], [140, 130], [60, 140]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3" fill="#e9b56f" opacity=".6"/>`).join('')}`,
+  clock: () => `<circle cx="100" cy="100" r="84" fill="#ffffff" stroke="${OL}" stroke-width="6"/><circle cx="100" cy="100" r="70" fill="none" stroke="#ff8fab" stroke-width="5" opacity=".6"/>${rep(4, i => { const a = i * Math.PI / 2; return `<circle cx="${100 + Math.cos(a) * 56}" cy="${100 + Math.sin(a) * 56}" r="5" fill="${OL}"/>`; }).join('')}<path d="M100 100 L100 54 M100 100 L134 116" stroke="${OL}" stroke-width="7" stroke-linecap="round"/><circle cx="100" cy="100" r="7" fill="${OL}"/>`,
+  box: () => `<rect x="12" y="12" width="176" height="176" rx="12" fill="#e8c39e" ${S}/><rect x="88" y="14" width="24" height="172" fill="#f6e2b8"/><path d="M12 100 L188 100" stroke="${OL}" stroke-width="2.5" opacity=".3"/><path d="M140 170 L140 140 M130 150 L140 140 L150 150 M164 170 L164 140 M154 150 L164 140 L174 150" fill="none" ${S}/>`,
+  camera: c => `<rect x="12" y="46" width="176" height="130" rx="20" fill="${c}" ${S}/><rect x="40" y="28" width="56" height="26" rx="8" fill="${c}" ${S}/><circle cx="104" cy="112" r="46" fill="#ffffff" ${S}/><circle cx="104" cy="112" r="30" fill="${OL}" ${S}/><circle cx="92" cy="100" r="9" fill="#fff" opacity=".7"/><rect x="146" y="60" width="26" height="16" rx="4" fill="#ffd166" ${S}/>`,
+  // 3 x 2
+  jeans: () => { const c = '#7fa6e0'; return `<rect x="14" y="14" width="272" height="172" rx="16" fill="${c}" ${S}/><rect x="14" y="14" width="272" height="30" rx="12" fill="${shade(c, -.12)}" ${S}/><circle cx="150" cy="29" r="7" fill="#ffd166" ${S}/>${[50, 100, 192, 242].map(x => `<rect x="${x}" y="10" width="8" height="38" rx="3" fill="${shade(c, -.12)}" ${S}/>`).join('')}<path d="M44 62 Q70 112 120 94 M256 62 Q230 112 180 94" fill="none" stroke="#ffd166" stroke-width="3.5" stroke-dasharray="7 6"/><path d="M150 46 L150 184" stroke="${OL}" stroke-width="2.5" opacity=".35"/>`; },
+  laptop: () => `<rect x="14" y="16" width="272" height="168" rx="18" fill="#d6dbe8" ${S}/><rect x="30" y="32" width="240" height="136" rx="10" fill="#fff" opacity=".35"/><circle cx="150" cy="100" r="18" fill="#fff" opacity=".85" ${S}/>`,
+  bento: () => `<rect x="10" y="10" width="280" height="180" rx="22" fill="#ff8fab" ${S}/><rect x="24" y="24" width="140" height="152" rx="12" fill="#fffaf2" ${S}/>${[[56, 60], [90, 80], [126, 54], [70, 124], [112, 140], [142, 104]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="5" ry="3" fill="#e8e1d4"/>`).join('')}<circle cx="94" cy="102" r="13" fill="#ff6b6b" ${S}/><rect x="176" y="24" width="100" height="70" rx="12" fill="#ffd166" ${S}/><path d="M190 58 Q226 40 262 58" fill="none" stroke="#fff" stroke-width="6" opacity=".7" stroke-linecap="round"/><rect x="176" y="106" width="100" height="70" rx="12" fill="#e6f7f2" ${S}/>${[[200, 130], [226, 150], [252, 130], [212, 156]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="13" fill="#5cc78a" ${S}/>`).join('')}`,
+  piano: () => `<rect x="12" y="20" width="276" height="164" rx="18" fill="#ff8fab" ${S}/><rect x="28" y="80" width="244" height="92" rx="6" fill="#ffffff" ${S}/>${rep(7, i => `<path d="M${28 + (i + 1) * 30.5} 80 L${28 + (i + 1) * 30.5} 172" stroke="${OL}" stroke-width="2.5"/>`).join('')}${[0, 1, 3, 4, 5].map(i => `<rect x="${28 + (i + 1) * 30.5 - 8}" y="80" width="16" height="52" rx="2" fill="${OL}"/>`).join('')}<circle cx="60" cy="48" r="12" fill="#ffd166" ${S}/><circle cx="96" cy="48" r="12" fill="#7fd8be" ${S}/><circle cx="132" cy="48" r="12" fill="#7fc8f8" ${S}/>`,
+  frame: () => `<rect x="12" y="12" width="276" height="176" rx="10" fill="${WOOD}" ${S}/><rect x="34" y="34" width="232" height="132" rx="4" fill="#bfe6ff" ${S}/><path d="M36 140 Q90 92 140 136 Q190 102 264 140 L264 164 L36 164 Z" fill="#7fd8be"/><circle cx="210" cy="72" r="16" fill="#ffd166"/>`,
+};
+// what goes in each container, by footprint (long side x short side)
+const PACK_THEMES = {
+  lunch: { look: 'lunch', '1x1': ['apple', 'orange', 'donut'], '2x1': ['banana', 'carrot', 'juice'], '3x1': ['baguette', 'chopsticks'], '2x2': ['sandwich'], '3x2': ['bento'] },
+  suitcase: { look: 'suitcase', '1x1': ['sockball', 'sunglasses', 'perfume'], '2x1': ['tshirt', 'sneaker', 'toiletry'], '3x1': ['towel', 'umbrella'], '2x2': ['sweater', 'camera'], '3x2': ['jeans'] },
+  toys: { look: 'chest', '1x1': ['duck', 'ball', 'blocks'], '2x1': ['car', 'crayons'], '3x1': ['train', 'xylophone'], '2x2': ['teddy'], '3x2': ['piano'] },
+  moving: { look: '', '1x1': ['mug', 'plantpot', 'gift'], '2x1': ['books', 'tshirt'], '3x1': ['tube', 'umbrella'], '2x2': ['clock', 'box'], '3x2': ['frame', 'laptop'] },
+  bigmove: { look: '', '1x1': ['mug', 'plantpot', 'sockball', 'duck'], '2x1': ['books', 'sneaker', 'car'], '3x1': ['towel', 'tube', 'train'], '2x2': ['box', 'teddy', 'sweater'], '3x2': ['frame', 'jeans', 'laptop'] },
+};
+const ITEM_COLORS = ['#ffb4c8', '#a8dcff', '#ffe08a', '#a8ebd3', '#d4bdfb', '#ffc7a8', '#c4e8a0', '#7fa6e0'];
+// split the box into rectangles so every piece can be a real object
+function rectPartition(w, h, seed) {
+  const r = mulberry(seed), occ = Array(w * h).fill(false), pieces = [];
+  const shapes = [[1, 1], [2, 1], [1, 2], [3, 1], [1, 3], [2, 2], [3, 2], [2, 3]];
+  const weight = n => n === 1 ? .7 : n === 2 ? 2.6 : n === 3 ? 2 : n === 4 ? 2.4 : 1.7;
+  for (let i = 0; i < w * h; i++) {
+    if (occ[i]) continue;
+    const x = i % w, y = Math.floor(i / w);
+    const fit = shapes.filter(([a, b]) => x + a <= w && y + b <= h && rep(b, yy => rep(a, xx => !occ[(y + yy) * w + x + xx]).every(Boolean)).every(Boolean));
+    const ws = fit.map(([a, b]) => weight(a * b)); let t = r() * ws.reduce((p, q) => p + q, 0), k = 0;
+    while (k < fit.length - 1 && t > ws[k]) { t -= ws[k]; k++; }
+    const [a, b] = fit[k], cells = [];
+    for (let yy = 0; yy < b; yy++) for (let xx = 0; xx < a; xx++) { occ[(y + yy) * w + x + xx] = true; cells.push([xx, yy]); }
+    cells.ox = x; cells.oy = y; pieces.push(cells);
+  }
+  return pieces;
+}
+function itemPieceSVG(cells, art, color) {
+  const [w, h] = dims(cells), Sh = Math.min(w, h), inner = PACK_ART[art](color);
+  const body = h > w ? `<g transform="translate(${Sh * 100} 0) rotate(90)">${inner}</g>` : inner;
+  return `<svg viewBox="0 0 ${w * 100} ${h * 100}" aria-hidden="true"><rect x="5" y="5" width="${w * 100 - 10}" height="${h * 100 - 10}" rx="18" fill="rgba(74,59,82,.09)"/>${body}</svg>`;
+}
 function playPack(lv) {
   const C = Math.min(56, Math.floor(260 / Math.max(lv.w, lv.h))), bx = (360 - lv.w * C) / 2, by = 18;
-  const box = el('box', bx - 10, by - 10, lv.w * C + 20, lv.h * C + 20);
+  const theme = PACK_THEMES[lv.theme] || PACK_THEMES.moving;
+  const box = el('box' + (theme.look ? ' ' + theme.look : ''), bx - 10, by - 10, lv.w * C + 20, lv.h * C + 20);
   for (let y = 0; y < lv.h; y++) for (let x = 0; x < lv.w; x++) el('cell', 10 + x * C + 3, 10 + y * C + 3, C - 6, C - 6, '', box);
   const trayTop = by + lv.h * C + 30;
   el('tray', 8, trayTop, 344, 600 - trayTop - 8);
-  const r = mulberry(lv.seed), pieces = partition(lv.w, lv.h, lv.seed), occ = Array(lv.w * lv.h).fill(-1);
+  const r = mulberry(lv.seed), pieces = rectPartition(lv.w, lv.h, lv.seed), occ = Array(lv.w * lv.h).fill(-1);
   let placed = 0, total = lv.w * lv.h;
   const sol = pieces.map(c => ({ cells: c, ox: c.ox, oy: c.oy }));
+  const used = {}, arts = pieces.map(c => { const [w, h] = dims(c), key = `${Math.max(w, h)}x${Math.min(w, h)}`, list = theme[key] || theme['1x1']; used[key] = (used[key] || 0) + 1; return list[(used[key] - 1 + lv.seed) % list.length]; });
   pieces.forEach((cells, k) => { let c = cells; const turns = 1 + Math.floor(r() * 3); for (let t = 0; t < turns; t++) c = rot(c); pieces[k] = c; });
   // tray slots in a simple flow layout, shrinking pieces until they all fit
   let TS = 0.62, slots;
-  for (TS of [0.62, 0.55, 0.48, 0.42, 0.36]) {
+  for (TS of [0.85, 0.75, 0.66, 0.58, 0.5, 0.44, 0.38]) {
     slots = []; let sx = 18, sy = trayTop + 12, rowH = 0;
     pieces.forEach(c => { const [w, h] = dims(c), pw = w * C * TS, ph = h * C * TS; if (sx + pw > 344) { sx = 18; sy += rowH + 12; rowH = 0; } slots.push([sx, sy]); sx += pw + 14; rowH = Math.max(rowH, ph); });
     if (sy + rowH < 592) break;
@@ -501,9 +608,9 @@ function playPack(lv) {
   progress(0, total, 'spaces filled');
   pieces.forEach((cells0, k) => {
     let cells = cells0, home = slots[k], at = null;
-    const color = PASTEL[k % PASTEL.length], icon = PICONS[k % PICONS.length];
-    const it = el('it', home[0], home[1], 0, 0); it.dataset.k = k;
-    const render = () => { const [w, h] = dims(cells); it.style.width = w * C + 'px'; it.style.height = h * C + 'px'; it.innerHTML = pieceSVG(cells, C, color, icon); it.dataset.cells = JSON.stringify(cells); };
+    const color = ITEM_COLORS[(k * 3 + lv.seed) % ITEM_COLORS.length], art = arts[k];
+    const it = el('it piece', home[0], home[1], 0, 0); it.dataset.k = k; it.dataset.art = art;
+    const render = () => { const [w, h] = dims(cells); it.style.width = w * C + 'px'; it.style.height = h * C + 'px'; it.innerHTML = itemPieceSVG(cells, art, color); it.dataset.cells = JSON.stringify(cells); };
     const toTray = () => { it.style.transformOrigin = 'top left'; it.style.transform = `scale(${TS})`; glide(it, home[0], home[1]); it.style.zIndex = 5; };
     const free = () => { if (at) { for (const [x, y] of cells) occ[(at[1] + y) * lv.w + at[0] + x] = -1; placed -= cells.length; at = null; progress(placed, total, 'spaces filled'); } };
     render(); it.style.transformOrigin = 'top left'; it.style.transform = `scale(${TS})`; it.style.zIndex = 5;
@@ -533,10 +640,41 @@ function playPack(lv) {
 // ---------- ROOM (corner view, like a little diorama) ----------
 const ISO = { ox: 180, oy: 196, N: 172, H: 170 }, RY = 8;
 const isoP = (x, y, z = 0) => [ISO.ox + x - y, ISO.oy + (x + y) / 2 - z];
-function roomBG(wall, floor) {
+function roomBG(wall, floor, opt = {}) {
   const N = ISO.N, H = ISO.H, T = 8, SL = 14, P = isoP;
   const poly = (pts, fill, line = true, extra = '') => `<path d="M${pts.map(p => p.map(v => v.toFixed(1)).join(' ')).join(' L')} Z" fill="${fill}"${line ? ` stroke="${OL}" stroke-width="3" stroke-linejoin="round"` : ''} ${extra}/>`;
-  const wl = shade(wall, -.1);
+  const wl = shade(wall, -.1), win = opt.win || 'R', paper = opt.paper || 'plain', ft = opt.floor || 'planks';
+  // a point on the left wall (x = 0) or right wall (y = 0)
+  const WP = (side, u, z) => side === 'L' ? P(0, u, z) : P(u, 0, z);
+  const wallPattern = side => {
+    if (paper === 'stripes') return rep(12, i => { const u = 8 + i * 14; return `<path d="M${WP(side, u, 9).join(' ')} L${WP(side, u, H - 3).join(' ')}" stroke="#fff" stroke-opacity=".3" stroke-width="5"/>`; }).join('');
+    if (paper === 'dots') return rep(8, i => rep(7, j => { const u = 12 + i * 21 + (j % 2) * 10, z = 20 + j * 22; return u < N - 4 ? `<circle cx="${WP(side, u, z)[0]}" cy="${WP(side, u, z)[1]}" r="2.6" fill="#fff" opacity=".5"/>` : ''; }).join('')).join('');
+    return '';
+  };
+  const windowOn = side => {
+    const [u0, u1] = side === 'L' ? [50, 110] : [36, 96], m = (u0 + u1) / 2;
+    const sun = WP(side, side === 'L' ? u0 + 14 : u1 - 12, 112);
+    const sill = side === 'L' ? [P(0, u0 - 4, 62), P(0, u1 + 4, 62), P(6, u1 + 4, 62), P(6, u0 - 4, 62)] : [P(u0 - 4, 0, 62), P(u1 + 4, 0, 62), P(u1 + 4, 6, 62), P(u0 - 4, 6, 62)];
+    return poly([WP(side, u0, 66), WP(side, u1, 66), WP(side, u1, 126), WP(side, u0, 126)], '#e9f7ff')
+      + `<circle cx="${sun[0]}" cy="${sun[1]}" r="7" fill="#ffd166" opacity=".85"/>`
+      + `<path d="M${WP(side, m, 66).join(' ')} L${WP(side, m, 126).join(' ')} M${WP(side, u0, 96).join(' ')} L${WP(side, u1, 96).join(' ')}" stroke="${OL}" stroke-width="3"/>`
+      + poly(sill, '#ffffff');
+  };
+  const sunPatch = side => side === 'L' ? poly([P(0, 44), P(0, 114), P(80, 164), P(80, 94)], '#fffbe6', false, 'opacity=".28"') : poly([P(30, 0), P(100, 0), P(150, 80), P(80, 80)], '#fffbe6', false, 'opacity=".28"');
+  const door = d => {
+    const u0 = d.u, u1 = d.u + 36, side = d.wall;
+    return poly([WP(side, u0 - 3, 0), WP(side, u1 + 3, 0), WP(side, u1 + 3, 90), WP(side, u0 - 3, 90)], '#ffffff')
+      + poly([WP(side, u0, 0), WP(side, u1, 0), WP(side, u1, 86), WP(side, u0, 86)], WOOD)
+      + poly([WP(side, u0 + 6, 48), WP(side, u1 - 6, 48), WP(side, u1 - 6, 78), WP(side, u0 + 6, 78)], shade(WOOD, .2))
+      + poly([WP(side, u0 + 6, 10), WP(side, u1 - 6, 10), WP(side, u1 - 6, 40), WP(side, u0 + 6, 40)], shade(WOOD, .2))
+      + `<circle cx="${WP(side, side === 'L' ? u0 + 7 : u1 - 7, 44)[0]}" cy="${WP(side, side === 'L' ? u0 + 7 : u1 - 7, 44)[1]}" r="3" fill="#ffd166" stroke="${OL}" stroke-width="2"/>`;
+  };
+  const floorPattern = () => {
+    if (ft === 'tiles') return rep(6, i => rep(6, j => (i + j) % 2 ? poly([P(i * N / 6, j * N / 6), P((i + 1) * N / 6, j * N / 6), P((i + 1) * N / 6, (j + 1) * N / 6), P(i * N / 6, (j + 1) * N / 6)], '#ffffff', false, 'opacity=".35"') : '').join('')).join('')
+      + rep(5, i => `<path d="M${P(0, (i + 1) * N / 6).join(' ')} L${P(N, (i + 1) * N / 6).join(' ')} M${P((i + 1) * N / 6, 0).join(' ')} L${P((i + 1) * N / 6, N).join(' ')}" stroke="#000" stroke-opacity=".08" stroke-width="2"/>`).join('');
+    if (ft === 'carpet') return poly([P(8, 8), P(N - 8, 8), P(N - 8, N - 8), P(8, N - 8)], '#ffffff', false, 'opacity=".18"') + rep(40, i => { const q = P(10 + (i * 37) % 150, 10 + (i * 61) % 150); return `<circle cx="${q[0]}" cy="${q[1]}" r="1.4" fill="#000" opacity=".07"/>`; }).join('');
+    return rep(7, i => `<path d="M${P(0, (i + 1) * N / 8).join(' ')} L${P(N, (i + 1) * N / 8).join(' ')}" stroke="#000" stroke-opacity=".07" stroke-width="2"/>`).join('');
+  };
   return `<svg viewBox="0 0 360 430" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible">`
     + `<ellipse cx="180" cy="396" rx="170" ry="22" fill="rgba(40,25,50,.13)"/>`
     // walls (left one a touch darker so the corner reads)
@@ -545,17 +683,15 @@ function roomBG(wall, floor) {
     + poly([P(0, 0), P(0, N), P(0, N, 7), P(0, 0, 7)], shade(wl, .55), false)
     + poly([P(0, 0), P(N, 0), P(N, 0, 7), P(0, 0, 7)], shade(wall, .55), false)
     + `<path d="M${P(0, 0).join(' ')} L${P(0, 0, H).join(' ')}" stroke="${OL}" stroke-opacity=".25" stroke-width="2"/>`
-    // window on the right wall, with a sunny patch on the floor
-    + poly([P(36, 0, 66), P(96, 0, 66), P(96, 0, 126), P(36, 0, 126)], '#e9f7ff')
-    + `<circle cx="${P(84, 0, 112)[0]}" cy="${P(84, 0, 112)[1]}" r="7" fill="#ffd166" opacity=".85"/>`
-    + `<path d="M${P(66, 0, 66).join(' ')} L${P(66, 0, 126).join(' ')} M${P(36, 0, 96).join(' ')} L${P(96, 0, 96).join(' ')}" stroke="${OL}" stroke-width="3"/>`
-    + poly([P(32, 0, 62), P(100, 0, 62), P(100, 6, 62), P(32, 6, 62)], '#ffffff')
+    + wallPattern('L') + wallPattern('R')
+    + (win.includes('L') ? windowOn('L') : '') + (win.includes('R') ? windowOn('R') : '')
+    + (opt.door ? door(opt.door) : '')
     // wall tops show their thickness
     + poly([P(-T, -T, H), P(N, -T, H), P(N, 0, H), P(0, 0, H), P(0, N, H), P(-T, N, H)], shade(wall, .45))
     // floor with planks, then the slab edge underneath
     + poly([P(0, 0), P(N, 0), P(N, N), P(0, N)], floor)
-    + poly([P(30, 0), P(100, 0), P(150, 80), P(80, 80)], '#fffbe6', false, 'opacity=".28"')
-    + rep(7, i => `<path d="M${P(0, (i + 1) * N / 8).join(' ')} L${P(N, (i + 1) * N / 8).join(' ')}" stroke="#000" stroke-opacity=".07" stroke-width="2"/>`).join('')
+    + floorPattern()
+    + (win.includes('L') ? sunPatch('L') : '') + (win.includes('R') ? sunPatch('R') : '')
     + poly([P(0, N), P(N, N), P(N, N, -SL), P(0, N, -SL)], shade(floor, -.16))
     + poly([P(N, 0), P(N, N), P(N, N, -SL), P(N, 0, -SL)], shade(floor, -.3))
     + poly([P(-T, N, -SL), P(0, N, -SL), P(0, N, H), P(-T, N, H)], shade(wl, -.18))
@@ -571,13 +707,13 @@ function spotArt(name, o, a, b) {
   }
   const A = isoSVG(name, o), [px, py] = isoP(a, b);
   const depth = a + A.fw / 2 + b + A.fd / 2;
-  return { wall: false, x: px - A.fd - A.pad, y: py - ISOF[name].H - A.pad + RY, w: A.w, h: A.h, tf: 'none', z: name === 'rug' ? 3 : 10 + Math.round(depth), svg: A.svg };
+  return { wall: false, x: px - A.fd - A.pad, y: py - ISOF[name].H - A.pad + RY, w: A.w, h: A.h, tf: 'none', z: FLAT.has(name) ? 3 : 10 + Math.round(depth), svg: A.svg };
 }
 function playRoom(lv) {
-  el('room', 0, RY, 360, 430, roomBG(lv.wall, lv.floor));
+  el('room', 0, RY, 360, 430, roomBG(lv.wall, lv.floor, lv.opt));
   const spots = lv.spots.map(([name, o, a, b], k) => Object.assign({ name, k, o }, spotArt(name, o, a, b)));
   window.__tidy.spots = spots;
-  const layer = s => s.name === 'rug' ? 0 : s.wall ? 1 : 2;
+  const layer = s => FLAT.has(s.name) ? 0 : s.wall ? 1 : 2;
   const order = spots.slice().sort((p, q) => layer(p) - layer(q) || p.z - q.z || p.k - q.k);
   const mb = document.createElement('button'); mb.type = 'button'; mb.className = 'mbox'; mb.setAttribute('aria-label', 'Open the moving box');
   Object.assign(mb.style, { left: '232px', top: '462px', width: '112px', height: '100px' });
