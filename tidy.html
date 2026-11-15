@@ -30,6 +30,7 @@
   --star-off: #d9dde8;
   --table: #f7e3cf;
   --table-edge: #ecd0b4;
+  --table-side: #d9b48f;
   --tray: #e3e7f1;
   --alt: #e9edf6;
   --alt-edge: #d0d6e4;
@@ -49,6 +50,7 @@
   --star-off: #463d5e;
   --table: #4a3d4a;
   --table-edge: #3a2f3b;
+  --table-side: #2c232d;
   --tray: #262036;
   --alt: #3a3252;
   --alt-edge: #211b31;
@@ -106,26 +108,33 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--pink); outline-
 /* pieces on the board */
 .it { position: absolute; touch-action: none; cursor: grab; transition: transform .18s ease, opacity .25s; will-change: left, top, transform; }
 .it svg { width: 100%; height: 100%; display: block; overflow: visible; }
-.it.drag { cursor: grabbing; z-index: 50 !important; transition: transform .1s; filter: drop-shadow(0 10px 8px rgba(74,59,82,.25)); }
+.it.drag { cursor: grabbing; z-index: 250 !important; transition: transform .1s; filter: drop-shadow(0 16px 10px rgba(40,25,50,.3)); }
+.it.item { filter: drop-shadow(0 5px 3px rgba(40,25,50,.24)); }
+.it.warm { filter: drop-shadow(0 0 6px rgba(255,209,102,.95)) drop-shadow(0 0 14px rgba(255,209,102,.7)) !important; }
 .it.done { cursor: default; }
 .it.shake { animation: shake .35s; }
 @keyframes shake { 0%, 100% { translate: 0 0; } 25% { translate: -7px 0; } 75% { translate: 7px 0; } }
 .pop { animation: popin .3s cubic-bezier(.3,1.6,.5,1); }
 @keyframes popin { from { transform: scale(.6); } to { transform: scale(1); } }
 
-.table { position: absolute; border-radius: 26px; background: var(--table); box-shadow: inset 0 -8px 0 var(--table-edge); }
+.table { position: absolute; border-radius: 26px; background: radial-gradient(120% 80% at 30% 15%, rgba(255,255,255,.35), transparent 60%), var(--table); box-shadow: inset 0 3px 0 rgba(255,255,255,.45), inset 0 -6px 0 var(--table-edge), 0 12px 0 var(--table-side), 0 22px 22px rgba(40,25,50,.18); }
 .bin { position: absolute; border-radius: 22px 22px 28px 28px; border: 3px solid var(--outline); color: var(--outline); display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 8px; transition: transform .15s; }
+.bin { box-shadow: inset 0 -12px 0 rgba(0,0,0,.07), inset 0 4px 0 rgba(255,255,255,.5), 0 7px 0 var(--outline), 0 14px 16px rgba(40,25,50,.2); }
+.bin::before { content: ''; position: absolute; left: 9px; right: 9px; top: 9px; height: 30px; border-radius: 14px 14px 10px 10px; background: rgba(74,59,82,.2); box-shadow: inset 0 8px 8px rgba(40,25,50,.25); }
 .bin .lbl { font-family: var(--display); font-weight: 600; font-size: 14px; background: rgba(255,255,255,.85); border-radius: 10px; padding: 2px 8px; }
 .bin .cnt { font-size: 12px; font-weight: 800; color: var(--outline); opacity: .7; margin-top: 2px; }
 .bin svg { width: 34px; height: 34px; margin-bottom: 2px; }
 .bin.ok { transform: scale(1.06); }
 .bin.bad { animation: shake .35s; border-color: #e0566f; }
 
-.box { position: absolute; border-radius: 10px; background: #e8c39e; border: 3px solid var(--outline); box-shadow: inset 0 0 0 6px #d9ab80; }
-.cell { position: absolute; border-radius: 6px; background: rgba(255,255,255,.35); }
-.tray { position: absolute; border-radius: 22px; background: var(--tray); }
+.box { position: absolute; border-radius: 10px; background: #d9ab80; border: 3px solid var(--outline); box-shadow: inset 0 12px 0 #b98552, inset 10px 0 0 #c99a6e, inset -10px 0 0 #c99a6e, inset 0 -6px 0 #e8c39e, 0 10px 0 #a8774c, 0 10px 0 3px var(--outline), 0 22px 22px rgba(40,25,50,.22); }
+.box::before, .box::after { content: ''; position: absolute; top: 10px; bottom: 10px; width: 22px; background: #e8c39e; border: 3px solid var(--outline); z-index: -1; }
+.box::before { left: -24px; border-radius: 8px 2px 2px 8px; transform: skewY(-8deg); }
+.box::after { right: -24px; border-radius: 2px 8px 8px 2px; transform: skewY(8deg); }
+.cell { position: absolute; border-radius: 6px; background: rgba(255,240,220,.4); box-shadow: inset 0 4px 5px rgba(90,55,30,.28), 0 1px 0 rgba(255,255,255,.4); }
+.tray { position: absolute; border-radius: 22px; background: var(--tray); box-shadow: inset 0 6px 12px rgba(40,25,50,.1), inset 0 -2px 0 rgba(255,255,255,.4); }
 
-.room { position: absolute; overflow: hidden; border-radius: 22px; border: 3px solid var(--outline); }
+.room { position: absolute; overflow: visible; }
 .room > svg:first-child { filter: var(--room-dim); transition: filter .3s; }
 .spot { position: absolute; border: 3px dashed var(--pink); border-radius: 14px; background: rgba(255,143,171,.12); opacity: 0; transition: opacity .2s; pointer-events: none; animation: glowspot 1s infinite alternate; }
 .spot.show { opacity: 1; }
@@ -234,6 +243,61 @@ const FURN = {
   tv: { w: 104, h: 82, layer: 3, d: `<rect x="2" y="2" width="100" height="62" rx="9" fill="#5b4a63" ${S}/><rect x="10" y="10" width="84" height="46" rx="5" fill="#7fc8f8"/><path d="M14 52 L40 26 M30 52 L56 26" stroke="#fff" stroke-width="5" opacity=".35" stroke-linecap="round"/><rect x="44" y="64" width="16" height="10" fill="${OL}"/><rect x="26" y="74" width="52" height="7" rx="3" fill="${OL}"/>` },
 };
 
+// ---------- art: furniture seen from the corner (2:1 isometric) ----------
+// x runs toward the right wall's front corner, y toward the left wall's front corner, z is up.
+const lp = (x, y, z = 0) => [x - y, (x + y) / 2 - z];
+function shade(hex, k) {
+  const n = parseInt(hex.slice(1), 16), f = c => Math.round(k > 0 ? c + (255 - c) * k : c * (1 + k));
+  return '#' + [n >> 16, n >> 8 & 255, n & 255].map(f).map(v => v.toString(16).padStart(2, '0')).join('');
+}
+const pth = (pts, fill, line = true) => `<path d="M${pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L')} Z" fill="${fill}"${line ? ` stroke="${OL}" stroke-width="2.2" stroke-linejoin="round"` : ''}/>`;
+function isoBox(x, y, z, w, d, h, c) {
+  return pth([lp(x + w, y, z), lp(x + w, y + d, z), lp(x + w, y + d, z + h), lp(x + w, y, z + h)], shade(c, -.2))
+    + pth([lp(x, y + d, z), lp(x + w, y + d, z), lp(x + w, y + d, z + h), lp(x, y + d, z + h)], c)
+    + pth([lp(x, y, z + h), lp(x + w, y, z + h), lp(x + w, y + d, z + h), lp(x, y + d, z + h)], shade(c, .22));
+}
+// parts: ['b', x,y,z,w,d,h,color] boxes, ['q', [[x,y,z]...], color, outline?] flat shapes, ['e', x,y,z, rx,ry, color, tilt] round bits.
+// Drawn in canonical pose (back against the right wall); o = 'R' | 'Rf' (turned around) | 'L' | 'Lf' (against the left wall)
+const fq = (x, y, w, d, z, c, line) => ['q', [[x, y, z], [x + w, y, z], [x + w, y + d, z], [x, y + d, z]], c, line];
+const yq = (y, x0, x1, z0, z1, c, line) => ['q', [[x0, y, z0], [x1, y, z0], [x1, y, z1], [x0, y, z1]], c, line];
+const PLUM = '#5b4a63';
+const ISOF = {
+  rug: { W: 70, D: 50, H: 3, parts: [['b', 0, 0, 0, 70, 50, 2, '#f7a1c4'], fq(7, 6, 56, 38, 2, '#ffd6e7', false), fq(16, 13, 38, 24, 2, '#f7a1c4', false)] },
+  bed: { W: 58, D: 92, H: 40, parts: [['b', 0, 0, 0, 58, 92, 12, WOOD], ['b', 0, 0, 12, 58, 8, 28, WOOD], ['b', 3, 8, 12, 52, 82, 8, '#ffffff'], ['b', 9, 12, 20, 40, 16, 6, '#ffffff'], ['b', 2, 40, 12, 54, 52, 11, '#9ad0f5'], yq(92, 6, 52, 16, 19, '#ffffff', false)] },
+  sofa: { W: 84, D: 36, H: 34, parts: [['b', 0, 0, 0, 84, 10, 34, '#7fd8be'], ['b', 0, 10, 0, 84, 26, 13, '#5cc7a8'], ['b', 0, 10, 0, 10, 26, 24, '#7fd8be'], ['b', 10, 12, 13, 32, 22, 6, '#8fe3cb'], ['b', 42, 12, 13, 32, 22, 6, '#8fe3cb'], ['b', 16, 10, 19, 14, 6, 13, '#ffd166'], ['b', 74, 10, 0, 10, 26, 24, '#7fd8be']] },
+  table: { W: 50, D: 36, H: 44, parts: [['b', 2, 2, 0, 4, 4, 24, WOODD], ['b', 2, 30, 0, 4, 4, 24, WOODD], ['b', 44, 2, 0, 4, 4, 24, WOODD], ['b', 44, 30, 0, 4, 4, 24, WOODD], ['b', 0, 0, 24, 50, 36, 4, WOOD], ['b', 21, 15, 28, 7, 7, 9, '#ff8fab'], ['e', 24.5, 18.5, 41, 4.5, 4.5, '#ffd166', 0]] },
+  chair: { W: 22, D: 22, H: 40, parts: [['b', 1, 1, 0, 3, 3, 16, WOODD], ['b', 1, 18, 0, 3, 3, 16, WOODD], ['b', 18, 1, 0, 3, 3, 16, WOODD], ['b', 18, 18, 0, 3, 3, 16, WOODD], ['b', 0, 0, 16, 22, 22, 4, '#ffb4a2'], ['b', 0, 0, 20, 22, 4, 20, '#ffb4a2']] },
+  lamp: { W: 16, D: 16, H: 70, parts: [['b', 3, 3, 0, 10, 10, 3, WOOD], ['b', 7, 7, 3, 2, 2, 48, PLUM], ['b', 1, 1, 50, 14, 14, 18, '#ffd166']] },
+  plant: { W: 20, D: 20, H: 60, parts: [['b', 3, 3, 0, 14, 14, 14, '#ff9f80'], ['b', 2, 2, 14, 16, 16, 4, '#ff9f80'], fq(4, 4, 12, 12, 18, '#8a6a52', false), ['e', 10, 10, 32, 8, 17, '#5cc78a', -28], ['e', 10, 10, 34, 8, 17, '#7fd8be', 28], ['e', 10, 10, 40, 7, 17, '#5cc78a', 0]] },
+  shelf: { W: 52, D: 16, H: 80, parts: [['b', 0, 0, 0, 52, 16, 80, WOOD], ...[[6, 26], [31, 51], [56, 75]].flatMap(([z0, z1], r) => [yq(16, 4, 48, z0, z1, WOODD, false), ...[[6, 11, '#ff8fab'], [12, 16, '#7fc8f8'], [17, 23, '#ffd166'], [24, 28, '#b58df2'], [33, 38, '#7fd8be'], [39, 44, '#ff9f80']].filter((b, i) => (i + r) % 3 !== 2).map(([a, b2, c]) => yq(16, a, b2, z0, z1 - 3 - ((a + r) % 4), c, true))])] },
+  desk: { W: 56, D: 28, H: 52, parts: [['b', 2, 2, 0, 4, 4, 26, WOODD], ['b', 2, 22, 0, 4, 4, 26, WOODD], ['b', 38, 2, 0, 16, 24, 26, WOOD], yq(26, 40, 52, 15, 15.6, WOODD, true), ['b', 0, 0, 26, 56, 28, 4, WOOD], ['b', 26, 6, 30, 4, 4, 4, PLUM], ['b', 14, 4, 34, 28, 3, 18, PLUM], yq(7, 16, 40, 36, 50, '#7fc8f8', false)] },
+  fridge: { W: 32, D: 28, H: 84, parts: [['b', 0, 0, 0, 32, 28, 84, '#e6f7f2'], yq(28, 0, 32, 56, 56.8, PLUM, true), ['b', 25, 28, 62, 3, 2, 14, PLUM], ['b', 25, 28, 28, 3, 2, 20, PLUM], ['e', 8, 28, 70, 3.5, 3.5, '#ff8fab', 0], yq(28, 6, 13, 38, 45, '#ffd166', true)] },
+  tv: { W: 56, D: 22, H: 50, parts: [['b', 0, 0, 0, 56, 22, 18, WOOD], yq(22, 28, 28.6, 2, 16, WOODD, true), ['b', 6, 8, 18, 44, 5, 32, PLUM], yq(13, 9, 47, 21, 47, '#7fc8f8', false), ['q', [[14, 13, 26], [22, 13, 26], [30, 13, 44], [22, 13, 44]], '#ffffff', false]] },
+};
+// furniture hung on a wall uses the flat art, slanted onto that wall
+const WALLF = { painting: { w: 52, h: 39 }, clock: { w: 30, h: 30 } };
+function isoSVG(name, o) {
+  const F = ISOF[name], swap = o[0] === 'L', flip = o.includes('f');
+  const fw = swap ? F.D : F.W, fd = swap ? F.W : F.D, pad = 8;
+  const mp = ([x, y, z]) => { if (flip) y = F.D - y; return swap ? [y, x, z] : [x, y, z]; };
+  let out = pth([lp(-2, -2), lp(fw + 4, -2), lp(fw + 4, fd + 4), lp(-2, fd + 4)], 'rgba(60,40,70,.16)', false);
+  for (const pt of F.parts) {
+    if (pt[0] === 'b') {
+      let [, x, y, z, w, d, h, c] = pt;
+      if (flip) y = F.D - y - d;
+      if (swap) [x, y, w, d] = [y, x, d, w];
+      out += isoBox(x, y, z, w, d, h, c);
+    } else if (pt[0] === 'q') {
+      out += pth(pt[1].map(mp).map(q => lp(...q)), pt[2], pt[3] !== false);
+    } else {
+      const [x, y, z] = mp([pt[1], pt[2], pt[3]]), [cx, cy] = lp(x, y, z);
+      out += `<ellipse cx="${cx}" cy="${cy}" rx="${pt[4]}" ry="${pt[5]}" fill="${pt[6]}" stroke="${OL}" stroke-width="2.2" transform="rotate(${swap ? -pt[7] : pt[7]} ${cx} ${cy})"/>`;
+    }
+  }
+  const w = fw + fd + 2 * pad, h = (fw + fd) / 2 + F.H + 2 * pad;
+  return { fw, fd, pad, w, h, svg: `<svg viewBox="${-fd - pad} ${-F.H - pad} ${w} ${h}" aria-hidden="true">${out}</svg>` };
+}
+
 // ---------- levels ----------
 const PENC = { red: '#ff6b6b', blue: '#7fc8f8', yellow: '#ffd166', green: '#7fd8be', purple: '#b58df2' };
 const L = [];
@@ -243,23 +307,23 @@ const roomL = (name, wall, floor, spots) => L.push({ type: 'room', name, wall, f
 const rep = (n, f) => Array.from({ length: n }, (_, i) => f(i));
 sortL('Pencil Cup', [['red', 'Red', '#ffd0d0', 'pencil', PENC.red], ['blue', 'Blue', '#d5ecff', 'pencil', PENC.blue], ['yellow', 'Yellow', '#fff0c2', 'pencil', PENC.yellow]],
   [...rep(3, () => ['pencil', PENC.red, 'red']), ...rep(3, () => ['pencil', PENC.blue, 'blue']), ...rep(3, () => ['pencil', PENC.yellow, 'yellow'])]);
-roomL('Cozy Bedroom', '#cfe6ff', '#f2d1a8', [['rug', 110, 382], ['bed', 22, 300], ['lamp', 212, 284], ['plant', 290, 324], ['painting', 36, 96], ['clock', 262, 104]]);
+roomL('Cozy Bedroom', '#cfe6ff', '#f2d1a8', [['rug', 'R', 96, 62], ['bed', 'L', 0, 50], ['lamp', 'R', 4, 118], ['plant', 'R', 6, 6], ['painting', 'wallL', 54, 70], ['clock', 'wallR', 122, 108]]);
 packL('Lunch Box', 3, 3, 11);
 sortL('Market Day', [['fruit', 'Fruit', '#ffe1e1', 'apple'], ['veg', 'Veggies', '#dcf6e6', 'carrot']],
   [['apple', 0, 'fruit'], ['banana', 0, 'fruit'], ['grapes', 0, 'fruit'], ['orange', 0, 'fruit'], ['apple', 0, 'fruit'], ['carrot', 0, 'veg'], ['broccoli', 0, 'veg'], ['eggplant', 0, 'veg'], ['carrot', 0, 'veg'], ['broccoli', 0, 'veg']]);
-roomL('Living Room', '#ffe3d6', '#e9c79d', [['rug', 82, 384], ['lamp', 4, 282], ['sofa', 52, 312], ['table', 228, 346], ['painting', 30, 96], ['clock', 262, 104]]);
+roomL('Living Room', '#ffe3d6', '#e9c79d', [['rug', 'R', 36, 58], ['sofa', 'R', 40, 0], ['table', 'R', 52, 64], ['lamp', 'R', 14, 6], ['painting', 'wallL', 60, 70], ['clock', 'wallR', 134, 112]]);
 packL('Suitcase', 4, 3, 22);
 sortL('Kitchen Shelf', [['fruit', 'Fruit', '#ffe1e1', 'apple'], ['veg', 'Veggies', '#dcf6e6', 'carrot'], ['bake', 'Bakery', '#fbe8cf', 'bread']],
   [['apple', 0, 'fruit'], ['banana', 0, 'fruit'], ['grapes', 0, 'fruit'], ['orange', 0, 'fruit'], ['carrot', 0, 'veg'], ['broccoli', 0, 'veg'], ['eggplant', 0, 'veg'], ['carrot', 0, 'veg'], ['bread', 0, 'bake'], ['croissant', 0, 'bake'], ['donut', 0, 'bake'], ['donut', 0, 'bake']]);
-roomL('Study Nook', '#dff3e8', '#e8cfa9', [['rug', 90, 386], ['shelf', 18, 254], ['desk', 136, 330], ['chair', 178, 330], ['lamp', 300, 282], ['clock', 40, 96], ['painting', 252, 92]]);
+roomL('Study Nook', '#dff3e8', '#e8cfa9', [['rug', 'R', 70, 84], ['shelf', 'L', 0, 24], ['desk', 'R', 62, 0], ['chair', 'Rf', 78, 32], ['lamp', 'R', 150, 8], ['clock', 'wallL', 110, 108], ['painting', 'wallL', 22, 96]]);
 packL('Toy Chest', 4, 4, 33);
 sortL('Bookshelf', [['red', 'Red', '#ffd0d0', 'book', PENC.red], ['blue', 'Blue', '#d5ecff', 'book', PENC.blue], ['green', 'Green', '#d8f5ea', 'book', PENC.green], ['purple', 'Purple', '#eadcff', 'book', PENC.purple]],
   [...rep(3, () => ['book', PENC.red, 'red']), ...rep(3, () => ['book', PENC.blue, 'blue']), ...rep(3, () => ['book', PENC.green, 'green']), ...rep(3, () => ['book', PENC.purple, 'purple'])]);
-roomL('Little Kitchen', '#fff3c9', '#d9e7f5', [['fridge', 22, 250], ['table', 150, 344], ['chair', 102, 314], ['chair', 258, 314], ['clock', 40, 96], ['painting', 244, 92]]);
+roomL('Little Kitchen', '#fff3c9', '#d9e7f5', [['fridge', 'L', 0, 14], ['table', 'R', 72, 72], ['chair', 'R', 86, 48], ['chair', 'Rf', 86, 110], ['clock', 'wallR', 128, 110], ['painting', 'wallL', 74, 78]]);
 packL('Moving Day', 5, 4, 44);
 sortL('Laundry Day', [['toys', 'Toys', '#fff0c2', 'duck'], ['clothes', 'Clothes', '#d5ecff', 'shirt', '#7fc8f8'], ['gifts', 'Gifts', '#ffe1ec', 'gift', '#ff8fab']],
   [['ball', 0, 'toys'], ['duck', 0, 'toys'], ['blocks', 0, 'toys'], ['ball', 0, 'toys'], ['duck', 0, 'toys'], ['shirt', '#7fc8f8', 'clothes'], ['sock', '#ff8fab', 'clothes'], ['hat', '#b58df2', 'clothes'], ['shirt', '#ffd166', 'clothes'], ['sock', '#7fd8be', 'clothes'], ['gift', '#ff8fab', 'gifts'], ['gift', '#7fc8f8', 'gifts'], ['gift', '#ffd166', 'gifts'], ['mug', '#b58df2', 'gifts'], ['mug', '#7fd8be', 'gifts']]);
-roomL('Dream Room', '#eadcff', '#f2d1a8', [['rug', 90, 388], ['shelf', 14, 254], ['tv', 122, 316], ['bed', 194, 300], ['painting', 30, 96], ['painting', 244, 92], ['clock', 300, 160]]);
+roomL('Dream Room', '#eadcff', '#f2d1a8', [['rug', 'R', 40, 100], ['shelf', 'L', 0, 30], ['tv', 'R', 30, 0], ['bed', 'R', 108, 0], ['painting', 'wallL', 96, 90], ['painting', 'wallR', 112, 72], ['clock', 'wallL', 40, 112]]);
 packL('Big Move', 5, 5, 55);
 const TYPE_LABEL = { sort: 'Sort', pack: 'Pack', room: 'Unbox' };
 const TYPE_ICON = { sort: ITEMS.apple(), pack: ITEMS.gift('#ffd166'), room: ITEMS.mug('#7fc8f8') };
@@ -353,7 +417,7 @@ function playSort(lv) {
   items.forEach(([art, c, key], k) => {
     const cx = 12 + (k % cols) * cw + cw / 2 + (r() - .5) * 14, cy = 18 + Math.floor(k / cols) * ch + ch / 2 + (r() - .5) * 10;
     const size = 70, x0 = cx - size / 2, y0 = cy - size / 2;
-    const it = el('it', x0, y0, size, size, svgWrap(ITEMS[art](c))); it.dataset.key = key;
+    const it = el('it item', x0, y0, size, size, svgWrap(ITEMS[art](c))); it.dataset.key = key;
     it.style.transform = `rotate(${(r() - .5) * 30}deg)`; it.style.zIndex = 5;
     draggable(it, {
       onStart() { it.style.transform = 'rotate(0deg) scale(1.1)'; },
@@ -407,11 +471,14 @@ function pieceSVG(cells, C, color, icon) {
     s += `<rect x="${x * C + g}" y="${y * C + g}" width="${C - 2 * g}" height="${C - 2 * g}" rx="10" fill="${color}"/>`;
     if (set.has(`${x + 1},${y}`)) s += `<rect x="${x * C + C / 2}" y="${y * C + g}" width="${C}" height="${C - 2 * g}" fill="${color}"/>`;
     if (set.has(`${x},${y + 1}`)) s += `<rect x="${x * C + g}" y="${y * C + C / 2}" width="${C - 2 * g}" height="${C}" fill="${color}"/>`;
+    if (set.has(`${x + 1},${y}`) && set.has(`${x},${y + 1}`) && set.has(`${x + 1},${y + 1}`)) s += `<rect x="${x * C + C / 2}" y="${y * C + C / 2}" width="${C}" height="${C}" fill="${color}"/>`;
   }
   // a darker outline drawn under a copy gives a soft border
   const outline = s.replace(/fill="[^"]+"/g, `fill="${OL}"`).replace(/x="([\d.]+)"/g, (m, v) => `x="${+v - 2}"`).replace(/y="([\d.]+)"/g, (m, v) => `y="${+v - 2}"`).replace(/width="([\d.]+)"/g, (m, v) => `width="${+v + 4}"`).replace(/height="([\d.]+)"/g, (m, v) => `height="${+v + 4}"`);
   const [ix, iy] = cells[0], ic = ITEMS[icon[0]](icon[1] || color);
-  return `<svg viewBox="-3 -3 ${w * C + 6} ${h * C + 6}" aria-hidden="true">${outline}${s}<svg x="${ix * C + 7}" y="${iy * C + 7}" width="${C - 14}" height="${C - 14}" viewBox="0 0 100 100">${ic}</svg></svg>`;
+  // a darker copy underneath gives each piece a thick, chunky edge
+  const sideCol = shade(color, -.22), side = s.replace(/fill="[^"]+"/g, `fill="${sideCol}"`), E = 6;
+  return `<svg viewBox="-3 -3 ${w * C + 6} ${h * C + 6}" aria-hidden="true"><g transform="translate(0 ${E})" opacity=".22" style="filter:blur(3px)">${outline}</g><g transform="translate(0 ${E})">${outline}${side}</g>${outline}${s}${cells.filter(([x, y]) => !set.has(`${x},${y - 1}`)).map(([x, y]) => `<rect x="${x * C + 9}" y="${y * C + 7}" width="${C - 18 + (set.has(`${x + 1},${y}`) && !set.has(`${x + 1},${y - 1}`) ? 18 : 0)}" height="5" rx="2.5" fill="#fff" opacity=".45"/>`).join('')}<svg x="${ix * C + 7}" y="${iy * C + 7}" width="${C - 14}" height="${C - 14}" viewBox="0 0 100 100">${ic}</svg></svg>`;
 }
 function playPack(lv) {
   const C = Math.min(56, Math.floor(260 / Math.max(lv.w, lv.h))), bx = (360 - lv.w * C) / 2, by = 18;
@@ -463,48 +530,89 @@ function playPack(lv) {
   return pieces.length;
 }
 
-// ---------- ROOM ----------
+// ---------- ROOM (corner view, like a little diorama) ----------
+const ISO = { ox: 180, oy: 196, N: 172, H: 170 }, RY = 8;
+const isoP = (x, y, z = 0) => [ISO.ox + x - y, ISO.oy + (x + y) / 2 - z];
 function roomBG(wall, floor) {
-  return `<svg viewBox="0 0 360 430" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%"><rect width="360" height="430" fill="${floor}"/>${rep(8, i => `<path d="M0 ${238 + i * 26} L360 ${238 + i * 26}" stroke="#000" stroke-opacity=".06" stroke-width="2"/>`).join('')}<rect width="360" height="230" fill="${wall}"/><rect y="222" width="360" height="12" fill="#fff" opacity=".7"/><rect x="128" y="34" width="104" height="96" rx="10" fill="#e9f7ff" stroke="${OL}" stroke-width="4"/><path d="M180 34 L180 130 M128 82 L232 82" stroke="${OL}" stroke-width="4"/><circle cx="210" cy="56" r="10" fill="#ffd166" opacity=".8"/></svg>`;
+  const N = ISO.N, H = ISO.H, T = 8, SL = 14, P = isoP;
+  const poly = (pts, fill, line = true, extra = '') => `<path d="M${pts.map(p => p.map(v => v.toFixed(1)).join(' ')).join(' L')} Z" fill="${fill}"${line ? ` stroke="${OL}" stroke-width="3" stroke-linejoin="round"` : ''} ${extra}/>`;
+  const wl = shade(wall, -.1);
+  return `<svg viewBox="0 0 360 430" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible">`
+    + `<ellipse cx="180" cy="396" rx="170" ry="22" fill="rgba(40,25,50,.13)"/>`
+    // walls (left one a touch darker so the corner reads)
+    + poly([P(0, 0), P(0, N), P(0, N, H), P(0, 0, H)], wl)
+    + poly([P(0, 0), P(N, 0), P(N, 0, H), P(0, 0, H)], wall)
+    + poly([P(0, 0), P(0, N), P(0, N, 7), P(0, 0, 7)], shade(wl, .55), false)
+    + poly([P(0, 0), P(N, 0), P(N, 0, 7), P(0, 0, 7)], shade(wall, .55), false)
+    + `<path d="M${P(0, 0).join(' ')} L${P(0, 0, H).join(' ')}" stroke="${OL}" stroke-opacity=".25" stroke-width="2"/>`
+    // window on the right wall, with a sunny patch on the floor
+    + poly([P(36, 0, 66), P(96, 0, 66), P(96, 0, 126), P(36, 0, 126)], '#e9f7ff')
+    + `<circle cx="${P(84, 0, 112)[0]}" cy="${P(84, 0, 112)[1]}" r="7" fill="#ffd166" opacity=".85"/>`
+    + `<path d="M${P(66, 0, 66).join(' ')} L${P(66, 0, 126).join(' ')} M${P(36, 0, 96).join(' ')} L${P(96, 0, 96).join(' ')}" stroke="${OL}" stroke-width="3"/>`
+    + poly([P(32, 0, 62), P(100, 0, 62), P(100, 6, 62), P(32, 6, 62)], '#ffffff')
+    // wall tops show their thickness
+    + poly([P(-T, -T, H), P(N, -T, H), P(N, 0, H), P(0, 0, H), P(0, N, H), P(-T, N, H)], shade(wall, .45))
+    // floor with planks, then the slab edge underneath
+    + poly([P(0, 0), P(N, 0), P(N, N), P(0, N)], floor)
+    + poly([P(30, 0), P(100, 0), P(150, 80), P(80, 80)], '#fffbe6', false, 'opacity=".28"')
+    + rep(7, i => `<path d="M${P(0, (i + 1) * N / 8).join(' ')} L${P(N, (i + 1) * N / 8).join(' ')}" stroke="#000" stroke-opacity=".07" stroke-width="2"/>`).join('')
+    + poly([P(0, N), P(N, N), P(N, N, -SL), P(0, N, -SL)], shade(floor, -.16))
+    + poly([P(N, 0), P(N, N), P(N, N, -SL), P(N, 0, -SL)], shade(floor, -.3))
+    + poly([P(-T, N, -SL), P(0, N, -SL), P(0, N, H), P(-T, N, H)], shade(wl, -.18))
+    + poly([P(N, -T, -SL), P(N, 0, -SL), P(N, 0, H), P(N, -T, H)], shade(wall, -.28))
+    + `</svg>`;
+}
+// where a piece of furniture ends up, in board pixels, and how it's drawn there
+function spotArt(name, o, a, b) {
+  if (o.startsWith('wall')) {
+    const W = WALLF[name], F = FURN[name], left = o === 'wallL';
+    const [x, y] = left ? isoP(0, a + W.w, b + W.h) : isoP(a, 0, b + W.h);
+    return { wall: true, x, y: y + RY, w: W.w, h: W.h, tf: `matrix(1,${left ? -.5 : .5},0,1,0,0)`, z: 2, svg: svgWrap(F.d, `0 0 ${F.w} ${F.h}`) };
+  }
+  const A = isoSVG(name, o), [px, py] = isoP(a, b);
+  const depth = a + A.fw / 2 + b + A.fd / 2;
+  return { wall: false, x: px - A.fd - A.pad, y: py - ISOF[name].H - A.pad + RY, w: A.w, h: A.h, tf: 'none', z: name === 'rug' ? 3 : 10 + Math.round(depth), svg: A.svg };
 }
 function playRoom(lv) {
-  const RY = 8, room = el('room', 0, RY, 360, 430, roomBG(lv.wall, lv.floor));
-  // window stays clear: paintings/clocks sit beside it
-  const spots = lv.spots.map(([name, x, y], k) => ({ name, x, y: y - 50 + RY, k, f: FURN[name] }));
+  el('room', 0, RY, 360, 430, roomBG(lv.wall, lv.floor));
+  const spots = lv.spots.map(([name, o, a, b], k) => Object.assign({ name, k, o }, spotArt(name, o, a, b)));
   window.__tidy.spots = spots;
-  const order = spots.slice().sort((a, b) => a.f.layer - b.f.layer || a.k - b.k);
-  const outlines = spots.map(s => el('spot', s.x - 4, s.y - 4, s.f.w + 8, s.f.h + 8));
+  const layer = s => s.name === 'rug' ? 0 : s.wall ? 1 : 2;
+  const order = spots.slice().sort((p, q) => layer(p) - layer(q) || p.z - q.z || p.k - q.k);
   const mb = document.createElement('button'); mb.type = 'button'; mb.className = 'mbox'; mb.setAttribute('aria-label', 'Open the moving box');
-  Object.assign(mb.style, { left: '232px', top: '470px', width: '112px', height: '100px' });
-  mb.innerHTML = `<svg viewBox="0 0 112 100"><rect x="6" y="34" width="100" height="62" rx="6" fill="#e8c39e" stroke="${OL}" stroke-width="3"/><rect x="48" y="34" width="16" height="62" fill="#d9ab80"/><g class="flapL" style="transform-origin:8px 36px"><path d="M8 36 L56 36 L48 18 L4 22 Z" fill="#d9ab80" stroke="${OL}" stroke-width="3" stroke-linejoin="round"/></g><g class="flapR" style="transform-origin:104px 36px"><path d="M56 36 L104 36 L108 22 L64 18 Z" fill="#d9ab80" stroke="${OL}" stroke-width="3" stroke-linejoin="round"/></g><text x="56" y="74" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="700" font-size="14" fill="${OL}">HOME</text></svg>`;
+  Object.assign(mb.style, { left: '232px', top: '462px', width: '112px', height: '100px' });
+  mb.innerHTML = `<svg viewBox="0 0 112 100"><ellipse cx="58" cy="96" rx="52" ry="6" fill="rgba(40,25,50,.16)"/><path d="M6 34 L84 34 L106 22 L106 84 L84 96 L6 96 Z" fill="#c99a6e" stroke="${OL}" stroke-width="3" stroke-linejoin="round"/><rect x="6" y="34" width="78" height="62" rx="4" fill="#e8c39e" stroke="${OL}" stroke-width="3"/><rect x="38" y="34" width="14" height="62" fill="#d9ab80"/><g class="flapL" style="transform-origin:8px 36px"><path d="M8 36 L46 36 L40 16 L4 22 Z" fill="#d9ab80" stroke="${OL}" stroke-width="3" stroke-linejoin="round"/></g><g class="flapR" style="transform-origin:84px 36px"><path d="M44 36 L84 36 L104 22 L62 16 Z" fill="#d9ab80" stroke="${OL}" stroke-width="3" stroke-linejoin="round"/></g><text x="45" y="74" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="700" font-size="14" fill="${OL}">HOME</text></svg>`;
   board.append(mb);
   const note = el('note', 0, 576, 360, 20); note.style.textAlign = 'left'; note.style.left = '18px';
-  let next = 0, out = null, placed = 0; const n = spots.length;
+  let next = 0, out = null, placed = 0; const n = spots.length, SNAP = 36;
   const upd = () => { note.textContent = next < n ? `${n - next} left in the box${out ? '' : ' · tap it'}` : 'Box is empty'; progress(placed, n, 'placed'); };
   upd();
   mb.addEventListener('click', () => {
     if (out || next >= n || game.over) return;
     const s = order[next++]; mb.classList.add('open'); setTimeout(() => mb.classList.remove('open'), 450); sfx.open();
-    const hs = Math.min(1, 150 / Math.max(s.f.w, s.f.h)), hx = 30, hy = 456 + (120 - s.f.h * hs) / 2;
-    const it = el('it', hx, hy, s.f.w, s.f.h, svgWrap(s.f.d, `0 0 ${s.f.w} ${s.f.h}`));
-    it.style.transformOrigin = 'top left'; it.style.transform = `scale(${hs})`; it.style.zIndex = 20; it.classList.add('pop');
+    const hs = Math.min(1, 150 / Math.max(s.w, s.h)), hx = 24 + (190 - s.w * hs) / 2, hy = 452 + (116 - s.h * hs) / 2;
+    const it = el('it', hx, hy, s.w, s.h, s.svg);
+    it.style.transformOrigin = '0 0'; it.style.transform = `scale(${hs})`; it.style.zIndex = 200; it.classList.add('pop');
     out = it; it.dataset.name = s.name; upd();
     const home = () => { it.style.transform = `scale(${hs})`; glide(it, hx, hy); };
+    const near = () => { const x = parseFloat(it.style.left), y = parseFloat(it.style.top); return spots.filter(o => o.name === s.name && !o.used).map(o => ({ o, d: Math.hypot(x - o.x, y - o.y) })).sort((p, q) => p.d - q.d)[0]; };
     draggable(it, {
-      onStart() { it.style.transform = 'scale(1)'; outlines[s.k].classList.add('show'); },
+      onStart() { it.style.transform = s.tf; },
+      onMove(p) {
+        if (s.wall) it.style.transform = `matrix(1,${p.x < 180 ? -.5 : .5},0,1,0,0)`;
+        const c = near(); it.classList.toggle('warm', !!c && c.d < 70);
+      },
       onDrop() {
-        outlines[s.k].classList.remove('show');
-        const dx = parseFloat(it.style.left) - s.x, dy = parseFloat(it.style.top) - s.y;
-        // the same furniture can have twin spots (two chairs): accept either free one
-        const twin = spots.find(o => o.name === s.name && !o.used && Math.abs(parseFloat(it.style.left) - o.x) < 34 && Math.abs(parseFloat(it.style.top) - o.y) < 34);
-        const target = (Math.abs(dx) < 34 && Math.abs(dy) < 34 && !s.used) ? s : twin;
+        it.classList.remove('warm');
+        const c = near(), target = c && c.d < SNAP ? c.o : null;
         if (target) {
-          target.used = true; it.classList.add('done'); it.style.zIndex = 4 + target.f.layer * 2 + Math.round(target.y / 100);
-          glide(it, target.x, target.y); sfx.place(); sparks(target.x + target.f.w / 2, target.y + target.f.h / 2);
+          target.used = true; it.classList.add('done'); it.style.zIndex = target.z;
+          if (target.svg !== s.svg) { it.innerHTML = target.svg; it.style.width = target.w + 'px'; it.style.height = target.h + 'px'; }
+          it.style.transform = target.tf; glide(it, target.x, target.y); sfx.place(); sparks(target.x + target.w / 2, target.y + target.h / 2);
           placed++; out = null; upd();
           if (placed === n) { note.textContent = 'All moved in!'; win(); }
         } else {
-          if (parseFloat(it.style.top) < 440) mistake();
+          if (parseFloat(it.style.top) < 430) mistake();
           home(); upd();
         }
       },
