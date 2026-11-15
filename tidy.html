@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Tidy Time</title>
 <meta name="theme-color" content="#eef1f8">
+<script>try { var t = (JSON.parse(localStorage.getItem('pocketArcade.tidy.v1') || '{}').theme) || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); document.documentElement.dataset.theme = t; if (t === 'dark') document.querySelector('meta[name=theme-color]').content = '#1d1829'; } catch (e) { }</script>
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,7 +22,39 @@
   --sun: #ffd166;
   --display: 'Fredoka', 'Nunito', system-ui, sans-serif;
   --body: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --outline: #4a3b52;
+  --track: #dfe4f0;
+  --shadow: #d6dbe8;
+  --locked: #e3e7f1;
+  --locked-ink: #a9b0c2;
+  --star-off: #d9dde8;
+  --table: #f7e3cf;
+  --table-edge: #ecd0b4;
+  --tray: #e3e7f1;
+  --alt: #e9edf6;
+  --alt-edge: #d0d6e4;
+  --scrim: rgba(74,59,82,.35);
+  --room-dim: none;
   color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --bg: #1d1829;
+  --card: #2b2440;
+  --ink: #f3eaf8;
+  --soft: #b2a5c6;
+  --track: #15111f;
+  --shadow: #120e1b;
+  --locked: #241e35;
+  --locked-ink: #675d80;
+  --star-off: #463d5e;
+  --table: #4a3d4a;
+  --table-edge: #3a2f3b;
+  --tray: #262036;
+  --alt: #3a3252;
+  --alt-edge: #211b31;
+  --scrim: rgba(8,5,14,.6);
+  --room-dim: brightness(.72) saturate(.85);
+  color-scheme: dark;
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
@@ -34,35 +67,37 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--pink); outline-
 /* ---------- menu ---------- */
 #menu { flex: 1; overflow-y: auto; padding: 18px 16px 28px; display: flex; flex-direction: column; gap: 16px; }
 .top { display: flex; justify-content: space-between; align-items: center; }
+.themebtn { display: flex; align-items: center; gap: 6px; border: 0; border-radius: 999px; padding: 7px 12px 7px 9px; background: var(--card); color: var(--ink); box-shadow: 0 3px 0 var(--shadow); font-weight: 800; font-size: 13px; }
+.themebtn svg { width: 18px; height: 18px; }
 .top a { color: var(--soft); font-weight: 700; font-size: 14px; text-decoration: none; }
 .logo { font-family: var(--display); font-weight: 700; font-size: 38px; line-height: 1; margin: 0; color: var(--ink); letter-spacing: .5px; }
 .logo span { color: var(--pink); }
 .tag { margin: 6px 0 0; color: var(--soft); font-size: 15px; line-height: 1.45; max-width: 36ch; }
-.modes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: #dfe4f0; padding: 5px; border-radius: 16px; }
+.modes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--track); padding: 5px; border-radius: 16px; }
 .modes button { border: 0; background: none; padding: 10px; border-radius: 12px; font-family: var(--display); font-weight: 600; font-size: 16px; color: var(--soft); }
-.modes button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: 0 2px 0 #cfd5e4; }
+.modes button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: 0 2px 0 var(--shadow); }
 .modehint { margin: -6px 2px 0; font-size: 13px; color: var(--soft); }
 .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.lv { position: relative; aspect-ratio: 1 / 1.05; border: 0; border-radius: 20px; background: var(--card); box-shadow: 0 4px 0 #d6dbe8; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 8px; }
-.lv:active { transform: translateY(2px); box-shadow: 0 2px 0 #d6dbe8; }
+.lv { position: relative; aspect-ratio: 1 / 1.05; border: 0; border-radius: 20px; background: var(--card); box-shadow: 0 4px 0 var(--shadow); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 8px; }
+.lv:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--shadow); }
 .lv .n { font-family: var(--display); font-weight: 700; font-size: 26px; }
 .lv .ty { font-size: 11px; font-weight: 800; color: var(--soft); text-transform: uppercase; letter-spacing: .4px; }
 .lv svg.ic { width: 30px; height: 30px; }
 .stars { font-size: 14px; letter-spacing: 1px; color: #e0c27a; }
-.stars .off { color: #d9dde8; }
-.lv.locked { background: #e3e7f1; box-shadow: none; color: #a9b0c2; }
+.stars .off { color: var(--star-off); }
+.lv.locked { background: var(--locked); box-shadow: none; color: var(--locked-ink); }
 .lv.locked .lock { width: 26px; height: 26px; }
 .lv.next { outline: 3px solid var(--pink); outline-offset: -3px; }
 
 /* ---------- play ---------- */
 #play { flex: 1; display: flex; flex-direction: column; min-height: 0; }
 .bar { display: flex; align-items: center; gap: 8px; padding: 10px 12px 6px; }
-.iconbtn { width: 40px; height: 40px; border: 0; border-radius: 12px; background: var(--card); box-shadow: 0 3px 0 #d6dbe8; display: grid; place-items: center; }
+.iconbtn { width: 40px; height: 40px; border: 0; border-radius: 12px; background: var(--card); color: var(--ink); box-shadow: 0 3px 0 var(--shadow); display: grid; place-items: center; }
 .iconbtn svg { width: 20px; height: 20px; }
 .ttl { flex: 1; min-width: 0; }
 .ttl b { display: block; font-family: var(--display); font-weight: 600; font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ttl small { display: block; color: var(--soft); font-size: 13px; font-weight: 700; }
-.timer { height: 8px; margin: 0 12px; border-radius: 4px; background: #dfe4f0; overflow: hidden; }
+.timer { height: 8px; margin: 0 12px; border-radius: 4px; background: var(--track); overflow: hidden; }
 .timer div { height: 100%; width: 100%; background: linear-gradient(90deg, var(--mint), #5cc7a8); transition: width .2s linear; }
 .timer.low div { background: linear-gradient(90deg, #ff9f9f, var(--pink)); }
 .wrap { flex: 1; min-height: 0; position: relative; }
@@ -78,19 +113,20 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--pink); outline-
 .pop { animation: popin .3s cubic-bezier(.3,1.6,.5,1); }
 @keyframes popin { from { transform: scale(.6); } to { transform: scale(1); } }
 
-.table { position: absolute; border-radius: 26px; background: #f7e3cf; box-shadow: inset 0 -8px 0 #ecd0b4; }
-.bin { position: absolute; border-radius: 22px 22px 28px 28px; border: 3px solid var(--ink); display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 8px; transition: transform .15s; }
+.table { position: absolute; border-radius: 26px; background: var(--table); box-shadow: inset 0 -8px 0 var(--table-edge); }
+.bin { position: absolute; border-radius: 22px 22px 28px 28px; border: 3px solid var(--outline); color: var(--outline); display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 8px; transition: transform .15s; }
 .bin .lbl { font-family: var(--display); font-weight: 600; font-size: 14px; background: rgba(255,255,255,.85); border-radius: 10px; padding: 2px 8px; }
-.bin .cnt { font-size: 12px; font-weight: 800; color: var(--ink); opacity: .7; margin-top: 2px; }
+.bin .cnt { font-size: 12px; font-weight: 800; color: var(--outline); opacity: .7; margin-top: 2px; }
 .bin svg { width: 34px; height: 34px; margin-bottom: 2px; }
 .bin.ok { transform: scale(1.06); }
 .bin.bad { animation: shake .35s; border-color: #e0566f; }
 
-.box { position: absolute; border-radius: 10px; background: #e8c39e; border: 3px solid var(--ink); box-shadow: inset 0 0 0 6px #d9ab80; }
+.box { position: absolute; border-radius: 10px; background: #e8c39e; border: 3px solid var(--outline); box-shadow: inset 0 0 0 6px #d9ab80; }
 .cell { position: absolute; border-radius: 6px; background: rgba(255,255,255,.35); }
-.tray { position: absolute; border-radius: 22px; background: #e3e7f1; }
+.tray { position: absolute; border-radius: 22px; background: var(--tray); }
 
-.room { position: absolute; overflow: hidden; border-radius: 22px; border: 3px solid var(--ink); }
+.room { position: absolute; overflow: hidden; border-radius: 22px; border: 3px solid var(--outline); }
+.room > svg:first-child { filter: var(--room-dim); transition: filter .3s; }
 .spot { position: absolute; border: 3px dashed var(--pink); border-radius: 14px; background: rgba(255,143,171,.12); opacity: 0; transition: opacity .2s; pointer-events: none; animation: glowspot 1s infinite alternate; }
 .spot.show { opacity: 1; }
 @keyframes glowspot { from { box-shadow: 0 0 0 0 rgba(255,143,171,.0); } to { box-shadow: 0 0 18px 4px rgba(255,143,171,.55); } }
@@ -105,15 +141,15 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--pink); outline-
 @keyframes spark { to { transform: translate(var(--dx), var(--dy)) scale(.2); opacity: 0; } }
 
 /* ---------- win / lose ---------- */
-.overlay { position: fixed; inset: 0; background: rgba(74,59,82,.35); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
-.card { width: 100%; max-width: 330px; background: var(--card); border-radius: 28px; padding: 24px 20px 18px; text-align: center; box-shadow: 0 8px 0 #d6dbe8; animation: popin .35s cubic-bezier(.3,1.6,.5,1); }
+.overlay { position: fixed; inset: 0; background: var(--scrim); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
+.card { width: 100%; max-width: 330px; background: var(--card); border-radius: 28px; padding: 24px 20px 18px; text-align: center; box-shadow: 0 8px 0 var(--shadow); animation: popin .35s cubic-bezier(.3,1.6,.5,1); }
 .card h2 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 34px; color: var(--pink); }
 .card p { margin: 8px 0 0; color: var(--soft); font-weight: 700; line-height: 1.4; }
 .bigstars { font-size: 42px; letter-spacing: 6px; margin-top: 8px; color: #f2b84b; }
-.bigstars .off { color: #e1e5ef; }
+.bigstars .off { color: var(--star-off); }
 .btns { display: grid; gap: 8px; margin-top: 16px; }
 .btn { border: 0; border-radius: 16px; padding: 13px; font-family: var(--display); font-weight: 600; font-size: 18px; background: var(--pink); color: #fff; box-shadow: 0 4px 0 #e06c8b; }
-.btn.alt { background: #e9edf6; color: var(--ink); box-shadow: 0 4px 0 #d0d6e4; }
+.btn.alt { background: var(--alt); color: var(--ink); box-shadow: 0 4px 0 var(--alt-edge); }
 .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #e06c8b; }
 .confetti { position: fixed; top: -10px; width: 9px; height: 14px; border-radius: 3px; z-index: 99; pointer-events: none; animation: fall 1.8s ease-in forwards; }
 @keyframes fall { to { transform: translate(var(--dx), 105vh) rotate(720deg); } }
@@ -123,7 +159,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--pink); outline-
 <body>
 <div class="app">
   <main id="menu">
-    <div class="top"><a href="./">‹ Pocket Arcade</a></div>
+    <div class="top"><a href="./">‹ Pocket Arcade</a><button type="button" class="themebtn" id="themeBtn" aria-pressed="false"></button></div>
     <div>
       <h1 class="logo">Tidy <span>Time</span></h1>
       <p class="tag">Pack boxes, sort things where they belong and set up cozy rooms. No rush, no ads.</p>
@@ -138,9 +174,9 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--pink); outline-
 
   <section id="play" hidden>
     <div class="bar">
-      <button type="button" class="iconbtn" id="backBtn" aria-label="Back to levels"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="#4a3b52" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button type="button" class="iconbtn" id="backBtn" aria-label="Back to levels"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <div class="ttl"><b id="lvTitle">Level</b><small id="lvSub"></small></div>
-      <button type="button" class="iconbtn" id="restartBtn" aria-label="Restart level"><svg viewBox="0 0 24 24"><path d="M5 12a7 7 0 1 0 2-5" fill="none" stroke="#4a3b52" stroke-width="3" stroke-linecap="round"/><path d="M4 4v5h5" fill="none" stroke="#4a3b52" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button type="button" class="iconbtn" id="restartBtn" aria-label="Restart level"><svg viewBox="0 0 24 24"><path d="M5 12a7 7 0 1 0 2-5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M4 4v5h5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     </div>
     <div class="timer" id="timer" hidden><div id="timerFill"></div></div>
     <div class="wrap" id="wrap"><div class="board" id="board"></div></div>
@@ -233,6 +269,19 @@ const KEY = 'pocketArcade.tidy.v1';
 let SV = { best: {}, mode: 'relaxed' };
 try { const raw = localStorage.getItem(KEY); if (raw) SV = Object.assign(SV, JSON.parse(raw)); } catch (e) { }
 function saveSV() { try { localStorage.setItem(KEY, JSON.stringify(SV)); } catch (e) { } }
+
+// ---------- light / dark ----------
+const MOON = '<svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" fill="#b58df2" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+const SUN = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5" fill="#ffd166" stroke="currentColor" stroke-width="2"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+function applyTheme(t) {
+  document.documentElement.dataset.theme = t;
+  const m = document.querySelector('meta[name=theme-color]'); if (m) m.content = t === 'dark' ? '#1d1829' : '#eef1f8';
+  const b = $('themeBtn'); const dark = t === 'dark';
+  b.innerHTML = (dark ? SUN : MOON) + (dark ? 'Light' : 'Dark');
+  b.setAttribute('aria-pressed', String(dark)); b.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+}
+applyTheme(document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light');
+$('themeBtn').addEventListener('click', () => { const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; SV.theme = t; saveSV(); applyTheme(t); });
 const bestOf = i => SV.best[i] || {};
 const cleared = i => !!(bestOf(i).relaxed || bestOf(i).timed);
 const unlocked = i => i === 0 || cleared(i - 1);
@@ -525,7 +574,7 @@ function renderMenu() {
     const b = document.createElement('button'); b.type = 'button'; const open = unlocked(i), st = bestOf(i)[SV.mode] || 0;
     b.className = 'lv' + (open ? '' : ' locked') + (i === firstOpen ? ' next' : '');
     b.innerHTML = open ? `<svg class="ic" viewBox="0 0 100 100">${TYPE_ICON[lv.type]}</svg><span class="n">${i + 1}</span><span class="ty">${TYPE_LABEL[lv.type]}</span><span class="stars">${starHTML(st)}</span>`
-      : `<svg class="lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="3" fill="#a9b0c2"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="#a9b0c2" stroke-width="2.5"/></svg><span class="ty">Level ${i + 1}</span>`;
+      : `<svg class="lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="3" fill="currentColor"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2.5"/></svg><span class="ty">Level ${i + 1}</span>`;
     b.setAttribute('aria-label', open ? `Level ${i + 1}, ${lv.name}, ${TYPE_LABEL[lv.type]}, ${st} stars` : `Level ${i + 1}, locked`);
     b.disabled = !open; b.onclick = () => { ac(); startLevel(i); };
     g.append(b);
