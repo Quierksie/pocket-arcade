@@ -85,9 +85,10 @@ h2 { font-family: var(--display); font-weight: 800; font-size: 20px; margin: 14p
 .card .win svg.art { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .card .win::after { content: ''; position: absolute; inset: 0; border-radius: 8px; box-shadow: inset 0 0 0 2.5px var(--d); pointer-events: none; }
 .card .stage { font-size: 9.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; color: #fff; background: var(--d); align-self: flex-start; padding: 2px 8px; border-radius: 0 0 8px 8px; margin-top: -4px; }
-.card .atk { display: grid; grid-template-columns: 50px 1fr auto; align-items: center; gap: 6px; padding: 3px 2px; border-bottom: 1px solid rgba(43,33,64,.12); }
-.card .atk .cost { display: flex; gap: 2px; }
-.card .atk .an { font-weight: 900; font-size: 13.5px; }
+.card .atk { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 6px; padding: 3px 2px; border-bottom: 1px solid rgba(43,33,64,.12); }
+.card .atk .cost { display: flex; gap: 1px; }
+.card .atk .an { font-weight: 900; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card .atk .cost { min-width: 50px; }
 .card .atk .dmg { font-family: var(--display); font-weight: 800; font-size: 19px; line-height: 1; }
 .card .fl { font-size: 9.3px; font-style: italic; line-height: 1.25; color: #5a4d6a; flex: 1; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; padding: 0 2px; }
 .card .meta { display: flex; align-items: center; justify-content: space-between; font-size: 9px; font-weight: 900; color: #6a5d7a; letter-spacing: .3px; }
@@ -264,42 +265,42 @@ const RARITY = { C: { name: 'Common', v: 3 }, U: { name: 'Uncommon', v: 8 }, R: 
 // ---------- the Wildspark set ----------
 // [name, element, rarity, stage, evolvesFrom, hp, [attack, cost, dmg], [attack, cost, dmg], flavor]
 const CARD_LIST = [
-  ['Kindlecub', 'fire', 'C', 0, null, 60, ['Warm Hug', 1, 10], ['Ember Toss', 2, 30], 'Its head flame flickers brighter whenever someone tells it a story.'],
-  ['Bonfursa', 'fire', 'H', 1, 'Kindlecub', 150, ['Log Slam', 2, 60], ['Campfire Roar', 3, 120], 'Travelers who get lost in the woods follow the glow on its back home.'],
-  ['Coalby', 'fire', 'C', 0, null, 70, ['Soot Sneeze', 1, 10], ['Hot Pounce', 2, 30], 'Leaves tiny sooty paw prints everywhere it naps.'],
-  ['Magmastiff', 'fire', 'R', 1, 'Coalby', 140, ['Crust Crunch', 2, 50], ['Lava Drool', 3, 110], 'Its crusty hide cracks open when it gets excited, which is often.'],
+  ['Toastle', 'fire', 'C', 0, null, 60, ['Crumb Toss', 1, 10], ['Hot Butter', 2, 30], 'Pops up every morning at exactly 7:00, ready to help.'],
+  ['Toastomatic', 'fire', 'H', 1, 'Toastle', 150, ['Pop Up', 2, 50], ['Golden Brown', 3, 130], 'Two slots, four settings, zero patience for burnt toast.'],
+  ['Matchling', 'fire', 'C', 0, null, 50, ['Strike', 1, 20], ['Spark Dash', 2, 30], 'Rubs its head on anything rough. Keep it away from paper.'],
+  ['Torchknight', 'fire', 'R', 1, 'Matchling', 130, ['Shield Bash', 2, 40], ['Blazing Oath', 3, 110], 'Swore to light the way for anyone lost in the dark.'],
   ['Smorlet', 'fire', 'U', 0, null, 60, ['Toasty Tap', 1, 20], ['Goo Bomb', 2, 40], 'Smells like a summer campfire. Please do not eat it.'],
-  ['Puddlop', 'water', 'C', 0, null, 60, ['Splish', 1, 10], ['Puddle Jump', 2, 30], 'Shows up after every rainstorm, wearing a brand new lily pad.'],
-  ['Tidetoad', 'water', 'U', 1, 'Puddlop', 110, ['Croak Wave', 2, 40], ['High Tide', 3, 80], 'One belly flop from it can flood a whole riverbank.'],
-  ['Teacrab', 'water', 'C', 0, null, 50, ['Pinch', 1, 10], ['Hot Splash', 2, 30], 'It picks the fanciest teacup it can find and refuses to share.'],
-  ['Kettlecrab', 'water', 'R', 1, 'Teacrab', 130, ['Steam Whistle', 2, 50], ['Boiling Clamp', 3, 100], 'When its kettle starts whistling, everyone knows to back away.'],
-  ['Buoysloth', 'water', 'U', 0, null, 90, ['Drift', 1, 20], ['Slow Crash', 3, 70], 'Has been floating in the same lazy circle for three days.'],
-  ['Bonsaipup', 'leaf', 'C', 0, null, 60, ['Leaf Lick', 1, 10], ['Sapling Swat', 2, 30], 'Wags its tail extra hard after a good watering.'],
-  ['Bonsaiku', 'leaf', 'R', 1, 'Bonsaipup', 140, ['Calm Breeze', 2, 40], ['Ancient Root', 3, 110], 'The tree on its back has been growing for a hundred years.'],
-  ['Mosslug', 'leaf', 'C', 0, null, 60, ['Slime Trail', 1, 10], ['Spore Puff', 2, 30], 'Wherever it crawls, tiny mushrooms pop up the next morning.'],
-  ['Fungoliath', 'leaf', 'U', 1, 'Mosslug', 130, ['Cozy Shelter', 2, 40], ['Mushroom Quake', 3, 90], 'Small forest critters rent rooms in its shell for one acorn a night.'],
-  ['Cactoot', 'leaf', 'U', 0, null, 80, ['Prickle Hoot', 1, 20], ['Desert Glare', 2, 50], 'Hoots once at sunrise and once at sunset. Never in between.'],
-  ['Bulbug', 'volt', 'C', 0, null, 50, ['Flicker', 1, 10], ['Static Wiggle', 2, 30], 'Glows brighter the more snacks you give it.'],
-  ['Filamoth', 'volt', 'R', 1, 'Bulbug', 120, ['Dazzle Dust', 2, 50], ['Filament Flash', 3, 100], 'Moths across the valley gather around it every night.'],
-  ['Plugpig', 'volt', 'C', 0, null, 60, ['Zap Snort', 1, 10], ['Cord Whip', 2, 30], 'Sniffs out outlets the way other pigs sniff out truffles.'],
-  ['Boarcharge', 'volt', 'U', 1, 'Plugpig', 120, ['Jolt Tackle', 2, 50], ['Full Charge', 3, 90], 'Charges for a full night, then sprints all day.'],
-  ['Stormjel', 'volt', 'H', 0, null, 110, ['Drizzle', 1, 20], ['Thunder Sting', 3, 110], 'Drifts along with storm clouds, zapping anything that gets too close.'],
-  ['Wispurr', 'spirit', 'C', 0, null, 50, ['Spooky Purr', 1, 10], ['Vanish Swipe', 2, 30], 'If your room feels cold and smells like candles, one is curled up nearby.'],
-  ['Grimalkyn', 'spirit', 'H', 1, 'Wispurr', 140, ['Grin Gleam', 2, 60], ['Ninefold Hex', 3, 130], 'You will see its grin long before you see the rest of it.'],
-  ['Sheetling', 'spirit', 'C', 0, null, 50, ['Peekaboo', 1, 10], ['Blanket Fort', 2, 20], 'Only haunts houses with very comfy beds.'],
-  ['Quiltergeist', 'spirit', 'H', 1, 'Sheetling', 130, ['Stitch Up', 2, 50], ['Patchwork Curse', 3, 120], 'Every patch on its quilt came from a different haunted house.'],
-  ['Mirrorwraith', 'spirit', 'H', 0, null, 120, ['Reflect', 2, 40], ['Shatter Scream', 3, 120], 'Look into its glass and it shows you, but smiling a little too wide.'],
-  ['Pebblit', 'stone', 'C', 0, null, 70, ['Roll Over', 1, 10], ['Pebble Pelt', 2, 30], 'Collects smaller pebbles and lines them up by size.'],
-  ['Cairnhorn', 'stone', 'R', 1, 'Pebblit', 170, ['Stack Stomp', 2, 60], ['Avalanche Charge', 3, 120], 'Hikers add a stone to its back for luck. It does not mind.'],
-  ['Geodle', 'stone', 'H', 0, null, 110, ['Sparkle Shake', 2, 40], ['Crystal Groom', 3, 100], 'Plain and rocky outside, dazzling inside. It knows it, too.'],
-  ['Frostfawn', 'frost', 'C', 0, null, 60, ['Snow Nuzzle', 1, 10], ['Icicle Poke', 2, 30], 'Its first frost antlers grow in on the coldest night of the year.'],
-  ['Glacielk', 'frost', 'H', 1, 'Frostfawn', 160, ['Northern Light', 2, 60], ['Glacier Crown', 3, 130], 'When it lifts its head, the aurora moves with it.'],
-  ['Mittenmole', 'frost', 'U', 0, null, 80, ['Snow Dig', 1, 20], ['Mitten Smack', 2, 50], 'Knits a new pair of mittens every winter and loses one by spring.'],
-  ['Foldove', 'sky', 'C', 0, null, 50, ['Paper Cut', 1, 10], ['Glide', 2, 30], 'Folded itself into being out of a forgotten letter.'],
-  ['Cranegami', 'sky', 'H', 1, 'Foldove', 130, ['Crisp Wing', 2, 50], ['Thousand Folds', 3, 120], 'Legend says if you collect a thousand of them, you get a wish.'],
-  ['Chronowl', 'stone', 'UR', 0, null, 200, ['Tick Tock', 2, 70], ['Rewind', 4, 180], 'Its pendulum tail has never missed a beat. Not even once.'],
-  ['Aurorca', 'frost', 'UR', 0, null, 220, ['Polar Song', 2, 80], ['Sky Breach', 4, 200], 'It swims through the night sky, painting the aurora as it goes.'],
-  ['Nebuloo', 'sky', 'UR', 0, null, 180, ['Stardust', 2, 60], ['Big Bang Boop', 4, 220], 'Some say it is a tiny galaxy that wanted to be held.'],
+  ['Raindrip', 'water', 'C', 0, null, 50, ['Drizzle', 1, 10], ['Puddle Plop', 2, 30], 'Carries an umbrella everywhere. Nobody knows why.'],
+  ['Stormbrella', 'water', 'H', 1, 'Raindrip', 140, ['Downpour', 2, 60], ['Thunder Twirl', 3, 120], 'Spins its canopy to call storms, then shelters anyone caught in them.'],
+  ['Soapsud', 'water', 'C', 0, null, 60, ['Bubble Blow', 1, 10], ['Slippery Slide', 2, 30], 'Smells like lavender. Leaves everything squeaky clean.'],
+  ['Lathertub', 'water', 'R', 1, 'Soapsud', 140, ['Foam Wave', 2, 50], ['Bath Blast', 3, 100], 'Its bath water is always the perfect temperature.'],
+  ['Sushimi', 'water', 'U', 0, null, 80, ['Chopstick Jab', 1, 20], ['Wasabi Kick', 2, 50], 'Very proud of its salmon blanket. Do not touch the blanket.'],
+  ['Pipseed', 'leaf', 'C', 0, null, 50, ['Sprinkle', 1, 10], ['Seed Shot', 2, 30], 'Waters itself every morning, then naps in the sun.'],
+  ['Blossomage', 'leaf', 'H', 1, 'Pipseed', 140, ['Petal Storm', 2, 60], ['Full Bloom', 3, 120], 'One wave of its staff turns a parking lot into a meadow.'],
+  ['Broccolo', 'leaf', 'C', 0, null, 70, ['Flex', 1, 10], ['Floret Press', 2, 30], 'Eats its vegetables. Lifts every day. Very proud of both.'],
+  ['Gherkid', 'leaf', 'U', 0, null, 70, ['Toothpick Poke', 1, 20], ['Brine Charge', 2, 50], 'Escaped the jar and swore never to go back.'],
+  ['Matchatoo', 'leaf', 'U', 0, null, 80, ['Whisk Whirl', 1, 20], ['Calm Steam', 2, 40], 'Brews the perfect cup and insists you slow down and enjoy it.'],
+  ['Batteri', 'volt', 'C', 0, null, 50, ['Static Poke', 1, 10], ['Bolt Swing', 2, 30], 'Always sure it has more charge left than it really does.'],
+  ['Megawatt', 'volt', 'R', 1, 'Batteri', 150, ['Jump Start', 2, 50], ['Overcharge', 3, 120], 'Can restart a car, a toaster, or a bad mood.'],
+  ['Popkern', 'volt', 'C', 0, null, 50, ['Pop!', 1, 10], ['Butter Burst', 2, 30], 'Gets so excited it pops. Then gets excited about that.'],
+  ['Lampling', 'volt', 'U', 0, null, 70, ['Night Light', 1, 20], ['Bright Idea', 2, 50], 'Stays up late reading and never needs a flashlight.'],
+  ['Remoty', 'volt', 'U', 0, null, 60, ['Channel Flip', 1, 20], ['Power Off', 2, 50], 'Hides between the couch cushions on purpose.'],
+  ['Spookie', 'spirit', 'C', 0, null, 50, ['Sprinkle Scare', 1, 10], ['Fresh Batch', 2, 30], 'Bakes itself every Halloween, then haunts the cookie jar.'],
+  ['Hauntcake', 'spirit', 'H', 1, 'Spookie', 140, ['Ghost Frosting', 2, 50], ['Last Slice', 3, 130], 'Blow out its candles and they come right back, a little more purple.'],
+  ['Snoozy', 'spirit', 'C', 0, null, 50, ['Yawn', 1, 10], ['Pillow Toss', 2, 20], 'Only haunts people who stay up way too late.'],
+  ['Dreamwisp', 'spirit', 'R', 1, 'Snoozy', 120, ['Lullaby', 2, 40], ['Moonbeam', 3, 100], 'Rides the moon each night, delivering good dreams.'],
+  ['Lanternette', 'spirit', 'U', 0, null, 80, ['Flicker Glow', 1, 20], ['Spirit Flame', 2, 50], 'Lights the path home for wandering spirits.'],
+  ['Rocklet', 'stone', 'C', 0, null, 60, ['Sugar Smack', 1, 10], ['Crystal Bonk', 2, 30], 'Grows a new crystal every time it gets a compliment.'],
+  ['Gemmajesty', 'stone', 'H', 1, 'Rocklet', 160, ['Royal Decree', 2, 60], ['Crown Jewel', 3, 130], 'Rules the crystal caves fairly, but expects a curtsy.'],
+  ['Brickbo', 'stone', 'C', 0, null, 70, ['Trowel Tap', 1, 10], ['Wall Up', 2, 30], 'Has built over a thousand tiny walls. Still not done.'],
+  ['Mittenkit', 'frost', 'C', 0, null, 60, ['Knit Purl', 1, 10], ['Yarn Toss', 2, 30], 'Knits itself a twin every winter, but only ever finds one.'],
+  ['Scarfwyrm', 'frost', 'H', 1, 'Mittenkit', 150, ['Cozy Wrap', 2, 50], ['Blizzard Loop', 3, 130], 'Wraps around lost travelers and keeps them warm till morning.'],
+  ['Iglooby', 'frost', 'U', 0, null, 90, ['Ice Fishing', 1, 20], ['Snow Fort', 2, 50], 'Always has a fish on the line. Never says where it caught it.'],
+  ['Kitelet', 'sky', 'C', 0, null, 50, ['Tail Twirl', 1, 10], ['Gust Glide', 2, 30], 'Only flies on windy days, and never lets go of its string.'],
+  ['Kitedrake', 'sky', 'H', 1, 'Kitelet', 140, ['Ribbon Lash', 2, 50], ['Festival Sky', 3, 120], 'Shows up at every kite festival. Nobody brought it.'],
+  ['Tickletock', 'stone', 'UR', 0, null, 200, ['Wind Up', 2, 70], ['Big Chime', 4, 180], 'It has kept perfect time for three hundred years and is very smug about it.'],
+  ['Cosmochef', 'sky', 'UR', 0, null, 210, ['Star Whisk', 2, 80], ['Supernova', 4, 200], 'Every star in the sky came out of its mixing bowl.'],
+  ['Moonmochi', 'sky', 'UR', 0, null, 180, ['Mallet Bop', 2, 60], ['Moon Feast', 4, 220], 'Pounds moon mochi all night long. Look up and you might see it.'],
 ];
 const CARDS = CARD_LIST.map(([name, el, r, stage, from, hp, a1, a2, flavor], i) => ({ id: i + 1, name, el, r, stage, from, hp, atk: [a1, a2], flavor }));
 const BYNAME = Object.fromEntries(CARDS.map(c => [c.name, c]));
@@ -322,56 +323,387 @@ const E = (cx, cy, rx, ry, fill, w = 3, extra = '') => `<ellipse cx="${cx}" cy="
 const C = (cx, cy, r, fill, w = 3, extra = '') => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" ${w ? st(w) : ''} ${extra}/>`;
 const R = (x, y, w, h, rx, fill, sw = 3, extra = '') => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="${fill}" ${sw ? st(sw) : ''} ${extra}/>`;
 
+// one face style for the whole set (based on Smorlet): big glossy eyes, blush, small mouth
+function face(x, y, k = 1, mood = 'smile') {
+  const dx = 10 * k, r = 5.6 * k;
+  let eyes = eye(x - dx, y, r) + eye(x + dx, y, r);
+  if (mood === 'sleepy') eyes = `<path d="M${x - dx - 4.5 * k} ${y} Q${x - dx} ${y + 4.5 * k} ${x - dx + 4.5 * k} ${y} M${x + dx - 4.5 * k} ${y} Q${x + dx} ${y + 4.5 * k} ${x + dx + 4.5 * k} ${y}" fill="none" ${st(2.6)}/>`;
+  if (mood === 'happy') eyes = `<path d="M${x - dx - 4.5 * k} ${y + 1.5 * k} Q${x - dx} ${y - 4.5 * k} ${x - dx + 4.5 * k} ${y + 1.5 * k} M${x + dx - 4.5 * k} ${y + 1.5 * k} Q${x + dx} ${y - 4.5 * k} ${x + dx + 4.5 * k} ${y + 1.5 * k}" fill="none" ${st(2.8)}/>`;
+  const brows = mood === 'brave' ? `<path d="M${x - dx - 5 * k} ${y - 9 * k} L${x - dx + 4 * k} ${y - 6.5 * k} M${x + dx + 5 * k} ${y - 9 * k} L${x + dx - 4 * k} ${y - 6.5 * k}" ${st(2.6)}/>` : '';
+  const my = y + 9 * k;
+  let mouth = smile(x, my, 4.8 * k);
+  if (mood === 'open' || mood === 'happy') mouth = `<path d="M${x - 5.5 * k} ${my - 1} Q${x} ${my + 9 * k} ${x + 5.5 * k} ${my - 1} Z" fill="#8a3048" ${st(2.4)}/><path d="M${x - 2.6 * k} ${my + 3.6 * k} Q${x} ${my + 1.4 * k} ${x + 2.6 * k} ${my + 3.6 * k} Q${x} ${my + 6.2 * k} ${x - 2.6 * k} ${my + 3.6 * k} Z" fill="#ff8fab"/>`;
+  if (mood === 'grin') mouth = `<path d="M${x - 7 * k} ${my - 1} Q${x} ${my + 8 * k} ${x + 7 * k} ${my - 1} Z" fill="#fff" ${st(2.4)}/>`;
+  if (mood === 'wow') mouth = `<ellipse cx="${x}" cy="${my + 1.5 * k}" rx="${3.2 * k}" ry="${4 * k}" fill="#8a3048" ${st(2.2)}/>`;
+  if (mood === 'brave') mouth = `<path d="M${x - 5 * k} ${my} Q${x} ${my + 4 * k} ${x + 5 * k} ${my}" fill="none" ${st(2.6)}/>`;
+  return eyes + brows + mouth + blush(x - 18 * k, y + 7 * k, 5 * k) + blush(x + 18 * k, y + 7 * k, 5 * k);
+}
+const hand = (x, y, c, r = 6) => C(x, y, r, c, 2.6);
+const limb = (x1, y1, x2, y2, c, w = 7) => `<path d="M${x1} ${y1} L${x2} ${y2}" stroke="${O}" stroke-width="${w + 5}" stroke-linecap="round"/><path d="M${x1} ${y1} L${x2} ${y2}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`;
+const bend = (d, c, w = 7) => `<path d="${d}" fill="none" stroke="${O}" stroke-width="${w + 5}" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+const bubble = (x, y, r) => C(x, y, r, '#ffffff', 2, 'fill-opacity=".35"') + `<path d="M${x - r * .5} ${y - r * .2} Q${x - r * .4} ${y - r * .55} ${x - r * .05} ${y - r * .6}" stroke="#fff" stroke-width="${Math.max(1.5, r * .22)}" fill="none" stroke-linecap="round"/>`;
+const zz = (x, y) => `<text x="${x}" y="${y}" font-family="Baloo 2, sans-serif" font-weight="800" font-size="15" fill="${O}" opacity=".65">z</text><text x="${x + 12}" y="${y - 12}" font-family="Baloo 2, sans-serif" font-weight="800" font-size="11" fill="${O}" opacity=".45">z</text>`;
+
 const ART = {
-  Kindlecub: () => shadow(100, 138, 38)
-    + E(70, 110, 9, 13, '#c4682f', 3, 'transform="rotate(25 70 110)"') + E(130, 110, 9, 13, '#c4682f', 3, 'transform="rotate(-25 130 110)"')
-    + E(100, 110, 33, 28, '#de853f') + E(100, 116, 20, 16, '#f9d7a8', 0)
-    + E(84, 136, 13, 7, '#c4682f') + E(116, 136, 13, 7, '#c4682f')
-    + C(74, 54, 12, '#c4682f') + C(126, 54, 12, '#c4682f') + C(74, 54, 6, '#f2b48a', 0) + C(126, 54, 6, '#f2b48a', 0)
-    + C(100, 76, 30, '#de853f') + shine(84, 60, 9, 5)
-    + flame(100, 42, 1.25)
-    + E(100, 87, 13, 9, '#f9d7a8', 2.5) + E(100, 83, 4.5, 3.2, O, 0) + smile(100, 88, 4.5)
-    + eye(88, 72, 5.5) + eye(112, 72, 5.5) + blush(79, 84) + blush(121, 84)
-    + spark(150, 40, .8, '#ffd27a') + spark(46, 70, .6, '#ffd27a'),
+  Toastle: () => shadow(100, 141, 38)
+    + `<path d="M84 22 Q80 14 86 8 M100 20 Q96 12 102 6 M116 22 Q112 14 118 8" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7"/>`
+    + E(88, 134, 9, 6, '#c98a4a') + E(112, 134, 9, 6, '#c98a4a') + limb(90, 124, 88, 132, '#e0a35a', 6) + limb(110, 124, 112, 132, '#e0a35a', 6)
+    + bend('M64 92 Q50 98 46 108', '#e0a35a', 7)
+    + `<g transform="rotate(-38 40 104)">${R(34, 64, 12, 40, 6, '#eef3fb')}${R(35.5, 102, 9, 18, 4, '#9a6440')}</g>` + hand(46, 108, '#e0a35a')
+    + P('M64 128 L64 72 Q52 68 54 52 Q58 32 82 34 Q100 22 118 34 Q142 32 146 52 Q148 68 136 72 L136 128 Z', '#d99447')
+    + P('M72 122 L72 76 Q63 72 64 59 Q67 43 85 44 Q100 34 115 44 Q133 43 136 59 Q137 72 128 76 L128 122 Z', '#ffe2a8', 0)
+    + E(84, 110, 5, 3, '#f2c27a', 0) + E(118, 70, 4, 2.5, '#f2c27a', 0) + E(112, 114, 3.5, 2.2, '#f2c27a', 0) + shine(84, 58, 9, 5)
+    + `<g transform="rotate(-8 100 34)">${R(88, 26, 26, 14, 4, '#fff2a6')}${R(90, 28, 22, 4, 2, '#fff', 0, 'opacity=".7"')}</g>` + P('M110 40 Q112 50 108 52 Q105 48 107 40 Z', '#fff2a6', 2)
+    + face(100, 86, 1.1, 'open')
+    + bend('M136 90 Q148 84 152 74', '#e0a35a', 7) + hand(152, 72, '#e0a35a'),
 
-  Bonfursa: () => shadow(100, 142, 56)
-    + flame(64, 48, 1.7, '#ff7a2f') + flame(136, 48, 1.7, '#ff7a2f') + flame(100, 34, 2.3, '#ff8a3b')
-    + `<g transform="rotate(-16 100 56)">${R(46, 48, 108, 16, 8, '#8a5634')}${C(50, 56, 7, '#c99063', 2.5)}${C(150, 56, 7, '#c99063', 2.5)}</g>`
-    + `<g transform="rotate(16 100 56)">${R(46, 48, 108, 16, 8, '#9a6440')}${C(50, 56, 7, '#c99063', 2.5)}${C(150, 56, 7, '#c99063', 2.5)}</g>`
-    + E(56, 104, 13, 22, '#a44f28', 3, 'transform="rotate(22 56 104)"') + E(144, 104, 13, 22, '#a44f28', 3, 'transform="rotate(-22 144 104)"')
-    + E(100, 106, 46, 34, '#b85a2c') + E(100, 112, 28, 22, '#f2c08f', 0)
-    + `<path d="M88 104 l4 6 M100 100 l0 7 M112 104 l-4 6" ${st(2)}/>`
-    + E(78, 138, 17, 8, '#a44f28') + E(122, 138, 17, 8, '#a44f28')
-    + C(77, 47, 10, '#a44f28') + C(123, 47, 10, '#a44f28') + C(77, 47, 5, '#f2b48a', 0) + C(123, 47, 5, '#f2b48a', 0)
-    + C(100, 68, 28, '#b85a2c') + shine(86, 54, 8, 4)
-    + E(100, 79, 14, 10, '#f2c08f', 2.5) + E(100, 75, 5, 3.5, O, 0)
-    + `<path d="M92 84 Q100 90 108 84" fill="none" ${st(2.5)}/><path d="M95 85 l1 3 M105 85 l-1 3" ${st(2)}/>`
-    + `<path d="M82 58 L94 62 M118 58 L106 62" ${st(3.5)}/>` + eye(90, 67, 5) + eye(110, 67, 5)
-    + spark(160, 70, .8, '#ffd27a') + spark(36, 60, .7, '#ffd27a') + spark(150, 20, .6, '#ffd27a'),
+  Toastomatic: () => shadow(100, 143, 56)
+    + flame(100, 36, 1.5, '#ff7a2f')
+    + `<g transform="rotate(-12 80 44)">${P('M66 66 L66 34 Q60 30 62 22 Q66 12 80 14 Q92 10 98 22 Q100 30 94 34 L94 66 Z', '#d99447')}${P('M71 62 L71 37 Q66 34 67 27 Q70 19 80 20 Q90 17 92 27 Q93 34 89 37 L89 62 Z', '#ffe2a8', 0)}</g>`
+    + `<g transform="rotate(10 122 40)">${P('M108 66 L108 30 Q102 26 104 18 Q108 8 122 10 Q134 6 140 18 Q142 26 136 30 L136 66 Z', '#d99447')}${P('M113 62 L113 33 Q108 30 109 23 Q112 15 122 16 Q132 13 134 23 Q135 30 131 33 L131 62 Z', '#ffe2a8', 0)}</g>`
+    + bend('M54 84 Q38 74 34 56', '#ff8a6b', 8) + `<g transform="rotate(-20 32 50)">${P('M20 54 Q18 34 32 32 Q46 32 44 50 L44 60 L22 60 Z', '#ffd6e0')}${R(20, 58, 26, 8, 3, '#ff8fab', 2.5)}<path d="M26 40 L38 40 M26 48 L38 48" stroke="#ff8fab" stroke-width="3"/></g>`
+    + R(50, 54, 100, 80, 24, '#ff7f66') + R(56, 58, 88, 10, 5, '#ffa48f', 0) + shine(70, 70, 10, 5)
+    + R(64, 50, 30, 9, 4, '#3a2c3e', 2.5) + R(106, 50, 30, 9, 4, '#3a2c3e', 2.5)
+    + R(50, 104, 100, 16, 0, '#e6ecf5') + `<path d="M50 104 H150 M50 120 H150" ${st(3)}/>`
+    + C(132, 112, 6, '#ffd166', 2.5) + R(150, 72, 14, 8, 3, '#c9d6e3', 2.5) + C(166, 76, 6, '#3a2c3e', 2.5)
+    + E(66, 136, 9, 5, '#c9d6e3') + E(134, 136, 9, 5, '#c9d6e3')
+    + face(98, 82, 1.15, 'grin') + `<path d="M80 70 L90 73 M116 70 L106 73" ${st(2.6)}/>`
+    + bend('M150 96 Q168 92 172 74', '#ff8a6b', 8) + `<path d="M172 74 L178 34" stroke="${O}" stroke-width="9" stroke-linecap="round"/><path d="M172 74 L178 34" stroke="#3a2c3e" stroke-width="4" stroke-linecap="round"/>` + R(168, 16, 22, 20, 4, '#c9d6e3') + `<path d="M172 22 V30 M179 22 V30 M186 22 V30" ${st(1.8)}/>` + hand(172, 74, '#ff8a6b')
+    + spark(26, 98, .6, '#ffe27a') + spark(184, 112, .5, '#ffe27a'),
 
-  Coalby: () => shadow(100, 138, 34)
-    + flame(56, 98, .9, '#ff7a2f')
-    + P('M64 110 L70 88 L88 80 L112 80 L132 90 L138 112 L128 132 L76 132 Z', '#3a3346')
-    + E(80, 132, 11, 7, '#2e2838') + E(120, 132, 11, 7, '#2e2838')
-    + `<path d="M80 100 L92 106 L88 118 M118 96 L110 108 L120 120" fill="none" stroke="#ff8a3b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M80 100 L92 106 L88 118 M118 96 L110 108 L120 120" fill="none" stroke="#ffe27a" stroke-width="1.6" stroke-linecap="round"/>`
-    + P('M76 52 L70 28 L92 44 Z', '#3a3346') + P('M124 52 L130 28 L108 44 Z', '#3a3346') + P('M76 46 L74 36 L84 44 Z', '#ff8a3b', 0)  + P('M124 46 L126 36 L116 44 Z', '#ff8a3b', 0)
-    + P('M70 74 L76 50 L92 42 L112 42 L126 52 L130 74 L118 92 L82 92 Z', '#463e55') + P('M82 52 L96 46 L92 56 Z', '#5a516b', 0)
-    + slit(88, 66, 6.5, '#ffd166') + slit(112, 66, 6.5, '#ffd166')
-    + `<path d="M92 80 Q100 87 108 80" fill="none" ${st(2.5)}/><path d="M96 82 l1.5 4 l1.5 -3.6 Z" fill="#fff"/>`
-    + `<path d="M100 88 L104 92" stroke="#ff8a3b" stroke-width="3" stroke-linecap="round"/>`
-    + spark(146, 70, .6, '#ffb36b') + spark(150, 92, .45, '#ffb36b'),
+  Matchling: () => shadow(100, 141, 30)
+    + flame(100, 30, 1.35, '#ff8a2f')
+    + limb(94, 112, 86, 134, '#f2d1a0', 6) + limb(106, 112, 114, 134, '#f2d1a0', 6) + E(84, 136, 8, 4.5, '#c98a4a') + E(116, 136, 8, 4.5, '#c98a4a')
+    + R(90, 80, 20, 40, 8, '#f6dcae')
+    + bend('M92 92 Q78 98 72 96', '#f6dcae', 6)
+    + `<g transform="rotate(-10 58 98)">${R(42, 86, 34, 26, 3, '#ffcf4d')}${R(42, 92, 34, 10, 0, '#ff5e57', 0)}<path d="M42 92 H76 M42 102 H76" ${st(2)}/>${flame(59, 99, .32, '#fff')}${R(44, 108, 30, 3, 1, '#8a5634', 0)}</g>` + hand(72, 96, '#f6dcae', 5.5)
+    + E(100, 64, 26, 27, '#ff5e57') + E(100, 74, 22, 14, '#e8443e', 0, 'opacity=".35"') + shine(88, 50, 8, 5)
+    + face(100, 64, 1.05, 'open')
+    + bend('M108 90 Q124 82 130 66', '#f6dcae', 6) + hand(130, 64, '#f6dcae', 5.5)
+    + spark(136, 52, .7, '#ffe27a') + spark(146, 66, .45, '#ffe27a') + spark(56, 50, .5, '#ffe27a'),
 
-  Magmastiff: () => shadow(104, 142, 62)
-    + `<path d="M150 92 Q170 70 164 54" fill="none" stroke="${O}" stroke-width="13" stroke-linecap="round"/><path d="M150 92 Q170 70 164 54" fill="none" stroke="#4a3a3a" stroke-width="7" stroke-linecap="round"/>` + flame(164, 50, 1.1, '#ff7a2f')
-    + R(76, 112, 16, 30, 6, '#3d3030') + R(138, 112, 16, 30, 6, '#3d3030')
-    + E(112, 102, 50, 27, '#4a3a3a')
-    + `<path d="M76 92 L92 100 L108 90 L126 100 L142 92 M84 116 L100 108 L116 118 L134 110" fill="none" stroke="#ff7a2f" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M76 92 L92 100 L108 90 L126 100 L142 92 M84 116 L100 108 L116 118 L134 110" fill="none" stroke="#ffd166" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`
-    + R(94, 112, 16, 30, 6, '#4a3a3a') + R(124, 112, 16, 30, 6, '#4a3a3a')
-    + `<path d="M58 92 L64 80 L70 92 L76 80 L82 94 L88 82 L92 96" fill="#1f1a2a" ${st(2.5)}/>`
-    + E(62, 72, 30, 25, '#4a3a3a') + P('M44 54 Q30 60 34 80 Q42 76 48 66 Z', '#382b2b')
-    + E(52, 90, 22, 11, '#382b2b') + E(36, 80, 8, 6, O, 0) + shine(56, 60, 8, 4)
-    + `<path d="M58 66 L66 70 M76 64 L70 68" ${st(3)}/>` + slit(62, 74, 4.5, '#ffb13b') + slit(76, 72, 4.5, '#ffb13b')
-    + `<path d="M44 94 Q42 104 46 108 Q50 104 48 96" fill="#ff7a2f" ${st(2)}/>`,
+  Torchknight: () => shadow(100, 143, 50)
+    + flame(100, 24, 1.5, '#ff7a2f')
+    + limb(90, 124, 86, 136, '#b9c6d6', 9) + limb(110, 124, 114, 136, '#b9c6d6', 9) + E(84, 137, 11, 5.5, '#5a5470') + E(116, 137, 11, 5.5, '#5a5470')
+    + bend('M126 104 Q146 98 150 84', '#b9c6d6', 8)
+    + `<path d="M150 136 L156 56" stroke="${O}" stroke-width="11" stroke-linecap="round"/><path d="M150 136 L156 56" stroke="#9a6440" stroke-width="6" stroke-linecap="round"/>` + R(148, 54, 16, 10, 3, '#ffcf4d', 2.5) + flame(157, 46, 1, '#ff7a2f')
+    + hand(150, 84, '#b9c6d6', 7)
+    + E(100, 108, 30, 26, '#d4dfeb') + R(72, 112, 56, 9, 3, '#9a6440', 2.5) + R(94, 110, 12, 13, 3, '#ffcf4d', 2.5) + shine(84, 96, 8, 4)
+    + C(100, 62, 30, '#c9d6e3') + R(76, 32, 48, 8, 4, '#ff6b5e', 2.5) + shine(84, 44, 9, 4)
+    + R(80, 50, 40, 32, 13, '#ffe0c4', 2.5)
+    + face(100, 62, .92, 'brave')
+    + P('M44 86 L80 82 Q82 112 62 128 Q42 112 44 86 Z', '#ffcf4d') + P('M52 92 L74 90 Q74 108 62 118 Q50 108 52 92 Z', '#ff8a5b', 0) + flame(62, 106, .42, '#fff3c0', '#ffffff')
+    + spark(30, 60, .6, '#ffe27a'),
+
+  Raindrip: () => E(100, 138, 46, 7, '#9ad8ff', 2.5) + E(100, 138, 30, 3.5, '#c9ecff', 0)
+    + `<path d="M120 102 L146 44" stroke="${O}" stroke-width="8" stroke-linecap="round"/><path d="M120 102 L146 44" stroke="#8a5634" stroke-width="3.5" stroke-linecap="round"/><path d="M120 102 Q114 112 120 116" fill="none" ${st(3.5)}/>`
+    + P('M118 50 Q124 22 150 20 Q174 22 176 46 Q170 40 162 46 Q156 38 148 46 Q140 38 132 46 Q124 40 118 50 Z', '#ffd166') + `<path d="M150 20 L148 46 M150 20 L162 46 M150 20 L134 46" stroke="#ff9a3b" stroke-width="2.5"/>` + C(150, 18, 3, '#ff9a3b', 2)
+    + P('M100 36 C120 62 138 82 138 104 A38 34 0 0 1 62 104 C62 82 80 62 100 36 Z', '#64bdfb') + `<path d="M76 98 Q74 116 88 124" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".55"/>` + shine(86, 74, 6, 11, 25)
+    + face(100, 100, 1.12, 'open')
+    + hand(126, 104, '#64bdfb', 6.5) + hand(64, 112, '#64bdfb', 6)
+    + P('M40 70 Q45 79 40 83 Q35 79 40 70 Z', '#bfe6ff', 2) + P('M32 100 Q36 107 32 110 Q28 107 32 100 Z', '#bfe6ff', 2) + P('M168 82 Q172 89 168 92 Q164 89 168 82 Z', '#bfe6ff', 2),
+
+  Stormbrella: () => shadow(100, 145, 32)
+    + P('M58 30 Q50 14 66 10 Q72 0 88 4 Q100 -4 112 6 Q128 2 134 14 Q146 16 142 30 Z', '#7d84a6', 2.5) + `<path d="M66 34 L60 48 M84 34 L78 50 M118 34 L112 50 M136 34 L130 48" stroke="#8fd3ff" stroke-width="3" stroke-linecap="round"/>`
+    + `<path d="M100 90 L100 126 Q100 140 88 138 Q80 136 82 128" fill="none" stroke="${O}" stroke-width="11" stroke-linecap="round"/><path d="M100 90 L100 126 Q100 140 88 138 Q80 136 82 128" fill="none" stroke="#9a6440" stroke-width="6" stroke-linecap="round"/>`
+    + bend('M42 88 Q28 96 24 110', '#7a8cff', 7) + P('M24 112 Q30 122 24 126 Q18 122 24 112 Z', '#8fd3ff', 2.5)
+    + bend('M158 88 Q172 96 174 108', '#7a8cff', 7) + `<path d="M178 100 L170 114 L178 114 L170 128" fill="none" stroke="${O}" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/><path d="M178 100 L170 114 L178 114 L170 128" fill="none" stroke="#ffe14a" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>`
+    + P('M36 92 Q40 42 100 34 Q160 42 164 92 Q152 84 139 92 Q126 84 113 92 Q100 84 87 92 Q74 84 61 92 Q48 84 36 92 Z', '#7a8cff')
+    + `<path d="M100 34 Q86 60 87 92 M100 34 Q114 60 113 92 M100 34 Q66 52 61 92 M100 34 Q134 52 139 92" fill="none" stroke="#5f6fe0" stroke-width="2.5"/>`
+    + `<path d="M100 34 Q86 60 87 92 Q74 84 61 92 Q66 52 100 34 Z M100 34 Q114 60 113 92 Q126 84 139 92 Q134 52 100 34 Z" fill="#a8b4ff" opacity=".6"/>` + R(97, 26, 6, 10, 3, '#ffd166', 2)
+    + face(100, 66, 1.2, 'open') + shine(70, 56, 10, 5),
+
+  Soapsud: () => shadow(100, 141, 42)
+    + E(84, 136, 10, 5, '#f59fc4') + E(116, 136, 10, 5, '#f59fc4')
+    + R(58, 62, 84, 70, 24, '#ffc2dc') + R(64, 64, 72, 22, 14, '#ffd8e8', 0) + shine(76, 76, 10, 4)
+    + `<path d="M100 120 C92 114 88 108 92 104 C95 101 99 103 100 106 C101 103 105 101 108 104 C112 108 108 114 100 120 Z" fill="#f59fc4"/>`
+    + C(80, 60, 10, '#ffffff') + C(96, 54, 13, '#ffffff') + C(114, 58, 10, '#ffffff') + C(124, 64, 7, '#ffffff') + C(68, 66, 6, '#ffffff')
+    + face(100, 92, 1.1, 'happy')
+    + hand(58, 104, '#ffc2dc', 6.5)
+    + bend('M140 100 Q150 92 154 84', '#ffc2dc', 7) + `<path d="M154 84 L162 66" stroke="${O}" stroke-width="7" stroke-linecap="round"/><path d="M154 84 L162 66" stroke="#7fd8be" stroke-width="3" stroke-linecap="round"/>` + `<circle cx="165" cy="58" r="9" fill="none" stroke="${O}" stroke-width="6"/><circle cx="165" cy="58" r="9" fill="none" stroke="#7fd8be" stroke-width="2.5"/>`
+    + bubble(176, 36, 9) + bubble(158, 26, 6) + bubble(184, 14, 5) + bubble(40, 40, 7) + bubble(30, 78, 5),
+
+  Lathertub: () => shadow(100, 143, 64)
+    + `<path d="M44 64 Q40 46 54 44 L64 44" fill="none" stroke="${O}" stroke-width="10" stroke-linecap="round"/><path d="M44 64 Q40 46 54 44 L64 44" fill="none" stroke="#d8e2ee" stroke-width="5" stroke-linecap="round"/>` + P('M62 48 Q66 56 62 58 Q58 56 62 48 Z', '#8fd3ff', 2)
+    + [48, 74, 126, 152].map(x => P(`M${x - 6} 136 L${x} 124 L${x + 6} 136 Z`, '#ffcf4d', 2.5)).join('')
+    + P('M34 78 L166 78 Q164 124 132 130 L68 130 Q36 124 34 78 Z', '#ffffff') + shine(56, 96, 6, 12, 15)
+    + `<path d="M44 110 Q100 120 156 110" fill="none" stroke="#d6eaf8" stroke-width="3"/>`
+    + [[46, 66, 12], [64, 58, 15], [86, 52, 16], [110, 54, 15], [132, 58, 14], [152, 66, 11], [74, 70, 9], [124, 70, 10]].map(([x, y, r]) => C(x, y, r, '#f4fbff', 2.5)).join('')
+    + R(28, 72, 144, 12, 6, '#e6f4ff')
+    + face(100, 100, 1.2, 'open')
+    + bend('M162 96 Q174 88 176 72', '#ffffff', 7) + `<path d="M176 72 L184 28" stroke="${O}" stroke-width="9" stroke-linecap="round"/><path d="M176 72 L184 28" stroke="#c98a52" stroke-width="4.5" stroke-linecap="round"/>` + E(186, 20, 9, 12, '#ff8fab', 2.5, 'transform="rotate(10 186 20)"') + `<path d="M180 12 l-4 -4 M186 9 l0 -5 M192 12 l4 -4" ${st(2)}/>`
+    + bubble(30, 40, 7) + bubble(150, 30, 6) + bubble(22, 112, 5),
+
+  Sushimi: () => shadow(100, 141, 44)
+    + `<path d="M150 50 L160 134 M158 48 L166 132" stroke="${O}" stroke-width="7" stroke-linecap="round"/><path d="M150 50 L160 134 M158 48 L166 132" stroke="#e0b07a" stroke-width="3" stroke-linecap="round"/>`
+    + E(86, 136, 9, 5, '#f3ead8') + E(114, 136, 9, 5, '#f3ead8')
+    + R(58, 70, 84, 62, 26, '#fffaf0') + [[70, 112], [84, 120], [118, 118], [128, 108], [76, 100], [124, 92]].map(([x, y]) => E(x, y, 3.5, 2, '#ebe1cc', 0)).join('')
+    + R(58, 114, 84, 12, 0, '#2f4a3a', 0) + `<path d="M60 114 H140 M62 126 H138" ${st(2.5)}/>`
+    + P('M50 80 Q54 48 100 46 Q148 46 152 82 Q142 72 126 76 Q104 66 78 76 Q62 72 50 80 Z', '#ff9a72')
+    + `<path d="M66 70 Q80 56 96 60 M88 72 Q104 56 124 58 M112 70 Q128 60 142 68" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" opacity=".85"/>`
+    + face(100, 94, 1.1, 'smile')
+    + hand(150, 98, '#fffaf0', 6.5) + hand(56, 104, '#fffaf0', 6)
+    + P('M30 128 Q28 116 40 116 Q50 118 46 128 Z', '#8fd16a', 2.5),
+
+  Pipseed: () => shadow(100, 141, 36)
+    + `<path d="M100 44 Q98 30 102 20" fill="none" stroke="${O}" stroke-width="7" stroke-linecap="round"/><path d="M100 44 Q98 30 102 20" fill="none" stroke="#5cc78a" stroke-width="3" stroke-linecap="round"/>` + leaf(102, 22, 1, -150, '#5fd082') + leaf(102, 22, 1, -30, '#4cbf72')
+    + E(86, 136, 9, 5, '#a8703f') + E(114, 136, 9, 5, '#a8703f')
+    + P('M100 42 C130 46 142 78 138 104 C134 128 118 136 100 136 C82 136 66 128 62 104 C58 78 70 46 100 42 Z', '#c98a52') + E(100, 112, 24, 20, '#e8b27a', 0) + shine(82, 64, 7, 12, 25)
+    + face(100, 92, 1.12, 'open')
+    + bend('M64 104 Q54 106 50 102', '#c98a52', 7)
+    + P('M24 92 L50 92 L52 114 L26 114 Z', '#7fc8f8') + `<path d="M26 98 L14 86" stroke="${O}" stroke-width="8" stroke-linecap="round"/><path d="M26 98 L14 86" stroke="#7fc8f8" stroke-width="4" stroke-linecap="round"/>` + `<path d="M30 92 Q38 78 46 92" fill="none" ${st(3)}/>` + hand(50, 102, '#c98a52', 6)
+    + P('M12 96 Q15 102 12 104 Q9 102 12 96 Z', '#8fd3ff', 1.8) + P('M18 106 Q21 112 18 114 Q15 112 18 106 Z', '#8fd3ff', 1.8)
+    + hand(138, 104, '#c98a52', 6),
+
+  Blossomage: () => shadow(100, 143, 44)
+    + leaf(58, 124, 2.2, -120, '#4cbf72') + leaf(142, 124, 2.2, -60, '#4cbf72')
+    + P('M74 138 L84 84 L116 84 L126 138 Z', '#5cc78a') + `<path d="M100 88 L100 136 M100 104 L88 96 M100 118 L112 110" stroke="#3aa060" stroke-width="2.5" fill="none"/>` + R(80, 88, 40, 8, 4, '#ffcf4d', 2.5)
+    + `<path d="M148 140 L156 40" stroke="${O}" stroke-width="10" stroke-linecap="round"/><path d="M148 140 L156 40" stroke="#9a6440" stroke-width="5" stroke-linecap="round"/>`
+    + [0, 72, 144, 216, 288].map(a => E(157 + Math.cos(a * Math.PI / 180) * 9, 32 + Math.sin(a * Math.PI / 180) * 9, 7, 10, '#ffffff', 2.5, `transform="rotate(${a + 90} ${157 + Math.cos(a * Math.PI / 180) * 9} ${32 + Math.sin(a * Math.PI / 180) * 9})"`)).join('') + C(157, 32, 6, '#ffd166', 2.5)
+    + bend('M118 100 Q138 96 150 88', '#5cc78a', 7) + hand(150, 88, '#5cc78a', 6.5)
+    + bend('M82 100 Q62 92 52 76', '#5cc78a', 7) + hand(52, 74, '#5cc78a', 6.5)
+    + [...Array(8)].map((_, i) => { const a = i / 8 * 360; return E(100 + Math.cos(a * Math.PI / 180) * 26, 60 + Math.sin(a * Math.PI / 180) * 26, 13, 18, i % 2 ? '#ff9ac2' : '#ffb4d2', 2.8, `transform="rotate(${a + 90} ${100 + Math.cos(a * Math.PI / 180) * 26} ${60 + Math.sin(a * Math.PI / 180) * 26})"`); }).join('')
+    + C(100, 60, 22, '#ffd98a') + shine(90, 50, 6, 3)
+    + face(100, 60, .95, 'happy')
+    + spark(40, 58, .8, '#ffffff') + spark(30, 82, .5, '#ffffff') + spark(176, 64, .6, '#ffffff'),
+
+  Broccolo: () => shadow(100, 141, 40)
+    + R(36, 20, 128, 7, 3, '#9aa8ba', 2.5) + R(26, 10, 14, 28, 4, '#5a5470', 2.5) + R(160, 10, 14, 28, 4, '#5a5470', 2.5) + R(18, 13, 9, 22, 3, '#5a5470', 2.5) + R(173, 13, 9, 22, 3, '#5a5470', 2.5)
+    + bend('M80 86 Q60 66 64 30', '#a8e6a1', 8) + bend('M120 86 Q140 66 136 30', '#a8e6a1', 8) + hand(64, 26, '#a8e6a1', 7) + hand(136, 26, '#a8e6a1', 7)
+    + E(88, 136, 10, 5, '#7cc45a') + E(112, 136, 10, 5, '#7cc45a')
+    + R(78, 76, 44, 58, 16, '#b8eeaf') + shine(88, 92, 4, 9, 0)
+    + [[74, 66, 16], [100, 56, 19], [126, 66, 16], [86, 76, 14], [114, 76, 14], [100, 72, 12]].map(([x, y, r], i) => C(x, y, r, i % 2 ? '#4cbf72' : '#5fd082')).join('')
+    + [[70, 60], [96, 48], [122, 60], [108, 50]].map(([x, y]) => C(x, y, 3, '#7fe0a0', 0)).join('')
+    + face(100, 104, 1, 'brave')
+    + P('M132 98 Q136 106 132 109 Q128 106 132 98 Z', '#8fd3ff', 2),
+
+  Gherkid: () => shadow(100, 141, 32)
+    + `<path d="M126 104 L168 48" stroke="${O}" stroke-width="7" stroke-linecap="round"/><path d="M126 104 L168 48" stroke="#f2deb6" stroke-width="3" stroke-linecap="round"/>` + C(152, 70, 9, '#6fae3a', 2.5) + C(152, 70, 3.5, '#ff5e57', 0)
+    + E(88, 136, 9, 5, '#5a9a3a') + E(112, 136, 9, 5, '#5a9a3a')
+    + R(74, 30, 52, 106, 26, '#86c95e') + [[84, 50], [116, 64], [86, 116], [118, 104], [100, 126], [112, 40]].map(([x, y]) => C(x, y, 3.2, '#6fae3a', 0)).join('') + shine(86, 52, 6, 14, 10)
+    + face(100, 74, 1.1, 'brave')
+    + hand(126, 102, '#86c95e', 6.5)
+    + C(58, 96, 18, '#ff6b6b') + [...Array(12)].map((_, i) => { const a = i / 12 * Math.PI * 2; return `<path d="M${58 + Math.cos(a) * 14} ${96 + Math.sin(a) * 14} L${58 + Math.cos(a) * 18} ${96 + Math.sin(a) * 18}" ${st(2)}/>`; }).join('') + C(58, 96, 9, '#ff8f8f', 0) + hand(74, 98, '#86c95e', 6),
+
+  Matchatoo: () => shadow(100, 141, 46)
+    + `<path d="M80 40 Q74 30 82 22 M100 36 Q94 24 102 16 M120 40 Q114 30 122 22" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".75"/>`
+    + E(100, 84, 50, 12, '#7cc45a') + [[78, 82, 5], [96, 86, 6], [116, 82, 5], [130, 86, 4]].map(([x, y, r]) => C(x, y, r, '#a8e08a', 1.8)).join('')
+    + P('M50 86 L150 86 Q148 134 100 136 Q52 134 50 86 Z', '#efe1cc') + `<path d="M54 102 Q100 112 146 102" fill="none" stroke="#7fa6e0" stroke-width="4"/><path d="M58 110 Q100 120 142 110" fill="none" stroke="#7fa6e0" stroke-width="2" stroke-dasharray="4 4"/>` + shine(64, 98, 5, 10, 20)
+    + face(100, 112, 1, 'happy')
+    + bend('M146 98 Q160 92 164 80', '#efe1cc', 7) + `<path d="M164 80 L170 50" stroke="${O}" stroke-width="8" stroke-linecap="round"/><path d="M164 80 L170 50" stroke="#e0c27a" stroke-width="3.5" stroke-linecap="round"/>`
+    + P('M162 50 Q160 22 172 14 Q184 22 180 50 Z', '#f2deb6') + `<path d="M166 48 L166 26 M171 48 L172 18 M176 48 L177 26" stroke="#c9a76a" stroke-width="1.8"/>` + hand(164, 80, '#efe1cc', 6)
+    + hand(52, 100, '#efe1cc', 6),
+
+  Batteri: () => shadow(100, 141, 30)
+    + limb(92, 124, 88, 134, '#3f3a58', 6) + limb(108, 124, 112, 134, '#3f3a58', 6) + E(86, 136, 8, 4.5, '#2b2740') + E(114, 136, 8, 4.5, '#2b2740')
+    + R(92, 26, 16, 12, 3, '#c9d6e3')
+    + R(76, 36, 48, 92, 14, '#3f3a58') + R(76, 58, 48, 50, 0, '#ffc928', 0) + `<path d="M76 58 H124 M76 108 H124" ${st(2.5)}/>` + shine(84, 46, 4, 6, 0)
+    + `<path d="M112 116 L112 124 M108 120 L116 120" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>`
+    + face(100, 78, 1, 'open')
+    + hand(74, 96, '#3f3a58', 6)
+    + bend('M124 92 Q136 88 140 80', '#3f3a58', 6) + hand(140, 78, '#3f3a58', 6)
+    + `<path d="M150 30 L136 62 L148 62 L138 96 L162 54 L150 54 L160 30 Z" fill="#ffe14a" ${st(2.8)}/>`
+    + spark(48, 54, .7, '#ffe27a') + spark(40, 84, .45, '#ffe27a'),
+
+  Megawatt: () => shadow(100, 143, 64)
+    + R(64, 120, 22, 18, 6, '#3a3f58') + R(114, 120, 22, 18, 6, '#3a3f58')
+    + bend('M70 48 Q40 50 34 84', '#ff5e57', 7) + bend('M130 48 Q160 50 166 84', '#3f3a58', 7)
+    + `<g transform="rotate(20 30 92)">${P('M18 84 L40 80 L42 92 L20 98 Z', '#ff5e57')}${P('M20 98 L42 92 L44 104 L22 108 Z', '#e04848')}</g>`
+    + `<g transform="rotate(-20 170 92)">${P('M182 84 L160 80 L158 92 L180 98 Z', '#3f3a58')}${P('M180 98 L158 92 L156 104 L178 108 Z', '#2b2740')}</g>`
+    + spark(32, 116, .8, '#ffe14a') + spark(168, 116, .8, '#ffe14a')
+    + R(52, 54, 96, 72, 14, '#4a4f6e') + R(52, 54, 96, 14, 8, '#5a6080', 0)
+    + R(62, 42, 16, 14, 4, '#ff5e57') + R(122, 42, 16, 14, 4, '#3a3f58') + `<path d="M66 49 H74 M70 45 V53" stroke="#fff" stroke-width="2.5"/><path d="M126 49 H134" stroke="#fff" stroke-width="2.5"/>`
+    + R(68, 70, 64, 40, 10, '#d6f0ff') + `<path d="M144 64 L136 82 L144 82 L136 100" fill="none" stroke="#ffe14a" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>`
+    + face(100, 86, 1.1, 'grin') + `<path d="M82 74 L92 77 M118 74 L108 77" ${st(2.6)}/>`,
+
+  Popkern: () => shadow(100, 141, 40)
+    + E(88, 136, 8, 4.5, '#e8b44a') + E(112, 136, 8, 4.5, '#e8b44a')
+    + `<g transform="rotate(-8 58 104)">${P('M38 88 L78 88 L72 132 L44 132 Z', '#ffffff')}${[0, 1, 2].map(i => `<path d="M${44 + i * 12} 88 L${48 + i * 9} 132" stroke="#ff5e57" stroke-width="6"/>`).join('')}${P('M38 88 L78 88 L72 132 L44 132 Z', 'none')}${C(46, 84, 7, '#fff6dc', 2.2)}${C(58, 80, 8, '#fff6dc', 2.2)}${C(70, 84, 7, '#fff6dc', 2.2)}${C(52, 76, 2, '#ffd166', 0)}</g>`
+    + [[100, 58, 22], [76, 74, 18], [124, 72, 19], [84, 100, 22], [118, 100, 22], [100, 116, 18], [100, 84, 22]].map(([x, y, r]) => C(x, y, r, '#fff6dc')).join('')
+    + C(100, 86, 18, '#fff6dc', 0) + C(84, 100, 8, '#ffe38a', 0, 'opacity=".7"') + C(122, 64, 6, '#ffe38a', 0, 'opacity=".7"')
+    + face(100, 84, 1.05, 'wow')
+    + hand(78, 104, '#fff6dc', 6) + hand(140, 92, '#fff6dc', 6)
+    + `<path d="M148 52 L160 44 M152 64 L168 62 M144 40 L150 28" stroke="#ff9a3b" stroke-width="3.5" stroke-linecap="round"/>` + spark(36, 46, .7, '#ffe27a'),
+
+  Lampling: () => shadow(100, 141, 38)
+    + P('M70 70 L130 70 L150 132 L50 132 Z', '#fff6b0', 0, 'opacity=".35"')
+    + `<path d="M100 66 L100 82" stroke="${O}" stroke-width="8"/><path d="M100 66 L100 82" stroke="#ffcf4d" stroke-width="4"/>`
+    + `<path d="M124 64 L124 80" stroke="${O}" stroke-width="2.5"/>` + C(124, 82, 3, '#ffcf4d', 2)
+    + P('M64 70 L80 26 L120 26 L136 70 Z', '#ffd8a8') + `<path d="M70 54 L130 54" stroke="#ff9a7a" stroke-width="3"/><path d="M76 40 L124 40" stroke="#ff9a7a" stroke-width="2" stroke-dasharray="5 4"/>` + shine(90, 38, 4, 8, 20)
+    + P('M76 136 Q66 112 78 94 Q84 84 100 82 Q116 84 122 94 Q134 112 124 136 Z', '#7a8cff') + shine(84, 102, 5, 9, 15)
+    + face(100, 108, 1, 'smile')
+    + bend('M78 104 Q64 104 56 98', '#7a8cff', 6)
+    + `<g transform="rotate(-12 46 96)">${P('M28 86 Q38 82 46 88 Q54 82 64 86 L64 106 Q54 102 46 108 Q38 102 28 106 Z', '#ffffff')}<path d="M46 88 L46 108" ${st(2)}/><path d="M32 92 H42 M32 97 H42 M50 92 H60 M50 97 H60" stroke="#c9b8d6" stroke-width="2"/></g>` + hand(56, 98, '#7a8cff', 5.5)
+    + hand(124, 108, '#7a8cff', 5.5) + spark(150, 36, .6, '#fff6a0') + spark(42, 40, .5, '#fff6a0'),
+
+  Remoty: () => shadow(100, 141, 30)
+    + `<path d="M100 28 Q120 14 136 22 M100 28 Q122 4 146 12" fill="none" stroke="#ffe14a" stroke-width="3.5" stroke-linecap="round"/>`
+    + limb(92, 128, 90, 134, '#3f3a58', 6) + limb(108, 128, 110, 134, '#3f3a58', 6) + E(88, 136, 8, 4.5, '#2b2740') + E(112, 136, 8, 4.5, '#2b2740')
+    + R(74, 28, 52, 104, 18, '#3f3a58') + shine(82, 40, 4, 8, 0)
+    + R(80, 36, 40, 34, 10, '#bfe6ff', 2.5)
+    + face(100, 50, .9, 'grin')
+    + C(100, 82, 7, '#ff5e57', 2.5) + [[88, 98, '#7fd8be'], [100, 98, '#ffd166'], [112, 98, '#7fc8f8'], [88, 110, '#ff8fab'], [100, 110, '#b58df2'], [112, 110, '#ffffff']].map(([x, y, c]) => C(x, y, 4.2, c, 2)).join('')
+    + R(92, 118, 16, 6, 3, '#9aa8ba', 2)
+    + hand(70, 92, '#3f3a58', 6)
+    + bend('M126 74 Q144 80 138 92 Q132 98 112 90', '#3f3a58', 6) + hand(112, 90, '#3f3a58', 5.5),
+
+  Spookie: () => shadow(100, 141, 34)
+    + `<g transform="rotate(-24 150 92)">${R(126, 86, 48, 13, 6, '#e8b56f')}${R(118, 88, 10, 9, 3, '#c98a52', 2.5)}${R(172, 88, 10, 9, 3, '#c98a52', 2.5)}</g>`
+    + P('M62 132 Q58 60 100 48 Q142 60 138 132 Q130 124 120 132 Q110 124 100 132 Q90 124 80 132 Q70 124 62 132 Z', '#e0a35a')
+    + P('M70 120 Q66 68 100 58 Q134 68 130 120 Q124 114 117 122 Q112 112 104 118 Q100 110 94 118 Q86 112 82 122 Q76 114 70 120 Z', '#fff6fa', 0)
+    + [[80, 76, '#ff8fab', 20], [118, 72, '#7fc8f8', -30], [112, 108, '#ffd166', 40], [84, 110, '#7fd8be', -10], [100, 66, '#b58df2', 70]].map(([x, y, c, r]) => R(x - 4, y - 1.5, 8, 3, 1.5, c, 0, `transform="rotate(${r} ${x} ${y})"`)).join('')
+    + face(100, 88, 1.1, 'open')
+    + hand(62, 100, '#e0a35a', 6) + hand(138, 98, '#e0a35a', 6.5)
+    + spark(42, 48, .6, '#e9dcff') + spark(160, 44, .7, '#e9dcff'),
+
+  Hauntcake: () => shadow(100, 146, 46)
+    + P('M52 118 Q50 136 62 140 Q70 130 78 140 Q88 130 100 142 Q112 130 122 140 Q130 130 138 140 Q150 136 148 118 Z', '#c9a8f5', 2.5, 'opacity=".9"')
+    + R(52, 82, 96, 42, 10, '#c9a8f5') + P('M52 90 Q52 82 60 82 L140 82 Q148 82 148 90 Q140 100 132 92 Q124 104 114 92 Q104 102 96 92 Q86 104 78 92 Q68 102 60 94 Q54 98 52 90 Z', '#ffffff', 2.5)
+    + R(70, 54, 60, 32, 9, '#ffb4c8') + P('M70 62 Q70 54 78 54 L122 54 Q130 54 130 62 Q122 70 116 62 Q108 72 100 62 Q92 72 84 62 Q76 70 70 62 Z', '#ffffff', 2.5)
+    + [80, 100, 120].map((x, i) => R(x - 3.5, 34 + (i % 2) * -4, 7, 22 - (i % 2) * -4, 2, ['#7fd8be', '#ffd166', '#7fc8f8'][i], 2.2) + flame(x, 30 + (i % 2) * -4, .55, '#b28cff', '#efe2ff')).join('')
+    + C(112, 52, 5, '#ff5e5e', 2.2)
+    + face(100, 104, 1.15, 'grin')
+    + bend('M52 104 Q36 100 30 88', '#c9a8f5', 7) + hand(30, 86, '#c9a8f5', 6)
+    + bend('M148 104 Q166 96 170 80', '#c9a8f5', 7) + `<path d="M170 82 L176 40" stroke="${O}" stroke-width="8" stroke-linecap="round"/><path d="M170 82 L176 40" stroke="#d8dde8" stroke-width="3.5" stroke-linecap="round"/><path d="M168 42 L170 22 M175 40 L176 20 M182 42 L182 22 M168 42 Q175 48 182 42" fill="none" ${st(2.6)}/>` + hand(170, 80, '#c9a8f5', 6)
+    + spark(30, 40, .7, '#e9dcff') + spark(176, 120, .5, '#e9dcff'),
+
+  Snoozy: () => shadow(100, 143, 26) + zz(136, 40)
+    + P('M66 126 Q62 62 100 50 Q138 62 134 126 Q126 118 117 128 Q108 118 100 128 Q92 118 83 128 Q74 118 66 126 Z', '#f6f2ff')
+    + P('M70 62 Q86 26 128 34 Q134 50 130 58 Q100 48 70 62 Z', '#7a8cff', 2.6) + `<path d="M84 46 L96 40 M100 50 L116 42" stroke="#fff" stroke-width="3.5"/>` + C(132, 34, 7, '#fff', 2.5)
+    + face(100, 80, 1.05, 'sleepy')
+    + R(70, 94, 60, 30, 12, '#ffe08a') + `<path d="M76 100 Q100 106 124 100" fill="none" stroke="#f2c25a" stroke-width="2.5"/>`
+    + hand(72, 104, '#f6f2ff', 6.5) + hand(128, 104, '#f6f2ff', 6.5),
+
+  Dreamwisp: () => P('M80 26 A52 52 0 0 0 80 130 A32 52 0 0 1 80 26 Z', '#ffe08a') + C(76, 96, 4, '#f2c25a', 0) + C(92, 116, 3, '#f2c25a', 0) + C(70, 70, 3, '#f2c25a', 0)
+    + `<path d="M118 104 Q150 118 168 104 Q178 96 172 88" fill="none" stroke="${O}" stroke-width="14" stroke-linecap="round"/><path d="M118 104 Q150 118 168 104 Q178 96 172 88" fill="none" stroke="#d6c6f8" stroke-width="9" stroke-linecap="round"/>`
+    + P('M90 108 Q84 64 112 54 Q140 62 138 104 Q130 112 114 112 Q100 114 90 108 Z', '#e4d8fc')
+    + P('M94 64 Q104 30 140 36 Q146 48 140 58 Q116 50 94 64 Z', '#5f6fe0', 2.6) + spark(108, 48, .35, '#ffe27a') + spark(124, 44, .3, '#ffe27a') + C(144, 36, 6, '#ffe27a', 2.4)
+    + face(114, 82, 1, 'happy')
+    + `<path d="M138 92 L158 70" stroke="${O}" stroke-width="7" stroke-linecap="round"/><path d="M138 92 L158 70" stroke="#9a6440" stroke-width="3" stroke-linecap="round"/><path d="M158 70 L162 76" ${st(2)}/>`
+    + R(154, 76, 18, 22, 5, '#fff6c0') + `<path d="M163 82 L165 87 L170 87 L166 90 L168 95 L163 92 L158 95 L160 90 L156 87 L161 87 Z" fill="#ffcf4d"/>` + hand(138, 92, '#e4d8fc', 6)
+    + spark(30, 20, .7, '#fff') + spark(170, 20, .6, '#fff') + spark(176, 132, .5, '#fff') + spark(30, 134, .5, '#fff'),
+
+  Lanternette: () => shadow(100, 145, 32)
+    + `<path d="M84 32 Q100 6 116 32" fill="none" ${st(3.5)}/>`
+    + C(100, 82, 54, '#fff1b0', 0, 'opacity=".28"')
+    + R(80, 28, 40, 10, 4, '#3a2c3e')
+    + E(100, 82, 38, 46, '#ff8f6b') + E(100, 82, 26, 36, '#ffd08a', 0, 'opacity=".55"')
+    + [52, 64, 100, 112].map(y => `<path d="M${66 + Math.abs(y - 82) * .3} ${y} Q100 ${y + 6} ${134 - Math.abs(y - 82) * .3} ${y}" fill="none" stroke="#e0603e" stroke-width="2.2"/>`).join('')
+    + R(82, 124, 36, 9, 4, '#3a2c3e') + `<path d="M100 133 L100 142" ${st(3)}/>` + E(100, 144, 4, 3, '#ff5e57', 2)
+    + face(100, 82, 1.15, 'smile')
+    + hand(62, 96, '#ff8f6b', 6) + flame(50, 86, .6, '#b28cff', '#efe2ff')
+    + hand(138, 96, '#ff8f6b', 6)
+    + spark(150, 40, .6, '#ffe27a') + spark(40, 120, .5, '#e9dcff'),
+
+  Rocklet: () => shadow(100, 141, 38)
+    + `<path d="M144 136 L146 34" stroke="${O}" stroke-width="10" stroke-linecap="round"/><path d="M144 136 L146 34" stroke="#c98a52" stroke-width="5" stroke-linecap="round"/>` + P('M140 34 L146 18 L154 32 L148 40 Z', '#ffb4e6', 2.5)
+    + E(86, 136, 9, 5, '#b58df2') + E(114, 136, 9, 5, '#b58df2')
+    + P('M60 112 L66 72 L86 52 L118 50 L138 70 L142 108 L124 132 L76 132 Z', '#d8a8ff')
+    + P('M66 72 L86 52 L94 78 Z', '#f0d4ff', 0) + P('M118 50 L138 70 L116 74 Z', '#c48af2', 0) + P('M60 112 L76 132 L82 108 Z', '#c48af2', 0) + P('M142 108 L124 132 L120 106 Z', '#e8c4ff', 0)
+    + P('M80 32 L90 54 L74 56 Z', '#ffb4e6', 2.5) + P('M108 26 L120 52 L100 52 Z', '#ffd0f0', 2.5)
+    + P('M60 112 L66 72 L86 52 L118 50 L138 70 L142 108 L124 132 L76 132 Z', 'none')
+    + face(100, 92, 1.12, 'open')
+    + hand(60, 100, '#d8a8ff', 6) + hand(140, 96, '#d8a8ff', 6.5)
+    + spark(40, 50, .7, '#fff') + spark(170, 70, .5, '#fff'),
+
+  Gemmajesty: () => shadow(100, 145, 56)
+    + P('M58 70 Q40 110 46 140 L154 140 Q160 110 142 70 Z', '#d6455e') + `<path d="M58 70 Q40 110 46 140" fill="none" stroke="#fff" stroke-width="5" stroke-dasharray="2 6" stroke-linecap="round" opacity=".9"/>`
+    + E(84, 138, 12, 6, '#8a7a6a') + E(116, 138, 12, 6, '#8a7a6a')
+    + E(100, 106, 40, 34, '#a69482') + P('M80 96 L100 82 L120 96 L112 124 L88 124 Z', '#b58df2', 2.6) + P('M80 96 L100 82 L100 124 L88 124 Z', '#d8c0ff', 0) + shine(80, 92, 8, 4)
+    + `<path d="M154 140 L162 52" stroke="${O}" stroke-width="10" stroke-linecap="round"/><path d="M154 140 L162 52" stroke="#ffcf4d" stroke-width="5" stroke-linecap="round"/>` + P('M162 30 L172 44 L162 58 L152 44 Z', '#7fd8ff', 2.6) + spark(162, 44, .4, '#fff')
+    + bend('M136 100 Q150 94 156 84', '#a69482', 8) + hand(156, 84, '#a69482', 7)
+    + C(100, 64, 30, '#a69482') + shine(86, 50, 8, 4)
+    + P('M72 44 L74 22 L86 34 L100 14 L114 34 L126 22 L128 44 Z', '#ffcf4d') + C(100, 24, 4, '#ff5e7a', 2) + C(80, 32, 3, '#7fd8ff', 2) + C(120, 32, 3, '#7fd8ff', 2)
+    + face(100, 66, 1.05, 'smile') + `<path d="M82 56 L92 54 M118 56 L108 54" ${st(2.4)}/>`
+    + hand(62, 112, '#a69482', 7)
+    + spark(30, 40, .8, '#fff') + spark(36, 80, .5, '#fff'),
+
+  Brickbo: () => shadow(100, 141, 44)
+    + E(84, 136, 11, 5.5, '#b84a38') + E(116, 136, 11, 5.5, '#b84a38')
+    + R(56, 70, 88, 62, 8, '#e0674f') + `<path d="M58 92 H142 M58 112 H142 M86 72 V92 M118 92 V112 M80 112 V130" stroke="#f6c3a8" stroke-width="3"/>` + shine(70, 80, 8, 3, 0)
+    + P('M66 72 Q66 44 100 42 Q134 44 134 72 Z', '#ffcf4d') + R(56, 68, 88, 8, 4, '#ffcf4d') + `<path d="M100 42 L100 70" stroke="#e0a32c" stroke-width="3"/>`
+    + face(100, 100, 1.1, 'grin')
+    + hand(56, 104, '#e0674f', 6.5)
+    + bend('M144 102 Q156 98 160 88', '#e0674f', 7) + `<path d="M160 88 L166 72" stroke="${O}" stroke-width="8" stroke-linecap="round"/><path d="M160 88 L166 72" stroke="#9a6440" stroke-width="4" stroke-linecap="round"/>` + P('M166 72 L156 46 L172 34 L180 62 Z', '#d8dde8') + C(168, 46, 5, '#c9b8a8', 2) + hand(160, 88, '#e0674f', 6),
+
+  Mittenkit: () => shadow(100, 141, 40)
+    + `<path d="M140 86 L170 52 M146 92 L176 62" stroke="${O}" stroke-width="7" stroke-linecap="round"/><path d="M140 86 L170 52 M146 92 L176 62" stroke="#ffcf4d" stroke-width="3" stroke-linecap="round"/>` + C(170, 52, 3.5, '#ff5e57', 2) + C(176, 62, 3.5, '#ff5e57', 2)
+    + C(46, 120, 15, '#7fc8f8') + `<path d="M36 112 Q46 120 56 112 M34 124 Q46 132 58 124 M44 106 Q40 120 46 134" fill="none" stroke="#5aa6d6" stroke-width="2.5"/><path d="M60 118 Q80 112 82 100" fill="none" stroke="#5aa6d6" stroke-width="2.5"/>`
+    + P('M70 54 L74 34 L86 50 Z', '#ff8fab') + P('M110 50 L122 34 L126 54 Z', '#ff8fab')
+    + P('M66 128 L66 70 Q66 44 98 44 Q132 44 132 72 L132 128 Z', '#ff8fab')
+    + P('M132 96 Q150 92 148 76 Q146 64 134 70', '#ff8fab', 3)
+    + `<path d="M74 70 L82 64 L90 70 L98 64 L106 70 L114 64 L122 70" fill="none" stroke="#fff" stroke-width="3" opacity=".8"/>` + spark(98, 102, .6, '#ffffff')
+    + R(62, 120, 74, 18, 6, '#ffffff') + `<path d="M72 122 V136 M82 122 V136 M92 122 V136 M102 122 V136 M112 122 V136 M122 122 V136" stroke="#e8e0f0" stroke-width="2.5"/>`
+    + face(98, 84, 1.05, 'smile')
+    + hand(66, 102, '#ff8fab', 6) + hand(142, 88, '#ff8fab', 6),
+
+  Scarfwyrm: () => [[30, 20], [170, 34], [150, 130], [40, 128], [110, 12]].map(([x, y], i) => `<path transform="translate(${x} ${y}) scale(${.45 + i % 2 * .2})" d="M0 -10 V10 M-8.7 -5 L8.7 5 M-8.7 5 L8.7 -5" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>`).join('')
+    + `<path d="M64 74 Q100 120 130 92 Q160 64 176 104" fill="none" stroke="${O}" stroke-width="30" stroke-linecap="round"/><path d="M64 74 Q100 120 130 92 Q160 64 176 104" fill="none" stroke="#ff6b6b" stroke-width="24" stroke-linecap="round"/><path d="M64 74 Q100 120 130 92 Q160 64 176 104" fill="none" stroke="#ffffff" stroke-width="24" stroke-dasharray="10 14" stroke-linecap="butt"/>`
+    + `<path d="M166 112 L162 132 M174 114 L174 134 M182 112 L186 130" ${st(3.5)}/><path d="M166 112 L162 132 M174 114 L174 134 M182 112 L186 130" stroke="#ff6b6b" stroke-width="1.5"/>`
+    + C(176, 108, 6, '#ffffff', 2.4)
+    + C(62, 62, 30, '#ff6b6b') + R(36, 70, 52, 14, 7, '#ffffff', 2.4)
+    + C(48, 34, 8, '#ffffff', 2.4) + C(76, 34, 8, '#ffffff', 2.4)
+    + `<path d="M34 52 Q34 30 62 28 Q90 30 90 52" fill="none" ${st(3.5)}/>` + E(33, 58, 7, 10, '#7fc8f8', 2.5) + E(91, 58, 7, 10, '#7fc8f8', 2.5)
+    + face(62, 58, 1.05, 'open')
+    + hand(96, 102, '#ff6b6b', 6)
+    + R(98, 96, 20, 20, 5, '#7fd8be') + `<path d="M118 102 Q126 104 124 112 Q122 116 118 114" fill="none" ${st(3)}/>` + E(108, 97, 8, 2.5, '#8a5634', 0) + `<path d="M104 90 Q102 84 106 80 M112 90 Q110 84 114 80" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>`,
+
+  Iglooby: () => shadow(100, 142, 54)
+    + `<path d="M150 98 L182 30" stroke="${O}" stroke-width="7" stroke-linecap="round"/><path d="M150 98 L182 30" stroke="#9a6440" stroke-width="3" stroke-linecap="round"/><path d="M182 30 Q188 70 182 104" fill="none" stroke="${O}" stroke-width="1.5"/>`
+    + `<g transform="rotate(-20 182 112)">${P('M170 112 Q180 102 192 112 Q180 122 170 112 Z', '#ff9a72', 2.2)}${P('M192 112 L198 106 L198 118 Z', '#ff9a72', 2)}</g>`
+    + P('M46 132 Q46 54 100 52 Q154 54 154 132 Z', '#eef8ff')
+    + `<path d="M50 104 H150 M48 120 H152 M58 86 H142 M74 68 H126 M80 52 V68 M120 52 V68 M68 68 V86 M100 68 V86 M132 68 V86 M84 86 V104 M116 86 V104 M70 104 V120 M100 104 V120 M130 104 V120" stroke="#c6e2f4" stroke-width="2.5"/>`
+    + P('M122 132 L122 112 Q134 100 146 112 L146 132 Z', '#3a5a8c', 2.6)
+    + P('M58 64 Q100 38 142 64 Q130 56 100 54 Q72 56 58 64 Z', '#ffffff', 2.5)
+    + face(92, 90, 1.15, 'smile')
+    + hand(150, 98, '#eef8ff', 6.5) + hand(50, 108, '#eef8ff', 6),
+
+  Kitelet: () => `<path d="M100 120 Q84 132 70 124 Q56 116 44 128 Q34 138 22 134" fill="none" stroke="${O}" stroke-width="5" stroke-linecap="round"/><path d="M100 120 Q84 132 70 124 Q56 116 44 128 Q34 138 22 134" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>`
+    + [[70, 124, '#7fd8be'], [44, 128, '#ffd166'], [22, 134, '#7fc8f8']].map(([x, y, c]) => P(`M${x} ${y} L${x - 7} ${y - 6} L${x - 7} ${y + 6} Z M${x} ${y} L${x + 7} ${y - 6} L${x + 7} ${y + 6} Z`, c, 2.2)).join('')
+    + `<path d="M138 82 Q160 96 166 128" fill="none" stroke="${O}" stroke-width="1.6"/>` + R(160, 122, 14, 18, 4, '#9a6440', 2.4)
+    + P('M100 22 L142 72 L100 122 L58 72 Z', '#ff8fab') + P('M100 22 L142 72 L100 72 Z', '#ffb4c8', 0) + P('M58 72 L100 122 L100 72 Z', '#ffd166', 0) + P('M100 72 L142 72 L100 122 Z', '#ffe08a', 0)
+    + `<path d="M100 22 L100 122 M58 72 L142 72" stroke="#c98a52" stroke-width="3"/>` + P('M100 22 L142 72 L100 122 L58 72 Z', 'none')
+    + face(100, 70, 1.1, 'open')
+    + hand(142, 80, '#ff8fab', 6) + hand(58, 80, '#ff8fab', 6),
+
+  Kitedrake: () => [[180, 104, 14, '#7fd8be'], [162, 92, 16, '#ffd166'], [142, 100, 17, '#7fc8f8'], [122, 92, 18, '#ff8fab'], [102, 100, 19, '#b58df2']].map(([x, y, r, c]) => P(`M${x - r * .3} ${y - r} L${x - r * .3} ${y - r - 10} L${x + r * .3} ${y - r} Z`, '#ff6b6b', 2) + C(x, y, r, c) + `<path d="M${x} ${y - r} V${y + r}" stroke="#fff" stroke-width="2" opacity=".7"/>`).join('')
+    + `<path d="M190 106 Q198 118 190 132 M186 112 Q190 128 180 140" fill="none" stroke="${O}" stroke-width="7" stroke-linecap="round"/><path d="M190 106 Q198 118 190 132 M186 112 Q190 128 180 140" fill="none" stroke="#ff6b6b" stroke-width="3" stroke-linecap="round"/>`
+    + `<path d="M36 76 Q18 82 12 98 M38 84 Q24 96 24 112" fill="none" stroke="${O}" stroke-width="6" stroke-linecap="round"/><path d="M36 76 Q18 82 12 98 M38 84 Q24 96 24 112" fill="none" stroke="#ffd166" stroke-width="2.5" stroke-linecap="round"/>`
+    + P('M40 36 L32 10 L54 30 Z', '#ffd166') + P('M90 36 L98 10 L76 30 Z', '#ffd166')
+    + C(65, 66, 36, '#ff6b6b') + C(65, 74, 24, '#ffb4b4', 0, 'opacity=".55"') + `<path d="M36 52 Q65 36 94 52" fill="none" stroke="#ffd166" stroke-width="4"/>` + C(65, 40, 4, '#7fd8be', 2)
+    + face(65, 66, 1.2, 'grin') + `<path d="M46 52 L56 55 M84 52 L74 55" ${st(2.6)}/>`
+    + bend('M84 98 Q92 112 88 122', '#ff6b6b', 7) + R(80, 120, 16, 14, 4, '#9a6440', 2.4) + `<path d="M88 134 Q120 146 150 128" fill="none" stroke="${O}" stroke-width="1.5"/>`,
+
+  Tickletock: () => shadow(100, 147, 48)
+    + gear(30, 40, 10, '#ffcf4d') + gear(172, 64, 12, '#ffcf4d') + gear(160, 30, 7, '#e0b04a')
+    + R(62, 20, 76, 124, 12, '#9a5a32') + P('M58 26 Q100 -6 142 26 Z', '#7a4422') + C(100, 6, 5, '#ffcf4d', 2.4) + R(66, 24, 68, 8, 3, '#b8743e', 0)
+    + R(70, 84, 60, 50, 8, '#bfe2ff', 2.6) + `<path d="M100 84 L100 110" ${st(2.5)}/>` + C(100, 116, 10, '#ffcf4d', 2.6) + shine(80, 96, 4, 10, 15)
+    + C(100, 54, 30, '#ffcf4d') + C(100, 54, 25, '#fffaf0', 2.4)
+    + [...Array(12)].map((_, i) => { const a = i / 12 * Math.PI * 2; return C(100 + Math.cos(a) * 20, 54 + Math.sin(a) * 20, i % 3 ? 1.2 : 2, O, 0); }).join('')
+    + face(100, 52, .95, 'grin')
+    + bend('M62 92 Q44 92 40 76', '#9a5a32', 7) + bend('M138 92 Q152 96 156 112', '#9a5a32', 7)
+    + `<g transform="rotate(-30 36 64)">${C(36, 44, 12, 'none', 0, 'stroke="#2b2140" stroke-width="10"')}${C(36, 44, 12, 'none', 0, 'stroke="#ffcf4d" stroke-width="5"')}${R(32, 54, 8, 28, 3, '#ffcf4d', 2.6)}${R(26, 72, 10, 6, 2, '#ffcf4d', 2.4)}</g>` + hand(40, 76, '#9a5a32', 6.5)
+    + hand(156, 112, '#9a5a32', 6.5)
+    + spark(176, 96, .6, '#ffe6a0') + spark(22, 110, .6, '#ffe6a0'),
+
+  Cosmochef: () => C(160, 30, 12, '#ff9ad5', 2.5) + E(160, 30, 20, 4, 'none', 0, 'stroke="#ffe27a" stroke-width="3"') + C(34, 40, 7, '#7fd8ff', 2.4)
+    + R(78, 2, 44, 30, 14, '#ffffff') + C(84, 14, 12, '#ffffff') + C(100, 8, 14, '#ffffff') + C(116, 14, 12, '#ffffff') + R(76, 26, 48, 12, 4, '#ffffff')
+    + C(100, 76, 44, 'url(#cs-galaxy)') + [[78, 54], [124, 60], [86, 106], [122, 100], [100, 44]].map(([x, y], i) => spark(x, y, i % 2 ? .5 : .35, '#fff')).join('') + shine(80, 52, 10, 5)
+    + face(100, 72, 1.2, 'open')
+    + P('M54 104 L146 104 Q144 140 100 142 Q56 140 54 104 Z', '#d8dde8') + E(100, 104, 46, 9, '#b8c0d0') + shine(68, 118, 5, 10, 15)
+    + E(100, 103, 38, 6, '#5a3fa6', 0) + spark(90, 102, .4, '#ffe27a') + spark(112, 103, .3, '#fff')
+    + bend('M140 86 Q160 82 162 66', '#8a5cf6', 8) + `<path d="M162 66 L138 98" stroke="${O}" stroke-width="7" stroke-linecap="round"/><path d="M162 66 L138 98" stroke="#d8dde8" stroke-width="3" stroke-linecap="round"/>` + P('M138 98 Q126 104 130 112 Q140 112 142 100 Z', '#d8dde8', 2.2) + hand(162, 64, '#8a5cf6', 7)
+    + hand(56, 100, '#8a5cf6', 7)
+    + spark(24, 90, .6, '#fff') + spark(180, 110, .5, '#fff') + spark(140, 14, .5, '#fff'),
+
+  Moonmochi: () => C(100, 70, 62, '#fff4c8') + C(70, 46, 9, '#f2e2a0', 0) + C(132, 40, 6, '#f2e2a0', 0) + C(146, 86, 8, '#f2e2a0', 0) + C(60, 96, 5, '#f2e2a0', 0)
+    + R(64, 112, 72, 30, 10, '#9a6440') + E(100, 112, 36, 7, '#7a4a28') + E(100, 108, 26, 9, '#ffffff', 2.4)
+    + E(78, 32, 9, 24, '#ffffff', 2.6, 'transform="rotate(-14 78 32)"') + E(78, 32, 4, 16, '#ffc2dc', 0, 'transform="rotate(-14 78 32)"') + E(116, 30, 9, 24, '#ffffff', 2.6, 'transform="rotate(16 116 30)"') + E(116, 30, 4, 16, '#ffc2dc', 0, 'transform="rotate(16 116 30)"')
+    + E(98, 78, 30, 28, '#ffffff') + E(98, 96, 26, 14, '#ffffff', 0) + shine(84, 64, 8, 4)
+    + face(98, 74, 1.05, 'happy')
+    + `<path d="M126 92 L156 40" stroke="${O}" stroke-width="9" stroke-linecap="round"/><path d="M126 92 L156 40" stroke="#c98a52" stroke-width="4.5" stroke-linecap="round"/>` + `<g transform="rotate(-60 156 36)">${R(140, 26, 32, 20, 8, '#b8743e')}</g>`
+    + hand(126, 92, '#ffffff', 6.5) + hand(72, 96, '#ffffff', 6)
+    + spark(24, 24, .7, '#fff') + spark(176, 120, .6, '#fff') + spark(30, 120, .5, '#fff'),
 
   Smorlet: () => shadow(100, 140, 32)
     + `<path d="M144 132 L144 46" stroke="${O}" stroke-width="8" stroke-linecap="round"/><path d="M144 132 L144 46" stroke="#a87048" stroke-width="4" stroke-linecap="round"/>` + flame(144, 40, .8)
@@ -384,335 +716,6 @@ const ART = {
     + eye(88, 96, 5.5) + eye(112, 96, 5.5) + smile(100, 106, 6) + blush(80, 106) + blush(120, 106)
     + flame(100, 50, .7),
 
-  Puddlop: () => shadow(100, 142, 48)
-    + E(62, 134, 14, 6, '#2f8ad8') + E(138, 134, 14, 6, '#2f8ad8')
-    + P('M54 130 Q46 104 66 92 Q76 66 100 66 Q124 66 134 92 Q154 104 146 130 Q100 142 54 130 Z', '#62bdfb')
-    + `<path d="M70 118 Q84 126 102 124" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".55"/>`
-    + C(80, 66, 15, '#62bdfb') + C(120, 66, 15, '#62bdfb') + eye(80, 67, 9) + eye(120, 67, 9)
-    + P('M84 48 Q100 30 116 48 Q100 54 84 48 Z', '#4cbf72', 2.5) + `<path d="M100 46 L100 38" ${st(2)}/>` + C(110, 42, 4, '#ff8fab', 2)
-    + `<path d="M74 98 Q100 116 126 98" fill="none" ${st(3)}/>` + blush(70, 96) + blush(130, 96)
-    + P('M160 70 Q166 80 160 84 Q154 80 160 70 Z', '#bfe6ff', 2) + P('M40 84 Q45 92 40 96 Q35 92 40 84 Z', '#bfe6ff', 2) + P('M150 40 Q154 47 150 50 Q146 47 150 40 Z', '#bfe6ff', 2),
-
-  Tidetoad: () => shadow(100, 142, 58)
-    + P('M48 92 Q50 46 84 54 Q92 26 122 38 Q150 30 154 62 Q164 72 152 96 Z', '#e9f7ff', 3)
-    + `<path d="M84 54 Q96 64 110 52 M122 38 Q130 52 146 46" fill="none" stroke="#7fc8f8" stroke-width="4" stroke-linecap="round"/>`
-    + E(100, 104, 54, 34, '#3a8ed6') + E(100, 118, 32, 18, '#bfe6ff', 0)
-    + C(72, 112, 4, '#6fb6f2', 0) + C(132, 100, 5, '#6fb6f2', 0) + C(126, 120, 3.5, '#6fb6f2', 0)
-    + P('M56 86 L52 74 M52 80 L46 76 M54 80 L60 74', 'none', 3) + P('M56 86 L52 74 M52 80 L46 76 M54 80 L60 74', 'none', 0, 'stroke="#ff8fab" stroke-width="2" stroke-linecap="round"')
-    + C(72, 70, 16, '#3a8ed6') + C(128, 70, 16, '#3a8ed6') + eye(72, 72, 8.5) + eye(128, 72, 8.5)
-    + `<path d="M60 58 L80 62 M140 58 L120 62" ${st(3.5)}/>`
-    + `<path d="M66 98 Q100 112 134 98" fill="none" ${st(3)}/>`
-    + E(62, 134, 16, 7, '#2f78bb') + E(138, 134, 16, 7, '#2f78bb') + shine(82, 86, 12, 5, -20),
-
-  Teacrab: () => shadow(100, 142, 50)
-    + E(100, 134, 48, 9, '#ffffff') + E(100, 132, 30, 5, '#f0e6f6', 0)
-    + `<path d="M130 100 Q152 96 150 112 Q148 124 132 120" fill="none" ${st(7)}/><path d="M130 100 Q152 96 150 112 Q148 124 132 120" fill="none" stroke="#ffd6e0" stroke-width="3"/>`
-    + `<path d="M86 84 L80 58 M114 84 L120 58" ${st(4)}/>` + C(80, 54, 8, '#fff') + C(120, 54, 8, '#fff') + eye(80, 55, 5) + eye(120, 55, 5)
-    + P('M78 92 Q100 70 122 92 Z', '#ff6b5e')
-    + P('M56 82 Q42 70 52 60 Q58 66 62 62 Q70 72 66 84 Z', '#ff6b5e', 2.5) + P('M144 82 Q158 70 148 60 Q142 66 138 62 Q130 72 134 84 Z', '#ff6b5e', 2.5)
-    + P('M62 92 L138 92 Q136 130 100 132 Q64 130 62 92 Z', '#ffd6e0')
-    + E(100, 92, 38, 8, '#ffffff', 3)
-    + `<g fill="#ff8fab">${C(80, 110, 3.5, '#ff8fab', 0)}${C(100, 116, 3.5, '#ff8fab', 0)}${C(120, 110, 3.5, '#ff8fab', 0)}${C(90, 122, 2.5, '#ff8fab', 0)}${C(110, 122, 2.5, '#ff8fab', 0)}</g>`
-    + `<path d="M70 104 Q74 100 78 104" stroke="#fff" stroke-width="4" stroke-linecap="round" fill="none" opacity=".8"/>`,
-
-  Kettlecrab: () => shadow(100, 142, 60)
-    + C(176, 56, 8, '#fff', 2) + C(168, 44, 6, '#fff', 2) + C(182, 38, 5, '#fff', 2)
-    + P('M38 112 Q22 96 30 82 Q38 90 44 86 Q54 98 48 114 Z', '#ff6b5e')
-    + P('M162 128 Q178 116 172 102 Q166 110 160 106 Q150 116 154 130 Z', '#ff6b5e')
-    + `<path d="M56 126 L40 132 M60 132 L48 140 M144 132 L152 140" ${st(4)}/>`
-    + P('M146 108 Q164 92 172 68 L178 72 Q172 102 150 124 Z', '#b9c6d6')
-    + `<path d="M88 64 L80 40 M112 64 L120 40" ${st(4)}/>` + C(80, 36, 8, '#fff') + C(120, 36, 8, '#fff') + eye(81, 37, 5) + eye(119, 37, 5)
-    + `<path d="M70 26 L86 32 M130 26 L114 32" ${st(3)}/>`
-    + P('M70 80 Q72 58 100 56 Q128 58 130 80 Z', '#ff6b5e') + `<path d="M90 72 Q100 66 110 72" fill="none" ${st(2.5)}/>`
-    + P('M54 132 Q46 80 100 76 Q154 80 146 132 Z', '#c9d6e3') + shine(76, 100, 12, 7)
-    + `<path d="M60 116 Q100 124 140 116" fill="none" stroke="#a6b4c4" stroke-width="3"/>`
-    + `<g transform="rotate(-12 70 60)">${E(76, 60, 28, 7, '#b2c0d0')}${C(76, 51, 5.5, '#8a5634', 2.5)}</g>`
-    + C(100, 104, 9, '#ffcf4d', 2.5) + `<path d="M96 104 L104 104 M100 100 L100 108" ${st(2)}/>`,
-
-  Buoysloth: () => `<path d="M0 116 Q25 108 50 116 T100 116 T150 116 T200 116 L200 150 L0 150 Z" fill="#8fd3ff" opacity=".7"/>`
-    + `<path d="M68 70 Q48 84 56 112" fill="none" ${st(13)}/><path d="M68 70 Q48 84 56 112" fill="none" stroke="#b49a7e" stroke-width="8" stroke-linecap="round"/>`
-    + C(100, 104, 36, '#ff6b5e')
-    + `<path d="M100 68 A36 36 0 0 1 136 104 L120 104 A20 20 0 0 0 100 84 Z M100 140 A36 36 0 0 1 64 104 L80 104 A20 20 0 0 0 100 124 Z" fill="#fff"/>`
-    + C(100, 104, 36, 'none') + C(100, 104, 20, '#8fd3ff')
-    + `<path d="M132 70 Q152 84 144 112" fill="none" ${st(13)}/><path d="M132 70 Q152 84 144 112" fill="none" stroke="#b49a7e" stroke-width="8" stroke-linecap="round"/>`
-    + `<path d="M50 112 l-4 6 M56 114 l-1 7 M62 112 l2 6 M138 112 l-2 6 M144 114 l1 7 M150 112 l4 6" ${st(2.5)}/>`
-    + C(100, 58, 28, '#b49a7e') + E(100, 62, 21, 17, '#efe0c8', 0)
-    + `<path d="M80 54 Q88 64 96 58 M120 54 Q112 64 104 58" fill="#6b5440" ${st(2)}/>`
-    + `<path d="M84 58 Q88 62 92 58 M108 58 Q112 62 116 58" fill="none" ${st(2.5)}/>`
-    + E(100, 66, 4, 3, O, 0) + smile(100, 71, 5)
-    + `<text x="134" y="36" font-family="Baloo 2, sans-serif" font-weight="800" font-size="16" fill="${O}" opacity=".7">z</text><text x="146" y="24" font-family="Baloo 2, sans-serif" font-weight="800" font-size="12" fill="${O}" opacity=".5">z</text>`,
-
-  Bonsaipup: () => shadow(100, 140, 40)
-    + `<path d="M112 92 Q106 74 118 66 Q126 58 122 46" fill="none" ${st(8)}/><path d="M112 92 Q106 74 118 66 Q126 58 122 46" fill="none" stroke="#9a6440" stroke-width="4" stroke-linecap="round"/>`
-    + E(122, 44, 18, 11, '#4cbf72') + E(110, 60, 12, 8, '#5fd082') + E(132, 58, 11, 7, '#5fd082')
-    + E(110, 112, 32, 20, '#ecc79e') + R(90, 118, 11, 20, 5, '#dfb48a') + R(122, 118, 11, 20, 5, '#dfb48a') + R(104, 120, 11, 18, 5, '#ecc79e') + R(136, 116, 10, 20, 5, '#ecc79e')
-    + leaf(142, 102, .9, -20, '#5fd082')
-    + C(78, 88, 24, '#ecc79e') + shine(70, 76, 7, 4)
-    + leaf(62, 74, 1, 120, '#4cbf72') + leaf(92, 70, 1, 70, '#4cbf72')
-    + E(66, 98, 11, 8, '#fff3e0', 2) + E(60, 95, 4, 3, O, 0)
-    + `<path d="M64 102 Q68 106 72 102" fill="none" ${st(2)}/><path d="M67 104 Q66 112 71 111 Q74 108 70 104" fill="#ff8fab" ${st(2)}/>`
-    + eye(76, 84, 5) + eye(92, 82, 5) + blush(86, 96),
-
-  Bonsaiku: () => shadow(108, 142, 62)
-    + `<path d="M118 92 Q108 68 122 54 Q136 42 126 26 M122 54 Q148 54 156 42 M118 72 Q96 66 88 52" fill="none" ${st(10)}/><path d="M118 92 Q108 68 122 54 Q136 42 126 26 M122 54 Q148 54 156 42 M118 72 Q96 66 88 52" fill="none" stroke="#8a5634" stroke-width="6" stroke-linecap="round"/>`
-    + E(126, 22, 26, 11, '#3faa66') + E(158, 38, 20, 9, '#4cbf72') + E(84, 46, 22, 9, '#4cbf72') + E(126, 16, 14, 5, '#7fe0a0', 0)
-    + `<path d="M158 47 L158 58" ${st(2)}/>` + R(152, 58, 12, 15, 4, '#ff8fab', 2.5) + C(158, 65, 3, '#ffe27a', 0)
-    + R(96, 88, 46, 12, 5, '#6f8fd6')
-    + E(114, 112, 46, 24, '#c99a6e') + R(76, 120, 15, 22, 6, '#b8885c') + R(140, 120, 15, 22, 6, '#b8885c') + R(96, 122, 15, 20, 6, '#c99a6e') + R(122, 122, 15, 20, 6, '#c99a6e')
-    + C(64, 90, 24, '#c99a6e') + P('M46 82 Q36 94 44 110 Q52 102 54 90 Z', '#a87a52', 2.5)
-    + P('M50 104 Q48 122 60 126 Q66 116 64 108 Z', '#6fbf7a', 2.5) + P('M60 106 Q66 124 76 122 Q76 112 70 104 Z', '#5aad68', 2.5)
-    + E(52, 98, 9, 7, '#ecd2b4', 2) + E(46, 96, 3.5, 3, O, 0)
-    + `<path d="M58 84 Q62 88 66 84 M72 82 Q76 86 80 82" fill="none" ${st(2.5)}/><path d="M56 78 L66 80 M72 78 L80 76" ${st(2.5)}/>`,
-
-  Mosslug: () => shadow(100, 140, 52)
-    + `<path d="M64 100 L54 68 M80 96 L84 64" ${st(7)}/><path d="M64 100 L54 68 M80 96 L84 64" stroke="#f2e6d0" stroke-width="3.5" stroke-linecap="round"/>`
-    + P('M40 70 Q54 52 68 68 Z', '#ff5e5e', 2.5) + P('M72 66 Q86 48 98 64 Z', '#ff5e5e', 2.5) + C(50, 64, 2.5, '#fff', 0) + C(58, 62, 2, '#fff', 0) + C(84, 59, 2.5, '#fff', 0) + C(91, 61, 2, '#fff', 0)
-    + P('M44 130 Q40 108 62 102 Q78 80 110 84 Q144 88 156 118 Q160 132 144 134 Z', '#cde9a6')
-    + P('M84 88 Q96 74 112 82 Q126 76 138 90 Q150 96 150 108 Q128 98 110 100 Q94 96 84 88 Z', '#4cbf72', 2.5)
-    + C(104, 82, 3, '#ff8fab', 0) + C(126, 84, 3, '#ffd166', 0) + C(140, 96, 2.5, '#ff8fab', 0)
-    + eye(62, 114, 5) + eye(78, 112, 5) + smile(70, 122, 5) + blush(56, 122) + shine(120, 116, 14, 4, -5),
-
-  Fungoliath: () => shadow(100, 142, 64)
-    + P('M30 132 Q34 110 50 104 L150 112 Q172 116 170 132 Z', '#ead8bf')
-    + `<path d="M40 102 L34 74 M52 100 L58 72" ${st(6)}/><path d="M40 102 L34 74 M52 100 L58 72" stroke="#ead8bf" stroke-width="3" stroke-linecap="round"/>`
-    + C(34, 70, 7, '#fff') + C(58, 68, 7, '#fff') + eye(34, 71, 4.5) + eye(58, 69, 4.5)
-    + C(46, 106, 16, '#ead8bf') + smile(46, 112, 5) + blush(36, 112, 4) + blush(56, 112, 4)
-    + R(84, 70, 60, 54, 10, '#fff3d6') + P('M104 124 L104 102 Q114 90 124 102 L124 124 Z', '#8a5634', 2.5) + C(120, 112, 1.8, '#ffd166', 0)
-    + C(94, 92, 7, '#ffd166', 2.5) + `<path d="M94 85 L94 99 M87 92 L101 92" ${st(1.8)}/>` + C(134, 90, 6, '#ffd166', 2.5)
-    + P('M62 78 Q114 -4 166 78 Q114 92 62 78 Z', '#ff5e5e')
-    + C(90, 50, 7, '#fff', 0) + C(118, 34, 8, '#fff', 0) + C(142, 56, 6, '#fff', 0) + C(108, 64, 5, '#fff', 0)
-    + R(140, 24, 9, 16, 2, '#b8885c', 2.5) + C(150, 16, 4, '#e8e8f0', 0) + C(156, 8, 5, '#e8e8f0', 0),
-
-  Cactoot: () => shadow(100, 140, 36)
-    + `<path d="M84 136 l-4 4 M88 136 l0 5 M112 136 l0 5 M116 136 l4 4" ${st(2.5)}/>`
-    + P('M70 102 Q52 102 52 84 L52 70 Q52 62 59 62 Q66 62 66 70 L66 84 Q66 90 72 90 Z', '#4cbf72')
-    + P('M130 102 Q148 102 148 84 L148 70 Q148 62 141 62 Q134 62 134 70 L134 84 Q134 90 128 90 Z', '#4cbf72')
-    + E(100, 98, 34, 40, '#56c87c') + `<path d="M84 64 Q80 98 86 134 M116 64 Q120 98 114 134" fill="none" stroke="#3aa060" stroke-width="2.5"/>`
-    + `<g ${st(2)}>${[[78, 112], [122, 112], [86, 126], [114, 126], [70, 96], [130, 96], [58, 76], [142, 76]].map(([x, y]) => `<path d="M${x - 3} ${y - 3} l-3 -2 M${x + 3} ${y - 3} l3 -2"/>`).join('')}</g>`
-    + E(100, 86, 26, 19, '#c8f0cf', 2)
-    + C(89, 84, 11, '#fff7d6', 2.5) + C(111, 84, 11, '#fff7d6', 2.5) + C(89, 84, 11, 'none', 0, 'stroke="#ffd166" stroke-width="3"') + C(111, 84, 11, 'none', 0, 'stroke="#ffd166" stroke-width="3"')
-    + eye(89, 85, 6) + eye(111, 85, 6) + P('M96 94 L104 94 L100 101 Z', '#ffb13b', 2)
-    + P('M76 66 L72 52 L84 60 Z', '#4cbf72', 2.5) + P('M124 66 L128 52 L116 60 Z', '#4cbf72', 2.5)
-    + [0, 72, 144, 216, 288].map(a => E(100 + Math.cos(a * Math.PI / 180) * 7, 56 + Math.sin(a * Math.PI / 180) * 7, 6, 4, '#ff8fab', 2, `transform="rotate(${a} ${100 + Math.cos(a * Math.PI / 180) * 7} ${56 + Math.sin(a * Math.PI / 180) * 7})"`)).join('') + C(100, 56, 4, '#ffd166', 2),
-
-  Bulbug: () => shadow(100, 140, 52)
-    + C(132, 94, 38, '#fff6a0', 0, 'opacity=".35"')
-    + `<path d="M48 76 L40 56 M60 76 L66 54" ${st(3)}/>` + spark(40, 52, .8, '#ffe27a') + spark(66, 50, .8, '#ffe27a')
-    + `<path d="M58 128 l0 8 M76 130 l0 8 M96 130 l0 7" ${st(3)}/>`
-    + C(98, 116, 14, '#c9d6e3') + `<path d="M86 110 L110 106 M85 118 L111 114 M88 126 L110 122" stroke="#9aa8ba" stroke-width="2.5"/>`
-    + C(76, 112, 15, '#ffe08a') + C(54, 100, 20, '#ffe08a') + shine(48, 90, 6, 3)
-    + C(132, 94, 26, '#fffbe0') + `<path d="M120 100 L124 88 L128 98 L132 86 L136 98 L140 88 L144 100" fill="none" stroke="#ffb13b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>` + shine(124, 80, 7, 4)
-    + eye(46, 98, 5) + eye(62, 96, 5) + smile(54, 108, 5) + blush(42, 108, 4) + blush(66, 106, 4)
-    + spark(166, 70, .6, '#ffe27a') + spark(160, 124, .5, '#ffe27a'),
-
-  Filamoth: () => shadow(100, 142, 44)
-    + C(100, 92, 44, '#fff6a0', 0, 'opacity=".3"')
-    + P('M94 84 Q60 30 26 46 Q18 74 44 92 Q70 98 94 92 Z', '#ffeaa0') + P('M106 84 Q140 30 174 46 Q182 74 156 92 Q130 98 106 92 Z', '#ffeaa0')
-    + `<path d="M36 56 L46 66 L52 56 L62 68 L70 58 L80 72 M164 56 L154 66 L148 56 L138 68 L130 58 L120 72" fill="none" stroke="#ffb13b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>`
-    + C(46, 78, 5, '#ffb13b', 2) + C(154, 78, 5, '#ffb13b', 2)
-    + P('M94 96 Q62 102 52 124 Q72 134 96 108 Z', '#ffd166') + P('M106 96 Q138 102 148 124 Q128 134 104 108 Z', '#ffd166')
-    + E(100, 98, 14, 27, '#fffbe0') + `<path d="M94 108 L98 96 L102 106 L106 94" fill="none" stroke="#ffb13b" stroke-width="2.5" stroke-linecap="round"/>`
-    + R(92, 120, 16, 14, 4, '#c9d6e3', 2.5) + `<path d="M93 126 L107 124 M94 130 L106 128" stroke="#9aa8ba" stroke-width="2"/>`
-    + `<path d="M92 56 Q80 30 66 26 M108 56 Q120 30 134 26" fill="none" ${st(3)}/><path d="M84 40 l-6 -2 M78 34 l-6 0 M116 40 l6 -2 M122 34 l6 0" ${st(2)}/>` + spark(66, 24, .9, '#ffe27a') + spark(134, 24, .9, '#ffe27a')
-    + C(100, 64, 15, '#fff2b8') + E(88, 74, 8, 5, '#fff', 2) + E(112, 74, 8, 5, '#fff', 2)
-    + E(93, 63, 5, 6.5, O, 0) + E(107, 63, 5, 6.5, O, 0) + C(91, 60, 2, '#fff', 0) + C(105, 60, 2, '#fff', 0) + blush(88, 70, 3.5) + blush(112, 70, 3.5),
-
-  Plugpig: () => shadow(104, 140, 40)
-    + `<path d="M136 104 Q152 96 148 110 Q144 122 156 120 Q168 116 162 106 Q158 100 166 98 L176 98" fill="none" ${st(6)}/><path d="M136 104 Q152 96 148 110 Q144 122 156 120 Q168 116 162 106 Q158 100 166 98 L176 98" fill="none" stroke="#5a5470" stroke-width="2.5"/>`
-    + R(174, 92, 12, 12, 2, '#f2eee9', 2.5) + `<path d="M186 95 L192 95 M186 101 L192 101" ${st(2.5)}/>`
-    + E(108, 110, 34, 24, '#ffb4c8') + R(86, 122, 11, 16, 5, '#ff9fb8') + R(124, 122, 11, 16, 5, '#ff9fb8') + R(100, 124, 11, 14, 5, '#ffb4c8') + R(112, 124, 11, 14, 5, '#ffb4c8')
-    + P('M64 70 L56 54 L74 62 Z', '#ff9fb8', 2.5) + P('M90 66 L96 50 L102 66 Z', '#ff9fb8', 2.5)
-    + C(80, 88, 25, '#ffb4c8') + shine(70, 76, 7, 4)
-    + R(46, 88, 26, 22, 8, '#f2eee9', 2.5) + R(34, 92, 14, 5, 2, '#ffd166', 2.5) + R(34, 102, 14, 5, 2, '#ffd166', 2.5)
-    + eye(78, 82, 5) + eye(94, 80, 5) + blush(90, 94) + smile(88, 98, 4)
-    + `<path d="M150 64 L144 76 L152 76 L146 88" fill="none" stroke="#ffc928" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>`,
-
-  Boarcharge: () => shadow(104, 142, 62)
-    + R(78, 112, 16, 28, 6, '#2b2740') + R(134, 112, 16, 28, 6, '#2b2740')
-    + R(64, 76, 92, 50, 14, '#3f3a58') + R(64, 96, 92, 12, 0, '#ffc928', 0) + `<path d="M64 96 L156 96 M64 108 L156 108" ${st(2.5)}/>`
-    + R(154, 88, 12, 22, 4, '#c9d6e3', 2.5) + `<path d="M118 98 L118 106 M114 102 L122 102" stroke="${O}" stroke-width="2.5" stroke-linecap="round"/>`
-    + R(94, 114, 16, 26, 6, '#3f3a58') + R(118, 114, 16, 26, 6, '#3f3a58')
-    + `<path d="M58 70 L70 58 L76 70 L88 54 L94 70 L106 52 L112 70 L124 56 L130 72 L142 60 L146 78" fill="#ffc928" ${st(2.5)}/>`
-    + E(62, 98, 28, 24, '#3f3a58') + shine(54, 84, 8, 4)
-    + E(40, 106, 12, 9, '#ffb4c8', 2.5) + E(36, 106, 2, 3, O, 0) + E(44, 106, 2, 3, O, 0)
-    + `<path d="M52 114 Q46 102 54 94" fill="none" ${st(6)}/><path d="M52 114 Q46 102 54 94" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>`
-    + `<path d="M56 86 L68 90 M80 86 L72 90" ${st(3)}/>` + slit(62, 94, 4.5, '#ffe27a') + slit(78, 94, 4.5, '#ffe27a')
-    + spark(30, 76, .7, '#ffe27a') + spark(172, 70, .6, '#ffe27a'),
-
-  Stormjel: () => shadow(100, 146, 26)
-    + [52, 80, 120, 148].map((x, i) => `<path d="M${x} 86 L${x - 8} ${104 + i % 2 * 6} L${x + 2} ${104 + i % 2 * 6} L${x - 6} ${128 + i % 2 * 8}" fill="none" stroke="${O}" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"/><path d="M${x} 86 L${x - 8} ${104 + i % 2 * 6} L${x + 2} ${104 + i % 2 * 6} L${x - 6} ${128 + i % 2 * 8}" fill="none" stroke="#ffe14a" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>`).join('')
-    + P('M40 84 Q30 66 46 58 Q46 36 70 38 Q80 18 104 26 Q124 16 138 34 Q162 32 162 56 Q176 66 160 84 Z', '#727896')
-    + P('M54 52 Q60 40 74 44 Q84 30 100 36', 'none', 0, 'stroke="#9ea4c0" stroke-width="6" stroke-linecap="round"')
-    + E(100, 84, 60, 9, '#565c78') + eye(84, 64, 6) + eye(116, 64, 6)
-    + `<path d="M90 76 Q100 84 110 76" fill="none" ${st(2.5)}/>` + blush(74, 74) + blush(126, 74)
-    + P('M30 106 Q34 112 30 115 Q26 112 30 106 Z', '#8fd3ff', 2) + P('M172 98 Q176 104 172 107 Q168 104 172 98 Z', '#8fd3ff', 2)
-    + spark(36, 40, .8, '#ffe27a') + spark(170, 28, .7, '#ffe27a'),
-
-  Wispurr: () => shadow(100, 142, 24)
-    + P('M78 94 Q66 120 84 132 Q100 140 108 126 Q118 140 136 130 Q150 120 140 106 Q156 108 160 96 Q150 98 142 92 Q132 84 120 92 Z', '#d6c6f8')
-    + `<path d="M140 106 Q154 100 158 88" fill="none" stroke="#ece4ff" stroke-width="4" stroke-linecap="round"/>`
-    + P('M78 62 L74 38 L94 52 Z', '#d6c6f8') + P('M122 62 L126 38 L106 52 Z', '#d6c6f8') + P('M80 54 L78 44 L88 51 Z', '#b6a0ea', 0) + P('M120 54 L122 44 L112 51 Z', '#b6a0ea', 0)
-    + C(100, 76, 27, '#e4d8fc') + shine(88, 62, 8, 4)
-    + slit(89, 74, 7, '#ffd166') + slit(111, 74, 7, '#ffd166')
-    + `<path d="M94 86 Q97 90 100 86 Q103 90 106 86" fill="none" ${st(2.5)}/>` + blush(80, 86) + blush(120, 86)
-    + `<path d="M74 82 L62 80 M74 87 L62 89 M126 82 L138 80 M126 87 L138 89" ${st(1.8)}/>`
-    + spark(52, 52, .7, '#e9dcff') + spark(150, 46, .6, '#e9dcff') + spark(160, 70, .4, '#e9dcff'),
-
-  Grimalkyn: () => shadow(100, 144, 50)
-    + [[-1, '#33507e'], [0, '#2c4570'], [1, '#33507e']].map(([k, c]) => `<path d="M100 112 Q${100 + k * 58} ${100 - Math.abs(k) * 10} ${100 + k * 66} ${56 + Math.abs(k) * 8} Q${100 + k * 76} ${36 + Math.abs(k) * 8} ${100 + k * 56} ${30 + Math.abs(k) * 6}" fill="none" ${st(14)}/><path d="M100 112 Q${100 + k * 58} ${100 - Math.abs(k) * 10} ${100 + k * 66} ${56 + Math.abs(k) * 8} Q${100 + k * 76} ${36 + Math.abs(k) * 8} ${100 + k * 56} ${30 + Math.abs(k) * 6}" fill="none" stroke="${c}" stroke-width="8" stroke-linecap="round"/>${flame(100 + k * 56, 28 + Math.abs(k) * 6, .65, '#7fe9ff', '#e6fdff')}`).join('')
-    + P('M62 140 Q56 104 72 88 L128 88 Q144 104 138 140 Z', '#22385e') + P('M86 140 Q88 112 100 104 Q112 112 114 140 Z', '#3a5a8c', 0)
-    + `<path d="M92 118 Q96 124 100 118 M104 128 Q108 134 112 128" fill="none" stroke="#7fe9ff" stroke-width="2" stroke-linecap="round" opacity=".7"/>`
-    + E(76, 140, 13, 6, '#22385e') + E(124, 140, 13, 6, '#22385e')
-    + P('M70 54 L66 22 L92 40 Z', '#22385e') + P('M130 54 L134 22 L108 40 Z', '#22385e') + P('M72 44 L70 30 L84 40 Z', '#7fe9ff', 0) + P('M128 44 L130 30 L116 40 Z', '#7fe9ff', 0)
-    + E(100, 64, 32, 28, '#22385e') + shine(86, 48, 8, 4)
-    + `<path d="M76 58 Q86 50 96 58 Q86 64 76 58 Z M104 58 Q114 50 124 58 Q114 64 104 58 Z" fill="#ffb347" ${st(2.5)}/><path d="M86 53 L86 63 M114 53 L114 63" ${st(3)}/>`
-    + `<path d="M74 52 L94 54 M126 52 L106 54" ${st(2.5)}/>`
-    + `<path d="M88 76 Q100 84 114 74" fill="none" ${st(2.8)}/><path d="M108 77 l2 5 l2 -5.5 Z" fill="#fff" ${st(1.4)}/>` + E(100, 70, 3.5, 2.5, '#ff9fb8', 0)
-    + `<path d="M70 70 L56 68 M70 75 L56 77 M130 70 L144 68 M130 75 L144 77" stroke="#7fe9ff" stroke-width="1.8" stroke-linecap="round"/>`
-    + spark(36, 96, .7, '#bdf6ff') + spark(166, 100, .6, '#bdf6ff') + spark(160, 128, .4, '#bdf6ff'),
-
-  Sheetling: () => shadow(100, 142, 28)
-    + R(84, 128, 12, 12, 5, '#ff8fab', 2.5) + R(104, 128, 12, 12, 5, '#7fc8f8', 2.5) + `<path d="M104 133 L116 133" stroke="#fff" stroke-width="2.5"/>`
-    + P('M66 130 Q62 70 100 56 Q138 70 134 130 Q126 122 117 132 Q108 122 100 132 Q92 122 83 132 Q74 122 66 130 Z', '#f8f5ff')
-    + `<path d="M80 100 Q78 116 84 126 M118 96 Q122 114 116 126" fill="none" stroke="#dcd4f0" stroke-width="3" stroke-linecap="round"/>`
-    + P('M82 62 Q98 30 126 40 Q120 52 116 60 Q100 54 82 62 Z', '#7fc8f8', 2.5) + `<path d="M92 50 L104 44 M104 56 L116 48" stroke="#fff" stroke-width="3.5"/>` + C(128, 40, 6, '#fff', 2.5)
-    + E(88, 86, 6, 9, O, 0) + E(112, 86, 6, 9, O, 0) + C(86, 82, 2, '#fff', 0) + C(110, 82, 2, '#fff', 0)
-    + E(100, 102, 4, 5, O, 0) + blush(80, 98) + blush(120, 98)
-    + P('M138 96 Q150 90 152 102 Q146 106 140 104 Z', '#f8f5ff', 2.5),
-
-  Quiltergeist: () => shadow(100, 146, 44)
-    + P('M46 136 Q36 66 100 40 Q164 66 154 136 Q140 124 128 138 Q114 124 100 138 Q86 124 72 138 Q60 124 46 136 Z', '#ffe6c4')
-    + `<g clip-path="url(#cs-quilt)">${[[40, 40, '#ff8fab'], [80, 40, '#7fc8f8'], [120, 40, '#ffd166'], [40, 72, '#7fd8be'], [80, 72, '#ffe6c4'], [120, 72, '#b58df2'], [40, 104, '#ffd166'], [80, 104, '#ff8fab'], [120, 104, '#7fd8be']].map(([x, y, c]) => `<rect x="${x}" y="${y}" width="40" height="32" fill="${c}"/>`).join('')}<path d="M40 72 H160 M40 104 H160 M80 40 V140 M120 40 V140" stroke="#fff" stroke-width="2.5" stroke-dasharray="5 4"/>${C(60, 116, 3, '#fff', 0)}${C(140, 88, 3, '#fff', 0)}</g>`
-    + P('M46 136 Q36 66 100 40 Q164 66 154 136 Q140 124 128 138 Q114 124 100 138 Q86 124 72 138 Q60 124 46 136 Z', 'none')
-    + C(82, 82, 11, '#ffffff') + C(118, 82, 9, '#ff6b6b') + [[-3, -3], [3, -3], [-3, 3], [3, 3]].map(([a, b]) => C(82 + a, 82 + b, 1.6, O, 0) + C(118 + a * .8, 82 + b * .8, 1.4, O, 0)).join('')
-    + `<path d="M82 104 Q100 116 118 104" fill="none" ${st(3)} stroke-dasharray="5 5"/>`
-    + `<path d="M150 50 L172 30" stroke="${O}" stroke-width="6" stroke-linecap="round"/><path d="M150 50 L172 30" stroke="#d8dde8" stroke-width="3" stroke-linecap="round"/><path d="M172 30 Q188 44 168 60 Q150 74 162 92" fill="none" stroke="#ff5e7a" stroke-width="2.5"/>`
-    + P('M42 96 Q26 92 24 104 Q34 108 44 106 Z', '#7fc8f8', 2.5) + P('M158 96 Q174 92 176 104 Q166 108 156 106 Z', '#ffd166', 2.5),
-
-  Mirrorwraith: () => shadow(100, 146, 24)
-    + `<path d="M58 70 Q30 60 36 36 Q48 50 58 46 M142 70 Q170 60 164 36 Q152 50 142 46" fill="none" stroke="#d9c7ff" stroke-width="7" stroke-linecap="round" opacity=".85"/>`
-    + R(93, 108, 14, 38, 6, '#ffcf4d') + C(100, 122, 9, '#ffcf4d', 2.5) + C(100, 142, 7, '#ffcf4d', 2.5)
-    + [...Array(12)].map((_, i) => { const a = i / 12 * Math.PI * 2; return C(100 + Math.cos(a) * 44, 64 + Math.sin(a) * 52, 5.5, '#ffcf4d', 2.5); }).join('')
-    + E(100, 64, 42, 50, '#ffcf4d') + E(100, 64, 32, 40, 'url(#cs-glass)') + shine(84, 40, 8, 14, 20)
-    + E(88, 58, 7, 10, '#f2ecff', 2.5) + E(112, 58, 7, 10, '#f2ecff', 2.5) + E(88, 60, 3, 4, '#5e3fa6', 0) + E(112, 60, 3, 4, '#5e3fa6', 0)
-    + `<path d="M84 80 Q90 74 94 80 Q100 86 106 80 Q110 74 116 80" fill="none" stroke="#f2ecff" stroke-width="3" stroke-linecap="round"/>`
-    + `<path d="M118 32 L110 50 L120 56 L112 72" fill="none" stroke="#fff" stroke-width="2.5" opacity=".9"/>`
-    + spark(30, 90, .6, '#e9dcff') + spark(170, 96, .7, '#e9dcff'),
-
-  Pebblit: () => shadow(100, 140, 34)
-    + E(86, 136, 8, 5, '#8f8478') + E(114, 136, 8, 5, '#8f8478')
-    + P('M68 116 Q62 84 96 78 Q134 76 136 108 Q138 134 102 136 Q72 136 68 116 Z', '#bdb3a8')
-    + C(82, 120, 2.5, '#9a8f84', 0) + C(122, 98, 3, '#9a8f84', 0) + C(118, 124, 2, '#9a8f84', 0) + shine(84, 92, 10, 5)
-    + P('M84 82 Q90 66 100 76 Q108 62 118 80 Q102 86 84 82 Z', '#5fd082', 2.5) + C(104, 70, 3.5, '#fff', 2) + C(104, 70, 1.5, '#ffd166', 0)
-    + eye(90, 104, 5) + eye(112, 104, 5) + smile(101, 114, 4.5) + blush(82, 114) + blush(120, 114)
-    + E(150, 134, 8, 5, '#bdb3a8', 2.5) + E(160, 130, 5, 3.5, '#bdb3a8', 2.5) + E(46, 134, 6, 4, '#bdb3a8', 2.5),
-
-  Cairnhorn: () => shadow(104, 144, 66)
-    + [[74, 116], [140, 116]].map(([x, y]) => E(x, y + 6, 11, 8, '#a59a8e') + E(x, y + 18, 12, 8, '#b3a89c')).join('')
-    + E(118, 94, 46, 24, '#b3a89c') + E(102, 76, 30, 15, '#c3b9ad') + E(134, 74, 22, 12, '#a59a8e') + E(118, 60, 16, 9, '#c9bfb3') + E(120, 50, 9, 6, '#b3a89c')
-    + [[96, 118], [124, 118]].map(([x, y]) => E(x, y + 6, 11, 8, '#b3a89c') + E(x, y + 18, 12, 8, '#c3b9ad')).join('')
-    + P('M100 90 Q116 84 134 92 Q122 96 110 96 Z', '#5fd082', 2.5) + P('M128 66 Q136 60 146 68 Q138 70 128 66 Z', '#5fd082', 2.5)
-    + E(58, 98, 26, 19, '#c3b9ad') + shine(52, 86, 8, 4)
-    + P('M38 90 L26 54 L50 84 Z', '#ece4d8') + P('M54 82 L50 64 L62 80 Z', '#ece4d8', 2.5)
-    + `<path d="M58 92 L68 94" ${st(3)}/>` + eye(62, 98, 4.5) + E(38, 104, 2, 3, O, 0) + `<path d="M40 112 Q48 116 56 112" fill="none" ${st(2.5)}/>`
-    + `<path d="M164 92 Q174 88 176 98" fill="none" ${st(3)}/>` + C(178, 102, 4, '#a59a8e', 2.5),
-
-  Geodle: () => shadow(100, 142, 42)
-    + `<defs></defs>`
-    + [[78, 134], [122, 134]].map(([x, y]) => R(x - 6, y - 26, 12, 24, 5, '#8a7a6a') + crystal(x, y, 11)).join('')
-    + crystal(146, 96, 12)
-    + E(100, 110, 32, 20, '#8a7a6a') + crystal(100, 96, 19)
-    + crystal(74, 74, 13) + crystal(126, 74, 13)
-    + C(100, 70, 21, '#8a7a6a') + crystal(100, 44, 16)
-    + E(100, 80, 10, 7, '#a69482', 2.5) + E(100, 77, 4, 3, O, 0)
-    + eye(91, 67, 4.8) + eye(109, 67, 4.8) + `<path d="M96 84 Q100 87 104 84" fill="none" ${st(2)}/>` + blush(86, 76, 4) + blush(114, 76, 4)
-    + spark(50, 48, .8, '#fff') + spark(156, 52, .6, '#fff') + spark(48, 112, .5, '#fff'),
-
-  Frostfawn: () => shadow(104, 142, 40)
-    + R(88, 108, 8, 32, 4, '#c79a6c', 2.5) + R(126, 108, 8, 32, 4, '#c79a6c', 2.5)
-    + E(112, 102, 30, 17, '#dcb58b') + C(150, 96, 7, '#fff', 2.5)
-    + [[104, 96], [118, 102], [126, 92], [108, 110]].map(([x, y]) => spark(x, y, .55, '#fff')).join('')
-    + R(98, 110, 8, 30, 4, '#dcb58b', 2.5) + R(118, 110, 8, 30, 4, '#dcb58b', 2.5)
-    + P('M80 92 Q84 104 96 100 L92 82 Z', '#dcb58b', 2.5)
-    + P('M64 50 L58 30 L66 40 L68 26 L72 44 Z', '#bff3ff', 2.5) + P('M84 48 L90 28 L86 40 L94 30 L88 50 Z', '#bff3ff', 2.5)
-    + E(60, 60, 12, 6, '#dcb58b', 2.5, 'transform="rotate(-30 60 60)"') + E(94, 56, 12, 6, '#dcb58b', 2.5, 'transform="rotate(30 94 56)"')
-    + E(76, 72, 19, 17, '#dcb58b') + E(70, 84, 11, 8, '#f6e6d2', 2) + E(64, 82, 3.5, 3, O, 0) + shine(70, 62, 6, 3)
-    + eye(74, 70, 5.5) + eye(88, 68, 5.5) + blush(84, 80, 4)
-    + spark(150, 50, .7, '#e3fbff') + spark(40, 104, .55, '#e3fbff'),
-
-  Glacielk: () => shadow(108, 144, 64)
-    + `<path d="M20 60 Q60 20 100 46 Q140 10 186 40" fill="none" stroke="#7fffd4" stroke-width="12" stroke-linecap="round" opacity=".35"/><path d="M24 74 Q70 40 110 60 Q150 30 184 56" fill="none" stroke="#c49bff" stroke-width="10" stroke-linecap="round" opacity=".3"/>`
-    + R(92, 108, 10, 34, 5, '#6e5340', 2.5) + R(146, 108, 10, 34, 5, '#6e5340', 2.5)
-    + E(124, 102, 42, 22, '#8a6a52')
-    + R(106, 112, 10, 30, 5, '#8a6a52', 2.5) + R(132, 112, 10, 30, 5, '#8a6a52', 2.5)
-    + P('M66 104 Q60 80 74 66 Q92 64 102 80 Q108 100 96 112 Q80 116 66 104 Z', '#f2f8ff')
-    + P('M58 46 L40 20 L50 26 L44 8 L58 24 L60 12 L66 30 Z', '#c9f6ff', 2.5) + P('M90 44 L106 18 L100 26 L114 12 L104 30 L118 26 L96 50 Z', '#c9f6ff', 2.5)
-    + P('M54 30 L58 24 L60 32 Z M104 26 L108 22 L106 30 Z', '#ffffff', 0)
-    + E(76, 60, 20, 17, '#8a6a52') + E(62, 70, 12, 9, '#a5866c', 2.5) + E(56, 68, 3.5, 3, O, 0)
-    + `<path d="M72 54 L82 56" ${st(3)}/>` + eye(78, 60, 4.8)
-    + E(52, 46, 9, 5, '#8a6a52', 2.5, 'transform="rotate(-25 52 46)"') + E(96, 48, 9, 5, '#8a6a52', 2.5, 'transform="rotate(25 96 48)"')
-    + `<path d="M40 82 Q34 80 30 84 Q34 88 38 86" fill="#e3fbff" ${st(2)} opacity=".9"/>` + spark(170, 80, .7, '#e3fbff'),
-
-  Mittenmole: () => shadow(100, 140, 42)
-    + P('M40 140 Q50 120 100 122 Q150 120 160 140 Z', '#f4fbff', 2.5)
-    + E(100, 102, 32, 30, '#6e5f6a') + shine(86, 84, 9, 5)
-    + R(70, 108, 60, 12, 6, '#ff6b6b', 2.5) + `<path d="M84 108 L84 120 M100 108 L100 120 M116 108 L116 120" stroke="#fff" stroke-width="3.5"/>` + R(110, 114, 12, 22, 5, '#ff6b6b', 2.5)
-    + E(100, 92, 10, 7, '#ff9fb8', 2.5) + `<path d="M92 88 l-4 -3 M108 88 l4 -3 M94 96 l-4 2 M106 96 l4 2" ${st(2)}/>`
-    + `<path d="M84 82 Q88 79 92 82 M108 82 Q112 79 116 82" fill="none" ${st(2.5)}/>` + blush(82, 90, 4) + blush(118, 90, 4)
-    + R(68, 64, 64, 6, 3, '#5a5470', 2) + C(86, 66, 10, '#a8e4ff') + C(114, 66, 10, '#a8e4ff') + shine(83, 63, 3, 2) + shine(111, 63, 3, 2)
-    + E(62, 112, 14, 12, '#7fd8be') + R(52, 118, 20, 7, 3, '#5ab89c', 2.5) + E(56, 104, 5, 7, '#7fd8be', 2.5, 'transform="rotate(-25 56 104)"')
-    + E(138, 112, 14, 12, '#ff8fab') + R(128, 118, 20, 7, 3, '#e86f90', 2.5) + E(144, 104, 5, 7, '#ff8fab', 2.5, 'transform="rotate(25 144 104)"')
-    + spark(40, 50, .7, '#ffffff') + spark(160, 40, .6, '#ffffff') + spark(150, 76, .45, '#ffffff'),
-
-  Foldove: () => shadow(100, 142, 40) + '<g transform="translate(-18 -26) scale(1.2)">'
-    + P('M48 104 L96 86 L150 98 L120 118 L72 120 Z', '#ffffff') + P('M72 120 L96 86 L120 118 Z', '#e8eef8', 2)
-    + P('M150 98 L174 78 L168 104 L148 108 Z', '#dfe7f5')
-    + P('M48 104 L36 82 L64 92 Z', '#ffffff') + P('M36 82 L24 88 L40 90 Z', '#ffcf4d', 2.5)
-    + P('M96 88 L118 34 L128 96 Z', '#f4f7fd') + P('M118 34 L128 96 L112 92 Z', '#dfe7f5', 2)
-    + C(46, 89, 2.8, O, 0) + blush(52, 96, 3.5)
-    + `<path d="M104 112 L100 132 M114 112 L114 132" ${st(2.5)}/><path d="M96 134 L104 132 M110 134 L118 132" ${st(2.5)}/>`
-    + '</g>',
-
-  Cranegami: () => shadow(100, 144, 56)
-    + P('M98 84 L18 30 L60 96 Z', 'url(#cs-washi)') + P('M60 96 L18 30 L54 70 Z', '#e86f90', 2)
-    + P('M102 84 L182 30 L140 96 Z', 'url(#cs-washi)') + P('M140 96 L182 30 L146 70 Z', '#e86f90', 2)
-    + P('M58 100 L100 76 L146 100 L120 122 L80 122 Z', '#ffffff') + P('M80 122 L100 76 L120 122 Z', '#eef2fa', 2)
-    + P('M146 100 L178 74 L166 108 Z', '#7fc8f8') + P('M58 100 L36 62 L48 64 Z', '#7fc8f8')
-    + P('M36 62 L28 48 L44 56 Z', '#ffffff') + P('M28 48 L18 52 L30 54 Z', '#ff5e5e', 2.5) + C(34, 54, 2.2, O, 0)
-    + spark(100, 30, .9, '#fff') + spark(170, 120, .6, '#fff') + spark(26, 118, .5, '#fff'),
-
-  Chronowl: () => shadow(100, 146, 52)
-    + `<path d="M100 120 L100 144" ${st(4)}/>` + C(100, 144, 7, '#ffcf4d', 2.5)
-    + gear(46, 92, 22, '#c98f3a') + gear(154, 92, 22, '#c98f3a') + gear(40, 70, 12, '#e0b04a') + gear(160, 70, 12, '#e0b04a')
-    + E(100, 92, 40, 46, '#d49a3e') + shine(82, 66, 10, 6)
-    + `<path d="M64 88 Q70 112 84 124 M136 88 Q130 112 116 124" fill="none" stroke="#b07a2a" stroke-width="3"/>`
-    + C(100, 104, 22, '#fffaf0') + [...Array(12)].map((_, i) => { const a = i / 12 * Math.PI * 2; return `<path d="M${100 + Math.cos(a) * 17} ${104 + Math.sin(a) * 17} L${100 + Math.cos(a) * 20} ${104 + Math.sin(a) * 20}" ${st(i % 3 ? 1.5 : 2.5)}/>`; }).join('')
-    + `<path d="M100 104 L100 90 M100 104 L110 110" ${st(3)}/>` + C(100, 104, 2.5, O, 0)
-    + P('M68 52 L62 26 L84 44 Z', '#c98f3a') + P('M132 52 L138 26 L116 44 Z', '#c98f3a')
-    + C(84, 62, 15, '#ffe6a0', 3) + C(116, 62, 15, '#ffe6a0', 3) + C(84, 62, 9, '#2dd4bf', 2.5) + C(116, 62, 9, '#2dd4bf', 2.5)
-    + C(84, 62, 4, O, 0) + C(116, 62, 4, O, 0) + C(81, 59, 2, '#fff', 0) + C(113, 59, 2, '#fff', 0)
-    + P('M95 72 L105 72 L100 82 Z', '#ff9a3b', 2.5)
-    + spark(30, 30, .8, '#ffe6a0') + spark(176, 34, .7, '#ffe6a0'),
-
-  Aurorca: () => `<path d="M10 40 Q60 0 110 34 Q160 64 196 20" fill="none" stroke="#7fffd4" stroke-width="10" stroke-linecap="round" opacity=".55"/><path d="M6 60 Q70 22 120 52 Q160 76 198 44" fill="none" stroke="#c49bff" stroke-width="8" stroke-linecap="round" opacity=".45"/>`
-    + [[24, 110], [60, 130], [170, 116], [150, 140], [40, 20], [130, 12], [184, 70]].map(([x, y]) => spark(x, y, .5, '#ffffff')).join('')
-    + P('M132 66 Q166 50 178 22 Q186 46 168 70 Q190 64 196 84 Q170 86 146 82 Z', 'url(#cs-aurora)')
-    + P('M24 98 Q30 62 80 58 Q130 54 150 76 Q158 92 136 104 Q100 120 56 114 Q30 112 24 98 Z', '#232541')
-    + P('M34 104 Q60 122 102 112 Q126 106 136 98 Q110 104 80 104 Q56 104 34 104 Z', '#ffffff', 2.5)
-    + P('M84 98 Q80 126 64 136 Q96 130 104 104 Z', 'url(#cs-aurora)')
-    + P('M84 60 Q90 34 104 26 Q108 44 104 60 Z', 'url(#cs-aurora)')
-    + E(52, 78, 9, 5, '#ffffff', 2.5, 'transform="rotate(-10 52 78)"') + C(46, 82, 3, O, 0) + C(45, 81, 1, '#fff', 0)
-    + [[70, 70], [96, 66], [112, 80], [86, 88], [124, 70]].map(([x, y]) => C(x, y, 1.6, '#cfe8ff', 0)).join('')
-    + `<path d="M28 100 Q36 104 44 102" fill="none" ${st(2.5)}/>` + shine(70, 66, 16, 4, -8),
-
-  Nebuloo: () => C(100, 70, 46, '#c49bff', 0, 'opacity=".22"')
-    + [[60, 100], [80, 110], [100, 114], [120, 110], [140, 100]].map(([x, y], i) => `<path d="M${x} ${y} Q${x + (i % 2 ? 8 : -8)} ${y + 14} ${x} ${y + 26} Q${x + (i % 2 ? -6 : 6)} ${y + 34} ${x + 2} ${y + 38}" fill="none" ${st(8)}/><path d="M${x} ${y} Q${x + (i % 2 ? 8 : -8)} ${y + 14} ${x} ${y + 26} Q${x + (i % 2 ? -6 : 6)} ${y + 34} ${x + 2} ${y + 38}" fill="none" stroke="${['#ff9ad5', '#9ad8ff', '#c49bff', '#9ad8ff', '#ff9ad5'][i]}" stroke-width="4" stroke-linecap="round"/>`).join('')
-    + P('M54 100 Q48 60 70 44 L66 18 L88 36 Q100 32 112 36 L134 18 L130 44 Q152 60 146 100 Q100 112 54 100 Z', 'url(#cs-galaxy)')
-    + [[76, 60], [124, 54], [110, 88], [70, 88], [134, 80], [92, 46]].map(([x, y], i) => spark(x, y, i % 2 ? .45 : .3, '#ffffff')).join('')
-    + E(84, 72, 9, 11, '#ffffff', 2.5) + E(116, 72, 9, 11, '#ffffff', 2.5) + E(85, 74, 6, 8, O, 0) + E(117, 74, 6, 8, O, 0) + C(82, 69, 2.6, '#fff', 0) + C(114, 69, 2.6, '#fff', 0) + spark(88, 78, .2, '#fff') + spark(120, 78, .2, '#fff')
-    + `<path d="M96 86 Q100 90 104 86" fill="none" ${st(2.5)}/>` + blush(72, 86) + blush(128, 86)
-    + `<ellipse cx="100" cy="22" rx="20" ry="5" fill="none" stroke="#ffe27a" stroke-width="3" opacity=".9"/>`
-    + spark(30, 40, .7, '#fff') + spark(170, 30, .8, '#fff') + spark(176, 110, .5, '#fff') + spark(24, 120, .5, '#fff'),
 };
 function crystal(x, y, r) {
   return `<g transform="translate(${x} ${y})"><circle r="${r}" fill="#b58df2" ${st(2.5)}/><path d="M${-r * .6} ${-r * .2} L0 ${-r * .75} L${r * .55} ${-r * .15} L0 ${r * .5} Z" fill="#dcc6ff"/><path d="M0 ${-r * .75} L0 ${r * .5}" stroke="#9a72e0" stroke-width="1.5"/><circle cx="${-r * .35}" cy="${-r * .4}" r="${r * .15}" fill="#fff"/></g>`;
@@ -723,17 +726,18 @@ function gear(x, y, r, c) {
   return `<path d="M${pts.map(p => p.map(v => v.toFixed(1)).join(' ')).join(' L')} Z" fill="${c}" ${st(2.5)}/><circle cx="${x}" cy="${y}" r="${r * .38}" fill="#fff3d0" ${st(2.5)}/>`;
 }
 // element backdrops behind the creature
+const bokeh = (n, colors, seed = 1) => [...Array(n)].map((_, i) => { const x = (i * 61 + seed * 37) % 200, y = (i * 43 + seed * 19) % 130, r = 6 + (i * 7) % 12; return `<circle cx="${x}" cy="${y}" r="${r}" fill="${colors[i % colors.length]}" opacity="${.18 + (i % 3) * .08}"/>`; }).join('');
 const SCENE = {
-  fire: () => [...Array(9)].map((_, i) => `<circle cx="${(i * 47) % 200}" cy="${150 - (i * 31) % 120}" r="${2 + i % 3}" fill="#fff4c2" opacity=".6"/>`).join('') + `<path d="M0 132 Q50 122 100 132 T200 128 L200 150 L0 150 Z" fill="#000" opacity=".08"/>`,
-  water: () => `<path d="M0 118 Q25 110 50 118 T100 118 T150 118 T200 118 L200 150 L0 150 Z" fill="#fff" opacity=".25"/><path d="M0 132 Q25 126 50 132 T100 132 T150 132 T200 132 L200 150 L0 150 Z" fill="#fff" opacity=".2"/>` + [[30, 40, 5], [170, 60, 7], [150, 24, 4]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="none" stroke="#fff" stroke-width="2" opacity=".7"/>`).join(''),
-  leaf: () => [[18, 30, 20], [176, 46, -30], [160, 120, 60], [30, 110, 140]].map(([x, y, r]) => `<path transform="translate(${x} ${y}) rotate(${r})" d="M0 0 C6 -10 18 -12 26 -10 C22 -2 12 6 0 0 Z" fill="#fff" opacity=".35"/>`).join('') + `<path d="M0 134 Q60 120 120 132 T200 130 L200 150 L0 150 Z" fill="#2c8a4d" opacity=".15"/>`,
-  volt: () => [[22, 30], [176, 40], [168, 116]].map(([x, y]) => `<path transform="translate(${x} ${y})" d="M2 -12 L-6 2 L0 2 L-2 12 L8 -2 L2 -2 Z" fill="#fff" opacity=".6"/>`).join('') + `<circle cx="100" cy="80" r="70" fill="#fff" opacity=".18"/>`,
-  spirit: () => [...Array(10)].map((_, i) => `<circle cx="${(i * 53 + 11) % 200}" cy="${(i * 37 + 9) % 140}" r="${1 + i % 2}" fill="#fff" opacity=".8"/>`).join('') + `<circle cx="160" cy="30" r="14" fill="#fff" opacity=".35"/><circle cx="166" cy="26" r="14" fill="#8c6ad0" opacity=".9"/>`,
-  stone: () => `<path d="M0 120 L30 96 L60 110 L96 86 L130 104 L166 90 L200 112 L200 150 L0 150 Z" fill="#82603f" opacity=".18"/>` + [[24, 40], [178, 34]].map(([x, y]) => `<path transform="translate(${x} ${y})" d="M-8 6 L-4 -4 L4 -6 L9 2 L4 7 Z" fill="#fff" opacity=".35"/>`).join(''),
-  frost: () => [[24, 30], [176, 24], [160, 110], [36, 120], [100, 16]].map(([x, y], i) => `<path transform="translate(${x} ${y}) scale(${.5 + i % 2 * .3})" d="M0 -10 V10 M-8.7 -5 L8.7 5 M-8.7 5 L8.7 -5" stroke="#fff" stroke-width="2.5" stroke-linecap="round" opacity=".8"/>`).join('') + `<path d="M0 132 Q50 124 100 132 T200 130 L200 150 L0 150 Z" fill="#fff" opacity=".5"/>`,
-  sky: () => [[30, 36, 1], [160, 28, 1.2], [150, 110, .8]].map(([x, y, s]) => `<path transform="translate(${x} ${y}) scale(${s})" d="M-18 6 A8 8 0 0 1 -12 -6 A11 11 0 0 1 8 -8 A9 9 0 0 1 18 6 Z" fill="#fff" opacity=".75"/>`).join(''),
+  fire: () => bokeh(10, ['#fff4c2', '#ffd27a', '#ffffff'], 2) + `<path d="M0 118 Q50 108 100 116 T200 112 L200 150 L0 150 Z" fill="#c9502a" opacity=".22"/><path d="M0 130 Q60 122 120 130 T200 128 L200 150 L0 150 Z" fill="#a8401f" opacity=".2"/>` + [...Array(7)].map((_, i) => `<circle cx="${(i * 47) % 200}" cy="${140 - (i * 31) % 110}" r="${1.5 + i % 3}" fill="#ffe27a" opacity=".8"/>`).join(''),
+  water: () => `<path d="M30 0 L60 0 L110 150 L60 150 Z M120 0 L140 0 L180 150 L150 150 Z" fill="#fff" opacity=".13"/>` + bokeh(6, ['#ffffff'], 3) + `<path d="M0 118 Q25 110 50 118 T100 118 T150 118 T200 118 L200 150 L0 150 Z" fill="#2f7fd0" opacity=".2"/><path d="M0 132 Q25 126 50 132 T100 132 T150 132 T200 132 L200 150 L0 150 Z" fill="#fff" opacity=".22"/>` + [[24, 40, 5], [176, 58, 7], [160, 22, 4], [36, 96, 3]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="none" stroke="#fff" stroke-width="2" opacity=".75"/>`).join(''),
+  leaf: () => `<path d="M0 104 Q40 84 90 98 Q140 80 200 96 L200 150 L0 150 Z" fill="#3fae66" opacity=".22"/><path d="M0 124 Q60 112 120 122 T200 120 L200 150 L0 150 Z" fill="#2c8a4d" opacity=".22"/>` + bokeh(6, ['#ffffff', '#fff6a0'], 4) + [[20, 120, '#ff8fab'], [180, 126, '#ffd166'], [160, 112, '#ffffff']].map(([x, y, c]) => `<circle cx="${x}" cy="${y}" r="4" fill="${c}"/><circle cx="${x}" cy="${y}" r="1.6" fill="#ffd166"/>`).join(''),
+  volt: () => `<circle cx="100" cy="76" r="76" fill="#fff" opacity=".22"/>` + bokeh(9, ['#ffffff', '#fff6a0', '#ffe14a'], 5) + [[20, 30], [178, 40], [170, 120], [28, 112]].map(([x, y]) => `<path transform="translate(${x} ${y})" d="M2 -12 L-6 2 L0 2 L-2 12 L8 -2 L2 -2 Z" fill="#fff" opacity=".7"/>`).join(''),
+  spirit: () => [...Array(14)].map((_, i) => `<circle cx="${(i * 53 + 11) % 200}" cy="${(i * 37 + 9) % 110}" r="${1 + i % 2}" fill="#fff" opacity=".85"/>`).join('') + `<circle cx="164" cy="28" r="14" fill="#fff" opacity=".4"/><circle cx="170" cy="24" r="14" fill="#9a7ad8" opacity=".9"/><path d="M0 120 Q40 100 80 116 Q130 96 200 114 L200 150 L0 150 Z" fill="#4b3a86" opacity=".35"/><path d="M0 132 Q60 120 120 132 T200 130 L200 150 L0 150 Z" fill="#fff" opacity=".18"/>`,
+  stone: () => `<path d="M0 0 L26 0 L14 40 L0 54 Z M200 0 L174 0 L188 44 L200 58 Z" fill="#82603f" opacity=".2"/><path d="M0 120 L30 98 L60 112 L96 90 L130 106 L166 92 L200 112 L200 150 L0 150 Z" fill="#82603f" opacity=".2"/>` + [[18, 70, '#c9a8ff'], [184, 76, '#7fd8ff'], [26, 30, '#ffb4e6']].map(([x, y, c]) => `<path transform="translate(${x} ${y})" d="M0 -12 L6 0 L0 12 L-6 0 Z" fill="${c}" opacity=".8"/>`).join('') + bokeh(4, ['#ffffff'], 6),
+  frost: () => `<path d="M0 108 Q50 88 100 104 Q150 86 200 102 L200 150 L0 150 Z" fill="#ffffff" opacity=".55"/><path d="M12 108 L22 82 L32 108 Z M172 104 L182 76 L192 104 Z" fill="#6fb6c8" opacity=".45"/>` + [[24, 30], [176, 24], [160, 100], [36, 70], [100, 14], [130, 60]].map(([x, y], i) => `<path transform="translate(${x} ${y}) scale(${.4 + i % 2 * .3})" d="M0 -10 V10 M-8.7 -5 L8.7 5 M-8.7 5 L8.7 -5" stroke="#fff" stroke-width="2.5" stroke-linecap="round" opacity=".85"/>`).join('') + `<path d="M0 130 Q50 122 100 130 T200 128 L200 150 L0 150 Z" fill="#fff" opacity=".6"/>`,
+  sky: () => `<circle cx="172" cy="24" r="40" fill="#fff6c0" opacity=".45"/><circle cx="172" cy="24" r="16" fill="#fff3a8" opacity=".9"/>` + [[30, 36, 1], [150, 70, 1.2], [40, 110, .9], [170, 122, .8]].map(([x, y, s]) => `<path transform="translate(${x} ${y}) scale(${s})" d="M-18 6 A8 8 0 0 1 -12 -6 A11 11 0 0 1 8 -8 A9 9 0 0 1 18 6 Z" fill="#fff" opacity=".8"/>`).join('') + `<path d="M60 30 q4 -4 8 0 q4 -4 8 0 M120 18 q3 -3 6 0 q3 -3 6 0" fill="none" stroke="#5577d6" stroke-width="2" stroke-linecap="round" opacity=".5"/>`,
 };
-const ART_DEFS = `<linearGradient id="cs-glass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c8d4ff"/><stop offset="1" stop-color="#6b4fa8"/></linearGradient>
+const ART_DEFS = `<filter id="cs-soft" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB"><feGaussianBlur in="SourceAlpha" stdDeviation="3.5" result="b"/><feOffset in="b" dx="-3" dy="-4" result="up"/><feComposite in="SourceAlpha" in2="up" operator="out" result="low"/><feFlood flood-color="#2b1840" flood-opacity=".22"/><feComposite in2="low" operator="in" result="sh"/><feOffset in="b" dx="3" dy="4" result="dn"/><feComposite in="SourceAlpha" in2="dn" operator="out" result="hi"/><feFlood flood-color="#ffffff" flood-opacity=".35"/><feComposite in2="hi" operator="in" result="gl"/><feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="sh"/><feMergeNode in="gl"/></feMerge></filter><linearGradient id="cs-glass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c8d4ff"/><stop offset="1" stop-color="#6b4fa8"/></linearGradient>
 <linearGradient id="cs-aurora" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7fffd4"/><stop offset=".5" stop-color="#6fc3ff"/><stop offset="1" stop-color="#c49bff"/></linearGradient>
 <radialGradient id="cs-galaxy" cx=".45" cy=".45" r=".7"><stop offset="0" stop-color="#ff9ad5"/><stop offset=".45" stop-color="#8a5cf6"/><stop offset="1" stop-color="#2a1d6b"/></radialGradient>
 <pattern id="cs-washi" width="14" height="14" patternUnits="userSpaceOnUse"><rect width="14" height="14" fill="#ff8fab"/><circle cx="7" cy="7" r="2.6" fill="#fff" opacity=".8"/><circle cx="0" cy="0" r="1.4" fill="#ffd166"/><circle cx="14" cy="14" r="1.4" fill="#ffd166"/></pattern>
@@ -742,9 +746,9 @@ function artSVG(card, cls = '') {
   if (card.r === 'UR') {
     // full-art: taller frame, creature sits in the open space between the name and the attacks
     const stars = [...Array(18)].map((_, i) => `<circle cx="${(i * 47 + 13) % 200}" cy="${-30 + (i * 71) % 270}" r="${1 + i % 3 * .6}" fill="#fff" opacity="${.4 + (i % 3) * .2}"/>`).join('');
-    return `<svg class="art ${cls}" viewBox="0 -34 200 286" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect y="-34" width="200" height="286" fill="url(#cs-night)"/>${stars}<g class="cr">${ART[card.name]()}</g></svg>`;
+    return `<svg class="art ${cls}" viewBox="0 -34 200 286" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect y="-34" width="200" height="286" fill="url(#cs-night)"/>${stars}<g class="cr" filter="url(#cs-soft)">${ART[card.name]()}</g></svg>`;
   }
-  return `<svg class="art ${cls}" viewBox="0 0 200 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="200" height="150" fill="url(#cs-bg-${card.el})"/>${SCENE[card.el]()}<g class="cr">${ART[card.name]()}</g></svg>`;
+  return `<svg class="art ${cls}" viewBox="0 0 200 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="200" height="150" fill="url(#cs-bg-${card.el})"/>${SCENE[card.el]()}<g class="cr" filter="url(#cs-soft)">${ART[card.name]()}</g></svg>`;
 }
 const SHINY_HUE = { fire: 200, water: 150, leaf: 250, volt: 200, spirit: 110, stone: 170, frost: 230, sky: 120 };
 function globalDefs() {
@@ -757,7 +761,7 @@ const $ = id => document.getElementById(id);
 document.body.insertAdjacentHTML('afterbegin', globalDefs() + packDefs());
 
 // ---------- save ----------
-const KEY = 'pocketArcade.cardshop.v1';
+const KEY = 'pocketArcade.cardshop.v2';
 const fresh = () => ({ coins: 150, own: {}, seen: {}, stats: { packs: 0, foils: 0, shinies: 0, holos: 0, urs: 0, earned: 0, legend: 0, timing: 0 }, ach: {}, miles: {}, daily: '', tips: Date.now(), mk: { m: {}, h: {}, t: Date.now(), ev: null }, swept: 0 });
 let SV = fresh();
 try { const raw = localStorage.getItem(KEY); if (raw) SV = Object.assign(fresh(), JSON.parse(raw)); } catch (e) { }
@@ -772,7 +776,7 @@ const today = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMo
 const VM = { n: 1, f: 2.5, s: 10 };
 const VNAME = { n: 'Normal', f: 'Foil', s: 'Shiny' };
 const BUYBACK = .85;
-const baseValue = c => RARITY[c.r].v * (c.name === 'Nebuloo' ? 1.6 : 1);
+const baseValue = c => RARITY[c.r].v * (c.name === 'Moonmochi' ? 1.6 : 1);
 const marketPrice = (c, v = 'n') => Math.max(1, Math.round(baseValue(c) * SV.mk.m[c.id] * VM[v]));
 const sellPrice = (c, v = 'n') => Math.max(1, Math.round(marketPrice(c, v) * BUYBACK));
 const fmt = n => n >= 10000 ? (n / 1000).toFixed(n >= 100000 ? 0 : 1) + 'k' : n.toLocaleString();
@@ -804,10 +808,10 @@ const change = c => { const h = SV.mk.h[c.id], a = h[Math.max(0, h.length - 6)],
 
 // ---------- packs ----------
 const PACKS = [
-  { id: 'starter', name: 'Starter Pack', price: 60, cover: 'Kindlecub', colors: ['#ffb36b', '#ff6b5e', '#a8321f'], slots: ['C', 'C', 'C', 'U', { R: .8, H: .18, UR: .02 }], shiny: 1 / 150, foil: .1, unlock: 0, odds: '5 cards · 1 rare or better' },
-  { id: 'booster', name: 'Booster Pack', price: 160, cover: 'Grimalkyn', colors: ['#7a8cff', '#4b3a96', '#21184f'], slots: ['C', 'C', 'U', 'U', { R: .66, H: .29, UR: .05 }, { R: .66, H: .29, UR: .05 }], shiny: 1 / 90, foil: .12, unlock: 0, odds: '6 cards · 2 rare or better' },
-  { id: 'premium', name: 'Premium Pack', price: 420, cover: 'Glacielk', colors: ['#8ff0ff', '#2f8fd6', '#123f7a'], slots: ['U', 'U', { R: .5, H: .42, UR: .08 }, { R: .5, H: .42, UR: .08 }, { H: .82, UR: .18 }], shiny: 1 / 50, foil: .2, unlock: 12, odds: '5 cards · holo guaranteed' },
-  { id: 'legend', name: 'Legend Pack', price: 1500, cover: 'Chronowl', colors: ['#ffe58a', '#e0a32c', '#5a3510'], slots: [{ H: .7, UR: .3 }, { H: .7, UR: .3 }, { H: .7, UR: .3 }, { UR: 1 }], shiny: 1 / 25, foil: .34, unlock: 24, odds: '4 cards · ultra rare guaranteed' },
+  { id: 'starter', name: 'Starter Pack', price: 60, cover: 'Toastle', colors: ['#ffb36b', '#ff6b5e', '#a8321f'], slots: ['C', 'C', 'C', 'U', { R: .8, H: .18, UR: .02 }], shiny: 1 / 150, foil: .1, unlock: 0, odds: '5 cards · 1 rare or better' },
+  { id: 'booster', name: 'Booster Pack', price: 160, cover: 'Hauntcake', colors: ['#7a8cff', '#4b3a96', '#21184f'], slots: ['C', 'C', 'U', 'U', { R: .66, H: .29, UR: .05 }, { R: .66, H: .29, UR: .05 }], shiny: 1 / 90, foil: .12, unlock: 0, odds: '6 cards · 2 rare or better' },
+  { id: 'premium', name: 'Premium Pack', price: 420, cover: 'Scarfwyrm', colors: ['#8ff0ff', '#2f8fd6', '#123f7a'], slots: ['U', 'U', { R: .5, H: .42, UR: .08 }, { R: .5, H: .42, UR: .08 }, { H: .82, UR: .18 }], shiny: 1 / 50, foil: .2, unlock: 12, odds: '5 cards · holo guaranteed' },
+  { id: 'legend', name: 'Legend Pack', price: 1500, cover: 'Tickletock', colors: ['#ffe58a', '#e0a32c', '#5a3510'], slots: [{ H: .7, UR: .3 }, { H: .7, UR: .3 }, { H: .7, UR: .3 }, { UR: 1 }], shiny: 1 / 25, foil: .34, unlock: 24, odds: '4 cards · ultra rare guaranteed' },
 ];
 const RANK = { C: 0, U: 1, R: 2, H: 3, UR: 4 };
 function pickRarity(slot) {
@@ -818,7 +822,7 @@ function pickRarity(slot) {
 }
 function pickCard(r) {
   const pool = CARDS.filter(c => c.r === r);
-  if (r === 'UR') { const w = pool.map(c => c.name === 'Nebuloo' ? 10 : 45); let t = Math.random() * w.reduce((a, b) => a + b, 0); for (let i = 0; i < pool.length; i++) if ((t -= w[i]) < 0) return pool[i]; }
+  if (r === 'UR') { const w = pool.map(c => c.name === 'Moonmochi' ? 10 : 45); let t = Math.random() * w.reduce((a, b) => a + b, 0); for (let i = 0; i < pool.length; i++) if ((t -= w[i]) < 0) return pool[i]; }
   return pool[Math.floor(Math.random() * pool.length)];
 }
 function rollPack(pack) {
@@ -866,7 +870,7 @@ function cardHTML(c, v = 'n') {
       <div class="top">${gemSVG(c.el)}<span class="nm">${c.name}</span><span class="hp"><small>HP</small>${c.hp}</span></div>
       <div class="win">${artSVG(c)}<div class="sheen"></div><div class="sheen dots"></div></div>
       ${c.r === 'UR' ? '<div class="spacer"></div>' : `<div class="stage">${stage}</div>`}
-      <div class="atks">${c.atk.map(([n, cost, d]) => `<div class="atk"><span class="cost">${Array(cost).fill(gemSVG(c.el, 1)).join('')}</span><span class="an">${n}</span><span class="dmg">${d}</span></div>`).join('')}</div>
+      <div class="atks">${c.atk.map(([n, cost, d]) => `<div class="atk"><span class="cost">${Array(cost).fill(gemSVG(c.el, 1)).join('')}</span><span class="an" style="${n.length > 12 ? 'font-size:12px' : ''}">${n}</span><span class="dmg">${d}</span></div>`).join('')}</div>
       <div class="fl">${c.flavor}</div>
       <div class="meta"><span class="weak">WEAK ${gemSVG(WEAK[c.el], 1)} ×2</span><span>${num}/036 <span class="rar">${RSYM[c.r]}</span></span><span>WILDSPARK</span></div>
     </div>
