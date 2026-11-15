@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Voxel Breaking Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one phone screen. 3D voxel block fills the top, a small control strip sits below. Single dark theme like Deep Dig. */
+:root {
+  --bg: #120e0b;
+  --panel: #1f1914;
+  --line: #3d3127;
+  --ink: #f4ead8;
+  --muted: #a8988a;
+  --gold: #f5c518;
+  --display: 'Press Start 2P', ui-monospace, monospace;
+  --body: 'Rubik', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); overflow: hidden; touch-action: manipulation; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+.app { height: 100%; max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; }
+header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; background: #0b0806; border-bottom: 2px solid #000; }
+header h1 { margin: 0; font-family: var(--display); font-size: 11px; color: var(--gold); }
+header a { color: var(--muted); font-size: 13px; }
+.stage { position: relative; flex: 1; min-height: 0; transition: background .8s; }
+.stage canvas { display: block; width: 100%; height: 100%; cursor: pointer; }
+.hud { position: absolute; left: 14px; right: 14px; top: 12px; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.row { display: flex; justify-content: space-between; align-items: baseline; font-family: var(--display); font-size: 10px; }
+.row .mat { color: var(--gold); }
+.hp { height: 12px; border: 2px solid #000; border-radius: 3px; background: rgba(0,0,0,.5); overflow: hidden; }
+.hp div { height: 100%; width: 100%; background: linear-gradient(#ff8a5e, #e04a2a); transition: width .08s; }
+.loot { position: absolute; left: 0; right: 0; bottom: 14px; text-align: center; font-family: var(--display); font-size: 10px; color: var(--ink); text-shadow: 2px 2px 0 #000; pointer-events: none; }
+.controls { padding: 12px 14px 16px; background: var(--panel); border-top: 2px solid #000; display: flex; flex-direction: column; gap: 10px; }
+.chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+.chips button { flex: 0 0 auto; padding: 8px 10px; border-radius: 4px; border: 1px solid var(--line); background: #2a221b; color: var(--muted); font-family: var(--display); font-size: 8px; cursor: pointer; }
+.chips button[aria-pressed="true"] { background: var(--gold); color: #2a1a00; border-color: #000; }
+.opts { display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.opts label { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink); }
+.opts input { width: 18px; height: 18px; accent-color: var(--gold); }
+.big { padding: 10px 14px; border-radius: 4px; border: 2px solid #000; background: var(--gold); color: #2a1a00; font-family: var(--display); font-size: 9px; cursor: pointer; box-shadow: 0 3px 0 #8a6400; }
+.big:active { transform: translateY(2px); box-shadow: 0 1px 0 #8a6400; }
+.note { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
+.err { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 24px; text-align: center; color: var(--muted); line-height: 1.5; }
+button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header><h1>VOXEL BREAKING DEMO</h1><a href="./">Back to Pocket Arcade</a></header>
+  <div class="stage" id="stage">
+    <div class="hud">
+      <div class="row"><span class="mat" id="matName">Stone</span><span id="hpText">8 / 8 hits</span></div>
+      <div class="hp"><div id="hpFill"></div></div>
+    </div>
+    <div class="loot" id="loot">Tap the block to mine it</div>
+  </div>
+  <div class="controls">
+    <div class="chips" id="chips" role="group" aria-label="Material"></div>
+    <div class="opts">
+      <label for="chipOpt"><input type="checkbox" id="chipOpt" checked> Chip voxels on every hit</label>
+      <button type="button" class="big" id="breakBtn">BREAK IT</button>
+    </div>
+    <p class="note">This is only a demo. If you like it, I can swap it in for the flat blocks in Deep Dig.</p>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+  const stage = document.getElementById('stage');
+  if (!window.THREE) { stage.innerHTML = '<div class="err">The 3D engine couldn’t load. Check your connection and reload the page.</div>'; return; }
+
+  // ---------- materials (same palettes as Deep Dig's layers) ----------
+  const MATS = [
+    { name: 'Stone',       base: '#7d7f86', dark: '#55575e', light: '#a0a3aa', sky: ['#2b2d33', '#121317'], ore: ['Iron', '#d9b8a0', '#fff0e4'] },
+    { name: 'Magma Rock',  base: '#5a2a22', dark: '#3a1712', light: '#ff6a2a', sky: ['#3d140c', '#120403'], ore: ['Gold', '#f5c518', '#fff2a8'] },
+    { name: 'Crystal Caves', base: '#2f3d6b', dark: '#1d2647', light: '#7fa8ff', sky: ['#14204a', '#060a1c'], ore: ['Diamond', '#5ff0f0', '#e8ffff'] },
+    { name: 'Uranium Veins', base: '#2a3a1c', dark: '#16220c', light: '#7dff3a', sky: ['#16260c', '#040801'], ore: ['Uranium', '#7dff3a', '#e0ffc0'] },
+    { name: 'Unobtainium Rift', base: '#3a1030', dark: '#1e0618', light: '#ff4fa0', sky: ['#2a0820', '#080006'], ore: ['Unobtainium', '#ff4fa0', '#ffe0f0'] },
+  ];
+  let mat = MATS[0];
+  const HITS = 8, N = 6, SIZE = 2, V = SIZE / N;
+
+  // ---------- three.js setup ----------
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+  stage.prepend(renderer.domElement);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100);
+  const camBase = new THREE.Vector3(4.6, 3.9, 5.4);
+  camera.position.copy(camBase); camera.lookAt(0, 0.9, 0);
+  scene.add(new THREE.HemisphereLight(0xfff4e0, 0x202030, 0.75));
+  const sun = new THREE.DirectionalLight(0xffffff, 0.75); sun.position.set(3, 6, 4); scene.add(sun);
+  const glow = new THREE.PointLight(0xffffff, 0, 6); glow.position.set(0, 1, 0); scene.add(glow);
+  // soft round shadow under the block
+  const sh = document.createElement('canvas'); sh.width = sh.height = 64; const sg = sh.getContext('2d');
+  const grd = sg.createRadialGradient(32, 32, 4, 32, 32, 32); grd.addColorStop(0, 'rgba(0,0,0,.6)'); grd.addColorStop(1, 'rgba(0,0,0,0)'); sg.fillStyle = grd; sg.fillRect(0, 0, 64, 64);
+  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 4.2), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(sh), transparent: true, depthWrite: false }));
+  shadow.rotation.x = -Math.PI / 2; shadow.position.y = 0.001; scene.add(shadow);
+
+  const geo = new THREE.BoxGeometry(V * 0.97, V * 0.97, V * 0.97);
+  const voxMat = new THREE.MeshLambertMaterial();
+  const block = new THREE.InstancedMesh(geo, voxMat, N * N * N); block.instanceMatrix.setUsage(THREE.DynamicDrawUsage); scene.add(block);
+  const MAXD = 2400;
+  const debris = new THREE.InstancedMesh(geo, voxMat, MAXD); debris.instanceMatrix.setUsage(THREE.DynamicDrawUsage); scene.add(debris);
+  // both meshes need per-voxel colors from the start (sized to their full count), since they share one material
+  for (const m of [block, debris]) { m.setColorAt(0, new THREE.Color('#ffffff')); m.instanceColor.setUsage(THREE.DynamicDrawUsage); }
+  debris.count = 0;
+
+  const tmp = new THREE.Object3D(), col = new THREE.Color();
+  let vox = [], hp = HITS, building = 0, punch = 0, shake = 0, lootTimer = 0;
+  const parts = [];
+
+  function mulberry(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  let seed = 1;
+  function makeBlock() {
+    const r = mulberry(seed++ * 7919);
+    const clusters = Array.from({ length: 4 }, () => [Math.floor(r() * N), Math.floor(r() * N), Math.floor(r() * N)]);
+    const hasOre = r() < 0.75;
+    vox = [];
+    for (let x = 0; x < N; x++) for (let y = 0; y < N; y++) for (let z = 0; z < N; z++) {
+      const v = r(); let c = v < 0.22 ? mat.dark : v > 0.85 ? mat.light : mat.base, ore = false;
+      if (hasOre && clusters.some(([a, b, d]) => Math.abs(a - x) + Math.abs(b - y) + Math.abs(d - z) <= (r() < .5 ? 1 : 0))) { c = r() < .3 ? mat.ore[2] : mat.ore[1]; ore = true; }
+      vox.push({ x, y, z, c: new THREE.Color(c), alive: true, ore, crack: 0 });
+    }
+    hp = HITS; building = 1; refreshHud();
+    document.getElementById('stage').style.background = `linear-gradient(${mat.sky[0]}, ${mat.sky[1]})`;
+  }
+  function voxPos(o, out) { return out.set((o.x - (N - 1) / 2) * V, (o.y + 0.5) * V, (o.z - (N - 1) / 2) * V); }
+  const P = new THREE.Vector3();
+  function drawBlock(t) {
+    let i = 0; const s = 1 + punch * 0.06;
+    for (const o of vox) {
+      if (!o.alive) continue;
+      voxPos(o, P);
+      // build-in animation: rows rise up from the floor
+      const k = building > 0 ? Math.min(1, Math.max(0, (1 - building) * 2.4 - o.y * 0.12)) : 1;
+      tmp.position.set(P.x * s, P.y * s - (1 - k) * 0.6, P.z * s);
+      tmp.scale.setScalar(Math.max(0.0001, k)); tmp.rotation.set(0, 0, 0); tmp.updateMatrix();
+      block.setMatrixAt(i, tmp.matrix);
+      col.copy(o.c).multiplyScalar(1 - o.crack * 0.55); block.setColorAt(i, col);
+      o.idx = i; i++;
+    }
+    block.count = i; block.instanceMatrix.needsUpdate = true; if (block.instanceColor) block.instanceColor.needsUpdate = true;
+  }
+  function spawnDebris(o, vel, life) {
+    if (parts.length >= MAXD) parts.shift();
+    voxPos(o, P);
+    parts.push({ p: P.clone(), v: vel, r: new THREE.Euler(), w: new THREE.Vector3((Math.random() - .5) * 12, (Math.random() - .5) * 12, (Math.random() - .5) * 12), c: o.c.clone(), life, t: 0, ore: o.ore, s: 1 });
+  }
+  function neighbors(o) { return vox.filter(q => q.alive && Math.abs(q.x - o.x) + Math.abs(q.y - o.y) + Math.abs(q.z - o.z) === 1); }
+  function exposed(o) { return o.x === 0 || o.y === 0 || o.z === 0 || o.x === N - 1 || o.y === N - 1 || o.z === N - 1 || neighbors(o).length < 6; }
+
+  // ---------- hitting ----------
+  const ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
+  function hit(clientX, clientY) {
+    if (building > 0.15 || hp <= 0) return;
+    let target = null, normal = new THREE.Vector3(0, 1, 0);
+    if (clientX !== undefined) {
+      const rc = renderer.domElement.getBoundingClientRect();
+      mouse.set(((clientX - rc.left) / rc.width) * 2 - 1, -((clientY - rc.top) / rc.height) * 2 + 1);
+      ray.setFromCamera(mouse, camera);
+      const h = ray.intersectObject(block)[0];
+      if (!h) return;
+      target = vox.find(o => o.alive && o.idx === h.instanceId);
+      if (h.face) normal.copy(h.face.normal);
+    } else { const surf = vox.filter(o => o.alive && exposed(o)); target = surf[Math.floor(Math.random() * surf.length)]; }
+    if (!target) return;
+    hp--; punch = 1; sfx.hit();
+    // crack spreads around the hit
+    for (const o of vox) if (o.alive) { const d = Math.abs(o.x - target.x) + Math.abs(o.y - target.y) + Math.abs(o.z - target.z); if (d <= 2) o.crack = Math.min(1, o.crack + (d === 0 ? .6 : d === 1 ? .35 : .15)); }
+    // chip a few voxels off the surface where you hit
+    if (document.getElementById('chipOpt').checked) {
+      const chip = [target, ...neighbors(target).filter(exposed).sort(() => Math.random() - .5).slice(0, 1 + Math.floor(Math.random() * 2))];
+      for (const o of chip) {
+        o.alive = false;
+        spawnDebris(o, normal.clone().multiplyScalar(2.2 + Math.random() * 1.6).add(new THREE.Vector3((Math.random() - .5) * 2.4, 2.4 + Math.random() * 1.8, (Math.random() - .5) * 2.4)), 1.2 + Math.random() * .6);
+        if (o.ore) loot(`+1 ${mat.ore[0]}`);
+      }
+    }
+    if (hp <= 0) shatter();
+    refreshHud();
+  }
+  function shatter() {
+    hp = 0; shake = 0.45; sfx.brk(); glow.color.set(mat.light); glow.intensity = 2.2;
+    let ores = 0;
+    for (const o of vox) {
+      if (!o.alive) continue; o.alive = false; voxPos(o, P);
+      const dir = P.clone().sub(new THREE.Vector3(0, 0.6, 0)).normalize();
+      const spd = 1.8 + Math.random() * 2.4;
+      const vel = dir.multiplyScalar(spd).add(new THREE.Vector3((Math.random() - .5) * 1.5, 2.5 + Math.random() * 3, (Math.random() - .5) * 1.5));
+      // keep pieces from flying into the camera
+      const toCam = vel.x * 0.6 + vel.z * 0.7; if (toCam > 1.5) { vel.x *= 0.5; vel.z *= 0.5; }
+      if (o.ore) { vel.y += 3.5; ores++; }
+      spawnDebris(o, vel, 1.4 + Math.random() * 1.2);
+    }
+    loot(ores ? `Block broken! +${Math.max(1, Math.round(ores / 4))} ${mat.ore[0]}` : 'Block broken!');
+    refreshHud();
+    setTimeout(makeBlock, 650);
+  }
+  function loot(text) { const l = document.getElementById('loot'); l.textContent = text; lootTimer = 1.6; if (/\+/.test(text)) sfx.ore(); }
+  function refreshHud() {
+    document.getElementById('matName').textContent = mat.name;
+    document.getElementById('hpText').textContent = `${Math.max(0, hp)} / ${HITS} hits`;
+    document.getElementById('hpFill').style.width = (Math.max(0, hp) / HITS * 100) + '%';
+  }
+
+  // ---------- debris physics ----------
+  const FLOOR = V / 2;
+  function stepDebris(dt) {
+    let n = 0;
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const q = parts[i]; q.t += dt;
+      if (q.t > q.life) { parts.splice(i, 1); continue; }
+      q.v.y -= (q.ore ? 9 : 16) * dt;
+      q.p.addScaledVector(q.v, dt);
+      if (q.p.y < FLOOR) { q.p.y = FLOOR; q.v.y = Math.abs(q.v.y) * 0.32; q.v.x *= 0.7; q.v.z *= 0.7; q.w.multiplyScalar(0.6); }
+      q.r.x += q.w.x * dt; q.r.y += q.w.y * dt; q.r.z += q.w.z * dt;
+      const fade = Math.min(1, (q.life - q.t) / 0.35);
+      tmp.position.copy(q.p); tmp.rotation.copy(q.r); tmp.scale.setScalar(Math.max(0.0001, fade * (q.ore ? 1.15 : 1))); tmp.updateMatrix();
+      debris.setMatrixAt(n, tmp.matrix);
+      col.copy(q.c); if (q.ore) col.multiplyScalar(1 + 0.4 * Math.abs(Math.sin(q.t * 14)));
+      debris.setColorAt(n, col); n++;
+    }
+    debris.count = n; debris.instanceMatrix.needsUpdate = true; if (debris.instanceColor) debris.instanceColor.needsUpdate = true;
+  }
+
+  // ---------- sound ----------
+  let AC = null;
+  function ac() { try { if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); } catch (e) { AC = null; } return AC; }
+  function noise(dur, vol, freq) { const a = ac(); if (!a) return; const len = Math.floor(a.sampleRate * dur), b = a.createBuffer(1, len, a.sampleRate), d = b.getChannelData(0); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len); const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); f.type = 'lowpass'; f.frequency.value = freq; g.gain.value = vol; s.buffer = b; s.connect(f).connect(g).connect(a.destination); s.start(); }
+  function tone(fq, dur, vol) { const a = ac(); if (!a) return; const o = a.createOscillator(), g = a.createGain(), t = a.currentTime; o.type = 'square'; o.frequency.setValueAtTime(fq, t); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); o.connect(g).connect(a.destination); o.start(t); o.stop(t + dur + .02); }
+  const sfx = { hit() { noise(.07, .08, 1500 + Math.random() * 600); }, brk() { noise(.35, .18, 700); tone(90, .25, .06); }, ore() { tone(988, .07, .03); setTimeout(() => tone(1319, .12, .03), 70); } };
+
+  // ---------- loop ----------
+  function resize() { const r = stage.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); camera.aspect = r.width / Math.max(1, r.height); camera.updateProjectionMatrix(); }
+  window.addEventListener('resize', resize);
+  let last = 0;
+  function loop(t) {
+    const dt = Math.min(0.05, (t - (last || t)) / 1000); last = t;
+    if (building > 0) building = Math.max(0, building - dt * 1.8);
+    punch = Math.max(0, punch - dt * 8); shake = Math.max(0, shake - dt); glow.intensity = Math.max(0, glow.intensity - dt * 4);
+    block.rotation.y = Math.sin(t / 2600) * 0.25;
+    camera.position.copy(camBase); if (shake > 0) camera.position.add(new THREE.Vector3((Math.random() - .5) * shake * .5, (Math.random() - .5) * shake * .5, 0));
+    camera.lookAt(0, 0.9, 0);
+    if (lootTimer > 0) { lootTimer -= dt; if (lootTimer <= 0) document.getElementById('loot').textContent = ''; }
+    drawBlock(t); stepDebris(dt);
+    renderer.render(scene, camera);
+    requestAnimationFrame(loop);
+  }
+
+  // ---------- controls ----------
+  renderer.domElement.addEventListener('pointerdown', e => { e.preventDefault(); hit(e.clientX, e.clientY); });
+  document.getElementById('breakBtn').addEventListener('click', () => { if (hp > 0 && building < 0.15) shatter(); });
+  const chips = document.getElementById('chips');
+  MATS.forEach((m, i) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = m.name.toUpperCase(); b.setAttribute('aria-pressed', i === 0 ? 'true' : 'false'); b.onclick = () => { mat = m; chips.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false')); makeBlock(); }; chips.append(b); });
+  window.__demo = { hit, shatter, state: () => ({ hp, alive: vox.filter(o => o.alive).length, debris: parts.length, building }) };
+  resize(); makeBlock(); requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
