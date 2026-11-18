@@ -1,8 +1,8 @@
 // Offline mode for Pocket Arcade.
 // Game files: try the network first so updates show up right away, fall back to the saved copy when offline.
 // Fonts and the Firebase sign-in library: use the saved copy first, since those files never change.
-const CACHE = 'pocket-arcade-v11';
-const CORE = ['./', './index.html', './manifest.json', './icon.png', './icon-192.png', './apple-touch-icon.png', './tidy.html', './card-shop.html', './sudoku.html', './chess.html'];
+const CACHE = 'pocket-arcade-v12';
+const CORE = ['./', './index.html', './manifest.json', './icon.png', './icon-192.png', './apple-touch-icon.png', './tidy.html', './card-shop.html', './sudoku.html', './chess.html', './puzzles.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));

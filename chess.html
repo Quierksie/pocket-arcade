@@ -161,6 +161,87 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
 .promo button:nth-child(even) { background: var(--sq-d); }
 .promo svg { width: 100%; height: 100%; }
 .toast { position: fixed; left: 50%; top: 14px; transform: translateX(-50%); background: var(--panel2); border: 1px solid var(--line); padding: 10px 16px; border-radius: 14px; font-weight: 800; font-size: 14px; z-index: 30; animation: rise .3s; box-shadow: 0 8px 20px rgba(0,0,0,.35); white-space: nowrap; }
+/* ---------- puzzles ---------- */
+.modeseg { margin-bottom: 14px; }
+.pcard { padding: 14px 16px; border-radius: 18px; background: var(--panel); border: 1px solid var(--line); margin-top: 10px; }
+.pcard .top { display: flex; align-items: center; gap: 10px; }
+.pcard .top b.big { font-size: 34px; font-weight: 900; line-height: 1; }
+.pcard .lbl { font-size: 12px; color: var(--soft); font-weight: 800; letter-spacing: .5px; text-transform: uppercase; }
+.pcard .meta { color: var(--soft); font-size: 13px; font-weight: 700; line-height: 1.5; }
+.pcard .meta b { color: var(--ink); }
+.gear { margin-left: auto; width: 38px; height: 38px; border-radius: 12px; background: var(--panel2); display: grid; place-items: center; flex: none; }
+.gear svg { width: 20px; height: 20px; }
+.chip2 { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 99px; background: var(--panel2); font-size: 12px; font-weight: 800; color: var(--soft); }
+.chip2.on { background: var(--accent); color: #fff; }
+.bigbtn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px; border-radius: 16px; background: linear-gradient(120deg, #5d8a33, #3e6b2a); color: #fff; text-align: left; margin-top: 12px; }
+.bigbtn b { font-size: 17px; display: block; }
+.bigbtn small { opacity: .85; font-size: 13px; }
+.bigbtn .go { margin-left: auto; font-weight: 900; background: rgba(255,255,255,.18); padding: 8px 14px; border-radius: 10px; }
+.bigbtn.daily { background: linear-gradient(120deg, #c9822a, #9b4f1f); }
+.bigbtn.done { background: linear-gradient(120deg, #4f7d26, #2f5a1a); }
+.flame { width: 18px; height: 18px; vertical-align: -3px; }
+.rowbtns { display: flex; gap: 8px; margin-top: 10px; }
+.rowbtns button { flex: 1; padding: 10px; border-radius: 12px; background: var(--panel2); font-weight: 800; font-size: 13.5px; }
+.tier { display: flex; align-items: center; gap: 12px; }
+.tier .bd { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; font-weight: 900; font-size: 20px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.35); flex: none; box-shadow: inset 0 -3px 0 rgba(0,0,0,.18); }
+.tier .tx { flex: 1; }
+.tier .tx b { font-size: 17px; }
+.pbar { height: 9px; border-radius: 99px; background: var(--panel2); overflow: hidden; margin-top: 6px; }
+.pbar i { display: block; height: 100%; background: var(--accent); border-radius: 99px; transition: width .4s; }
+.quest { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 13px; font-weight: 800; color: var(--soft); }
+.quest .dots { display: flex; gap: 4px; }
+.quest .dots i { width: 14px; height: 14px; border-radius: 50%; background: var(--panel2); border: 2px solid var(--line); }
+.quest .dots i.on { background: var(--gold); border-color: var(--gold); }
+.hist { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; }
+.hist span { font-size: 12px; font-weight: 900; padding: 3px 7px; border-radius: 8px; background: var(--panel2); }
+.pzbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 2px 2px 10px; font-weight: 800; font-size: 14px; color: var(--soft); min-height: 34px; }
+.pzbar b { color: var(--ink); font-size: 18px; }
+.pzbar .dl { font-size: 13px; font-weight: 900; margin-left: 4px; }
+.pzstat { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px; background: var(--panel); margin: 10px 0 8px; font-weight: 800; font-size: 15px; min-height: 52px; }
+.pzstat .ic { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 900; font-size: 15px; flex: none; }
+.pzstat small { display: block; color: var(--soft); font-size: 12.5px; font-weight: 700; }
+.pzstat.good { box-shadow: inset 0 0 0 2px #81b64c; }
+.pzstat.bad { box-shadow: inset 0 0 0 2px #d63a2f; }
+.sq.ok { background: #9fd36a; } .sq.d.ok { background: #6fae3f; }
+.sq.no { background: #f08a7e; } .sq.d.no { background: #d65a4c; }
+.res { background: var(--panel); border-radius: 16px; padding: 14px; margin-top: 8px; }
+.res h3 { margin: 0 0 8px; font-size: 20px; font-weight: 900; display: flex; align-items: center; gap: 8px; }
+.res h3 .dl { font-size: 18px; margin-left: auto; }
+.res .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.res .grid div { background: var(--panel2); border-radius: 10px; padding: 8px 10px; font-size: 12px; font-weight: 800; color: var(--soft); }
+.res .grid b { display: block; font-size: 18px; color: var(--ink); }
+.res .themes { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.res .pts { margin-top: 10px; font-size: 13px; font-weight: 800; color: var(--soft); }
+.res .pts div { display: flex; justify-content: space-between; padding: 3px 0; }
+.res .pts div b { color: var(--gold); }
+.res .pts .tot { border-top: 1px solid var(--line); margin-top: 4px; padding-top: 6px; color: var(--ink); }
+.res .row { display: flex; gap: 8px; margin-top: 12px; }
+.res .row .btn { flex: 1; font-size: 15px; padding: 11px 8px; }
+.cal-head { display: flex; align-items: center; justify-content: space-between; margin: 6px 0 10px; }
+.cal-head b { font-size: 18px; }
+.cal-head button { width: 42px; height: 42px; border-radius: 12px; background: var(--panel); font-size: 22px; font-weight: 900; }
+.cal-head button:disabled { opacity: .3; }
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+.cal .wd { text-align: center; font-size: 11px; font-weight: 900; color: var(--soft); padding-bottom: 2px; }
+.cal button { aspect-ratio: 1; border-radius: 10px; background: var(--panel); font-weight: 800; font-size: 14px; position: relative; }
+.cal button.solved { background: #5d8a33; color: #fff; }
+.cal button.late { background: #8a9a45; color: #fff; }
+.cal button.tried { background: #b65a3c; color: #fff; }
+.cal button.today { box-shadow: inset 0 0 0 2px var(--gold); }
+.cal button:disabled { opacity: .25; }
+.legend { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; font-size: 12px; font-weight: 800; color: var(--soft); }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 4px; vertical-align: -1px; margin-right: 4px; }
+.radio { display: flex; flex-direction: column; gap: 8px; text-align: left; margin: 6px 0 14px; }
+.radio button { padding: 12px 14px; border-radius: 14px; background: var(--panel2); border: 2px solid transparent; }
+.radio button b { display: block; font-size: 16px; }
+.radio button small { color: var(--soft); font-size: 12.5px; }
+.radio button[aria-pressed="true"] { border-color: var(--accent); }
+.tiers { display: flex; flex-direction: column; gap: 6px; text-align: left; max-height: 50vh; overflow: auto; margin-bottom: 12px; }
+.tiers div { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 14px; }
+.tiers .bd { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; color: #fff; font-weight: 900; font-size: 14px; }
+.tiers small { margin-left: auto; color: var(--soft); font-size: 12px; }
+.tiers .cur { color: var(--accent); }
+.howpts { text-align: left; font-size: 13px; color: var(--soft); line-height: 1.6; margin: 0 0 12px; }
 @media (prefers-reduced-motion: reduce) { .card, .toast { animation: none; } .pc.anim { transition: none; } }
 </style>
 </head>
@@ -173,6 +254,8 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
   </header>
 
   <section class="menu" id="menu">
+    <div class="seg modeseg" role="group" aria-label="Mode" id="modeSeg"><button data-m="play">Play bots</button><button data-m="puz">Puzzles</button></div>
+    <div id="playMenu">
     <div class="rate" id="rateCard"></div>
     <button class="cont" id="contBtn" hidden><div><b>Continue game</b><small id="contInfo"></small></div><span class="go">Play</span></button>
     <h2>Play as</h2>
@@ -180,7 +263,42 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
     <button class="opt" id="tbOpt" role="switch"><div class="tx"><b>Takebacks</b><small id="tbNote"></small></div><span class="sw"></span></button>
     <h2>Choose your opponent</h2>
     <div class="bots" id="bots"></div>
+    </div>
+    <div id="puzMenu" hidden></div>
   </section>
+  <section id="puzzle" hidden>
+    <div class="pzbar"><span id="pzMode"></span><span id="pzRate"></span></div>
+    <div class="wrap"><div class="board" id="pboard" role="grid" aria-label="Puzzle board"></div></div>
+    <div class="pzstat" id="pzStat"></div>
+    <div class="tools" id="pzTools">
+      <button class="tool" id="pzHint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V16h8v-1.3A7 7 0 0 0 12 2z"/></svg>Hint</button>
+      <button class="tool" id="pzRetry"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>Retry</button>
+      <button class="tool" id="pzSol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Solution</button>
+      <button class="tool" id="pzNext"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Next</button>
+    </div>
+    <div id="pzResult" hidden></div>
+  </section>
+
+  <section id="anaSec" hidden>
+    <div class="pzbar"><span>Analysis board</span><span id="anEval"></span></div>
+    <div class="wrap"><div class="board" id="aboard" role="grid" aria-label="Analysis board"></div></div>
+    <div class="anal" id="anInfo"></div>
+    <div class="moves" id="anMoves"></div>
+    <button class="opt" id="anReply" role="switch"><div class="tx"><b>Engine replies</b><small>The engine answers each of your moves so you can test lines against it.</small></div><span class="sw"></span></button>
+    <div class="tools" style="margin-top:10px">
+      <button class="tool" id="anUndo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg>Undo</button>
+      <button class="tool" id="anBest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Play best</button>
+      <button class="tool" id="anFlip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg>Flip</button>
+      <button class="tool" id="anReset"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>Reset</button>
+    </div>
+  </section>
+
+  <section id="archSec" hidden>
+    <div class="cal-head"><button id="calPrev" aria-label="Previous month">‹</button><b id="calTitle"></b><button id="calNext" aria-label="Next month">›</button></div>
+    <div class="cal" id="cal"></div>
+    <div class="legend"><span><i style="background:#5d8a33"></i>Solved on time</span><span><i style="background:#8a9a45"></i>Solved late</span><span><i style="background:#b65a3c"></i>Not solved yet</span><span><i style="box-shadow:inset 0 0 0 2px var(--gold)"></i>Today</span></div>
+  </section>
+
 
   <section id="game" hidden>
     <div class="pl" id="topPl"></div>
@@ -798,25 +916,25 @@ const E = ENGINE();
 let worker = null, reqId = 0;
 function makeWorker() {
   try {
-    const src = ENGINE.toString() + '\nconst E = ENGINE();\nonmessage = e => { const d = e.data; E.load(d.fen); for (const u of d.moves) E.make(E.fromUci(u)); const r = E.think(d.opts); postMessage({ id: d.id, uci: r.move ? E.uci(r.move) : null, depth: r.depth }); };';
+    const src = ENGINE.toString() + '\nconst E = ENGINE();\nonmessage = e => { const d = e.data; E.load(d.fen); for (const u of d.moves) E.make(E.fromUci(u)); const r = E.think(d.opts); postMessage({ id: d.id, uci: r.move ? E.uci(r.move) : null, depth: r.depth, score: r.score }); };';
     worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
     worker.onmessage = e => onBrain(e.data);
   } catch (e) { worker = null; }
 }
 makeWorker();
 const pending = {};
-function ask(opts, cb, moves) {
+function ask(opts, cb, moves, fen) {
   const id = ++reqId;
   pending[id] = cb;
-  const msg = { id, fen: E.START, moves: (moves || G.moves).slice(), opts };
+  const msg = { id, fen: fen || E.START, moves: (moves || G.moves).slice(), opts };
   if (worker) worker.postMessage(msg);
   else setTimeout(() => { // fallback: think on the main thread
     const X = ENGINE(); X.load(msg.fen); for (const u of msg.moves) X.make(X.fromUci(u));
-    const r = X.think(opts); onBrain({ id, uci: r.move ? X.uci(r.move) : null });
+    const r = X.think(opts); onBrain({ id, uci: r.move ? X.uci(r.move) : null, score: r.score });
   }, 30);
   return id;
 }
-function onBrain(d) { const cb = pending[d.id]; delete pending[d.id]; if (cb && d.id === reqId) cb(d.uci); }
+function onBrain(d) { const cb = pending[d.id]; delete pending[d.id]; if (cb && d.id === reqId) cb(d.uci, d); }
 function cancelBrain() {
   for (const k in pending) delete pending[k];
   reqId++;
@@ -1204,7 +1322,7 @@ function renderAnalysis(n) {
 }
 $('anal').addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) goTo(+b.dataset.go); });
 $('botsBtn').onclick = showMenu;
-$('back').onclick = e => { if (!$('game').hidden) { e.preventDefault(); cancelBrain(); stopAnalysis(); premove = null; thinking = false; showMenu(); } };
+$('back').onclick = e => { if (!$('game').hidden) { e.preventDefault(); cancelBrain(); stopAnalysis(); premove = null; thinking = false; showMenu(); } else if (pzBack()) e.preventDefault(); };
 
 // ---------- results + rating ----------
 function finish(st) {
@@ -1247,7 +1365,12 @@ function showResult() {
 function showMenu() {
   stopAnalysis(); premove = null;
   $('game').hidden = true; $('menu').hidden = false; $('back').textContent = '‹ Arcade';
+  ['puzzle', 'anaSec', 'archSec'].forEach(x => { $(x).hidden = true; });
   document.querySelectorAll('.ov').forEach(o => o.remove());
+  const pm = SV.mode === 'puz';
+  $('playMenu').hidden = pm; $('puzMenu').hidden = !pm;
+  $('modeSeg').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.m === (pm ? 'puz' : 'play')));
+  if (pm) { renderPuzMenu(); loadPuzzles().catch(() => { }); }
   let w = 0, l = 0, d = 0; for (const k in SV.rec) { w += SV.rec[k].w; l += SV.rec[k].l; d += SV.rec[k].d; }
   $('rateCard').innerHTML = `<div class="num"><small>YOUR RATING</small>${Math.round(SV.rating)}</div><div class="meta">Peak <b>${Math.round(SV.peak)}</b><br>W <b>${w}</b> · L <b>${l}</b> · D <b>${d}</b></div>`;
   const g = SV.game;
@@ -1308,7 +1431,547 @@ function confirmBox(title, text, ok, fn) {
 }
 window.addEventListener('resize', () => { if (G && !$('game').hidden) render(); });
 
-window.__chess = { get G() { return G; }, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
+// =====================================================================
+// PUZZLES: rated puzzles, daily puzzle + archive, Puzzle Journey, analysis board
+// =====================================================================
+const PZ0 = { rating: 400, rd: 230, vol: 0.06, peak: 400, solved: 0, failed: 0, streak: 0, best: 0, diff: 'std', tried: [], hist: [], pts: 0, record: 0, quest: { day: '', n: 0, done: false }, daily: {}, bestDaily: 0 };
+SV.pz = Object.assign({}, PZ0, SV.pz || {});
+const PZ = SV.pz;
+if (!SV.mode) SV.mode = 'play';
+
+const DIFFS = {
+  std: { name: 'Standard', off: 0, gain: 1, loss: 1, note: 'Manageable puzzles near your rating.' },
+  hard: { name: 'Hard', off: 150, gain: 1.2, loss: 0.8, note: 'Tougher puzzles. Bigger gains, smaller losses.' },
+  xhard: { name: 'Extra Hard', off: 300, gain: 1.4, loss: 0.6, note: 'Much tougher puzzles. Biggest gains, smallest losses.' },
+};
+const TIERS = [['Wood', '#a0703c'], ['Stone', '#8d8f94'], ['Bronze', '#cd7f32'], ['Silver', '#a9b3c1'], ['Crystal', '#45bfe0'], ['Elite', '#9b6bff'], ['Champion', '#ff5d73'], ['Legend', '#e8b923']];
+const THEME_NAMES = { mate: 'Checkmate', mateIn1: 'Mate in 1', mateIn2: 'Mate in 2', mateIn3: 'Mate in 3', mateIn4: 'Mate in 4', mateIn5: 'Mate in 5', fork: 'Fork', hangingPiece: 'Hanging piece', sacrifice: 'Sacrifice', promotion: 'Promotion', discoveredAttack: 'Discovered attack', doubleCheck: 'Double check', backRankMate: 'Back rank mate', smotheredMate: 'Smothered mate', oneMove: 'One move', short: 'Short', long: 'Long', veryLong: 'Very long', opening: 'Opening', middlegame: 'Middlegame', endgame: 'Endgame', advantage: 'Advantage', crushing: 'Crushing', enPassant: 'En passant', castling: 'Castling' };
+const FLAME = '<svg class="flame" viewBox="0 0 24 24" fill="#ff8a3d"><path d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 0-3-1-6 1-9.5z"/></svg>';
+
+// ---------- dates ----------
+const ymd = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const parseYmd = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const addDays = (s, n) => { const d = parseYmd(s); d.setDate(d.getDate() + n); return ymd(d); };
+const today = () => ymd(new Date());
+const ARCHIVE_START = '2016-01-01';
+
+// ---------- data ----------
+let PUZ = null, pzLoading = null;
+function loadPuzzles() {
+  if (PUZ) return Promise.resolve(PUZ);
+  if (!pzLoading) pzLoading = fetch('puzzles.json').then(r => r.json()).then(d => { PUZ = d.p.map((a, i) => ({ id: i, fen: a[0], moves: a[1].split(' '), rating: a[2], themes: a[3] ? a[3].split(' ') : [] })); return PUZ; }).catch(e => { pzLoading = null; throw e; });
+  return pzLoading;
+}
+const solverMoves = p => Math.floor(p.moves.length / 2);
+const targetTime = p => Math.round(20 + 15 * solverMoves(p) + Math.max(0, p.rating - 600) / 25);
+const passRate = p => Math.round(100 / (1 + Math.pow(10, (p.rating - 1250) / 520)));
+
+// ---------- Glicko-2 ----------
+function glicko(r, rd, vol, opp, score) {
+  const q = 173.7178, mu = (r - 1500) / q, phi = rd / q, muj = (opp - 1500) / q, phij = 60 / q, tau = 0.5;
+  const g = 1 / Math.sqrt(1 + 3 * phij * phij / (Math.PI * Math.PI));
+  const e = 1 / (1 + Math.exp(-g * (mu - muj)));
+  const v = 1 / (g * g * e * (1 - e));
+  const delta = v * g * (score - e);
+  const a = Math.log(vol * vol);
+  const f = x => { const ex = Math.exp(x); return ex * (delta * delta - phi * phi - v - ex) / (2 * Math.pow(phi * phi + v + ex, 2)) - (x - a) / (tau * tau); };
+  let A = a, B;
+  if (delta * delta > phi * phi + v) B = Math.log(delta * delta - phi * phi - v); else { let k = 1; while (f(a - k * tau) < 0 && k < 50) k++; B = a - k * tau; }
+  let fA = f(A), fB = f(B), it = 0;
+  while (Math.abs(B - A) > 1e-6 && it++ < 100) { const C = A + (A - B) * fA / (fB - fA), fC = f(C); if (fC * fB <= 0) { A = B; fA = fB; } else fA /= 2; B = C; fB = fC; }
+  const nv = Math.exp(A / 2), ps = Math.sqrt(phi * phi + nv * nv), np = 1 / Math.sqrt(1 / (ps * ps) + 1 / v);
+  return { r: (mu + np * np * g * (score - e)) * q + 1500, rd: np * q, vol: Math.min(0.1, nv), exp: e };
+}
+function rateResult(p, ok) {
+  const d = DIFFS[PZ.diff] || DIFFS.std;
+  const g = glicko(PZ.rating, PZ.rd, PZ.vol, p.rating, ok ? 1 : 0);
+  let delta = g.r - PZ.rating;
+  delta = Math.round(delta * (delta > 0 ? d.gain : d.loss));
+  if (ok && delta < 1) delta = 1;
+  PZ.rating = Math.max(100, PZ.rating + delta);
+  PZ.rd = Math.max(50, g.rd); PZ.vol = g.vol;
+  PZ.peak = Math.max(PZ.peak, PZ.rating);
+  if (ok) PZ.solved++; else PZ.failed++;
+  PZ.hist.push({ id: p.id, ok, d: delta }); if (PZ.hist.length > 30) PZ.hist.shift();
+  return delta;
+}
+
+// ---------- Puzzle Journey ----------
+const levelCost = t => 60 + 30 * t;
+function journey(pts) {
+  let left = pts;
+  for (let t = 0; t < TIERS.length; t++) for (let l = 1; l <= 20; l++) { const c = levelCost(t); if (left < c) return { t, l, into: left, need: c }; left -= c; }
+  const P = 1000, n = Math.floor(left / P);
+  return { t: TIERS.length - 1, l: 20, prestige: n + 1, into: left - n * P, need: P };
+}
+const tierLabel = j => `${TIERS[j.t][0]} ${j.l}${j.prestige ? ` · Prestige ${j.prestige}` : ''}`;
+function questToday() { if (PZ.quest.day !== today()) PZ.quest = { day: today(), n: 0, done: false }; return PZ.quest; }
+
+// ---------- daily ----------
+const DAY_T = [1950, 700, 900, 1100, 1300, 1500, 1700]; // Sunday..Saturday
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const DAY_DIFF = ['Hardest', 'Easy', 'Easy+', 'Medium', 'Medium+', 'Hard', 'Harder'];
+let dailyPools = null;
+function dailyPuzzle(ds) {
+  if (!dailyPools) dailyPools = DAY_T.map(t => {
+    let w = 160, pool;
+    do { pool = PUZ.filter(p => Math.abs(p.rating - t) <= w && solverMoves(p) >= 2); w += 80; } while (pool.length < 40 && w < 1200);
+    if (pool.length < 10) pool = PUZ.filter(p => Math.abs(p.rating - t) <= 400);
+    return pool.map(p => p.id);
+  });
+  const d = parseYmd(ds), pool = dailyPools[d.getDay()];
+  const week = Math.floor((d - parseYmd('2000-01-02')) / 864e5 / 7);
+  let k = 97; while (pool.length % k === 0) k += 2;
+  return PUZ[pool[((week * k) % pool.length + pool.length) % pool.length]];
+}
+const onTime = ds => { const r = PZ.daily[ds]; return !!(r && r.at && r.at < parseYmd(ds).getTime() + 48 * 3600e3 + 3600e3); };
+function dailyStreak() {
+  const t = today();
+  let last = null;
+  for (let i = 0; i <= 2; i++) { const ds = addDays(t, -i); if (onTime(ds)) { last = ds; break; } }
+  if (!last) return 0;
+  let n = 0, ds = last;
+  while (onTime(ds) && n < 5000) { n++; ds = addDays(ds, -1); }
+  if (n > PZ.bestDaily) PZ.bestDaily = n;
+  return n;
+}
+
+// ---------- shared board widget ----------
+function choosePromo(color, done, cancel) {
+  const o = document.createElement('div'); o.className = 'ov';
+  o.innerHTML = `<div class="card"><h3 style="font-size:21px">Promote to</h3><div class="promo">${[5, 4, 3, 2].map(t => `<button data-t="${t}">${pieceSVG(t * color, '')}</button>`).join('')}</div></div>`;
+  document.body.append(o);
+  o.onclick = e => { const b = e.target.closest('button'); o.remove(); if (b) done(+b.dataset.t); else cancel(); };
+}
+function makeBoard(el, ctl) {
+  const B = { sel: -1, tg: [], drag: null, anim: null };
+  const X = () => ctl.eng;
+  const sqAt = (x, y) => { const r = el.getBoundingClientRect(); const j = Math.floor((x - r.left) / r.width * 8), i = Math.floor((y - r.top) / r.height * 8); if (i < 0 || i > 7 || j < 0 || j > 7) return -1; const f = ctl.flipped(); return (f ? i : 7 - i) * 16 + (f ? 7 - j : j); };
+  B.select = sq => { B.sel = sq; B.tg = sq < 0 ? [] : X().legalMoves().filter(m => X().from(m) === sq); };
+  const attempt = to => {
+    const opts = B.tg.filter(m => X().to(m) === to);
+    if (!opts.length) return false;
+    const go = m => { B.select(-1); ctl.onMove(m); };
+    if (opts.length > 1) choosePromo(X().side, t => go(opts.find(m => X().promo(m) === t)), () => { B.select(-1); B.draw(); });
+    else go(opts[0]);
+    return true;
+  };
+  el.addEventListener('pointerdown', e => {
+    if (!ctl.canMove()) return;
+    const sq = sqAt(e.clientX, e.clientY); if (sq < 0) return;
+    const p = X().board[sq], own = p && (p > 0) === (X().side > 0);
+    if (B.sel >= 0 && !own && B.tg.some(m => X().to(m) === sq)) { B.anim = { from: B.sel, to: sq }; attempt(sq); return; }
+    if (own) {
+      const again = B.sel === sq;
+      B.select(sq); B.draw();
+      B.drag = { sq, x: e.clientX, y: e.clientY, on: false, again, id: e.pointerId };
+      try { el.setPointerCapture(e.pointerId); } catch (err) { }
+    } else { B.select(-1); B.draw(); }
+  });
+  el.addEventListener('pointermove', e => {
+    const d = B.drag; if (!d || e.pointerId !== d.id) return;
+    if (!d.on && Math.hypot(e.clientX - d.x, e.clientY - d.y) > 6) {
+      d.on = true;
+      const size = el.getBoundingClientRect().width / 8 * 1.15;
+      const g = document.createElement('div'); g.className = 'ghost'; g.style.width = g.style.height = size + 'px';
+      g.innerHTML = pieceSVG(X().board[d.sq], ''); g.firstChild.style.width = g.firstChild.style.height = '100%';
+      document.body.append(g); d.g = g;
+      const pc = el.querySelector(`[data-sq="${d.sq}"] .pc`); if (pc) pc.classList.add('lift');
+    }
+    if (d.on) { d.g.style.left = e.clientX + 'px'; d.g.style.top = e.clientY + 'px'; }
+  });
+  el.addEventListener('pointerup', e => {
+    const d = B.drag; if (!d || e.pointerId !== d.id) return;
+    B.drag = null; if (d.g) d.g.remove();
+    if (d.on) { const to = sqAt(e.clientX, e.clientY); if (to >= 0 && to !== d.sq && attempt(to)) return; B.draw(); }
+    else if (d.again) { B.select(-1); B.draw(); }
+  });
+  el.addEventListener('pointercancel', () => { if (B.drag && B.drag.g) B.drag.g.remove(); B.drag = null; B.draw(); });
+  B.draw = () => {
+    const E2 = X(), bd = E2.board, f = ctl.flipped(), hl = ctl.hl ? ctl.hl() : {};
+    const chk = E2.inCheck() ? E2.king[E2.side === 1 ? 0 : 1] : -1;
+    const tset = new Set(B.tg.map(m => E2.to(m)));
+    let h = '';
+    for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) {
+      const rank = f ? i : 7 - i, file = f ? 7 - j : j, sq = rank * 16 + file, p = bd[sq];
+      let c = 'sq' + ((rank + file) % 2 === 0 ? ' d' : '');
+      if (hl.last && hl.last.includes(sq)) c += ' mv';
+      if (sq === B.sel) c += ' sel';
+      if (hl.hint && hl.hint.includes(sq)) c += ' hint';
+      if (hl.ok && hl.ok.includes(sq)) c += ' ok';
+      if (hl.no && hl.no.includes(sq)) c += ' no';
+      if (sq === chk) c += ' chk';
+      if (tset.has(sq)) c += p ? ' ring' : ' dot';
+      let inner = '';
+      if (j === 0) inner += `<span class="cr">${rank + 1}</span>`;
+      if (i === 7) inner += `<span class="cf">${'abcdefgh'[file]}</span>`;
+      if (p) inner += pieceSVG(p);
+      if (hl.badge && hl.badge.sq === sq) inner += `<span class="bdg" style="background:${hl.badge.c}">${hl.badge.s}</span>`;
+      h += `<div class="${c}" data-sq="${sq}">${inner}</div>`;
+    }
+    el.innerHTML = h;
+    if (B.anim) {
+      const pc = el.querySelector(`[data-sq="${B.anim.to}"] .pc`), fe = el.querySelector(`[data-sq="${B.anim.from}"]`);
+      if (pc && fe) {
+        const a = fe.getBoundingClientRect(), b = pc.parentElement.getBoundingClientRect();
+        pc.style.transform = `translate(${a.left - b.left}px, ${a.top - b.top}px)`; pc.style.zIndex = 5;
+        requestAnimationFrame(() => requestAnimationFrame(() => { pc.classList.add('anim'); pc.style.transform = ''; }));
+      }
+      B.anim = null;
+    }
+  };
+  return B;
+}
+const sqN = n => (n.charCodeAt(1) - 49) * 16 + (n.charCodeAt(0) - 97);
+const moveSound = san => sound(san.includes('+') || san.includes('#') ? 'check' : san.includes('x') ? 'cap' : 'move');
+
+// ---------- screens ----------
+const SCREENS = ['menu', 'game', 'puzzle', 'anaSec', 'archSec'];
+function showScreen(id, back) {
+  SCREENS.forEach(s => { $(s).hidden = s !== id; });
+  $('back').textContent = back;
+  document.querySelectorAll('.ov').forEach(o => o.remove());
+  window.scrollTo(0, 0);
+}
+
+// ---------- puzzle menu ----------
+function renderPuzMenu() {
+  const host = $('puzMenu');
+  const d = DIFFS[PZ.diff] || DIFFS.std, j = journey(PZ.pts), q = questToday(), ds = today(), rec = PZ.daily[ds];
+  const streak = dailyStreak();
+  const hist = PZ.hist.slice(-12).map(h => `<span class="${h.ok ? 'up' : 'down'}">${h.d > 0 ? '+' : ''}${h.d}</span>`).join('');
+  host.innerHTML = `
+    <div class="pcard">
+      <div class="top"><div><div class="lbl">Puzzle rating</div><b class="big">${Math.round(PZ.rating)}</b></div>
+        <div class="meta" style="margin-left:14px">Peak <b>${Math.round(PZ.peak)}</b><br>Solved <b>${PZ.solved}</b> · Missed <b>${PZ.failed}</b></div>
+        <button class="gear" id="pzGear" aria-label="Puzzle settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div>
+      ${hist ? `<div class="hist">${hist}</div>` : ''}
+      <button class="bigbtn" id="pzPlay"><div><b>Rated puzzles</b><small>${d.name} · ${PZ.streak > 1 ? `${PZ.streak} in a row` : 'matched to your rating'}</small></div><span class="go">Solve</span></button>
+    </div>
+    <div class="pcard">
+      <div class="top"><div><div class="lbl">Daily puzzle</div><b style="font-size:17px">${DAY_NAMES[new Date().getDay()]} · ${DAY_DIFF[new Date().getDay()]}</b></div>
+        <div class="meta" style="margin-left:auto;text-align:right">${FLAME} <b>${streak}</b> day streak<br>Best <b>${PZ.bestDaily}</b></div></div>
+      <button class="bigbtn ${rec && rec.at ? 'done' : 'daily'}" id="pzDaily"><div><b>${rec && rec.at ? 'Solved today' : 'Today\'s puzzle'}</b><small>${rec && rec.at ? 'Come back tomorrow for a new one' : 'Solve within 48 hours to keep your streak'}</small></div><span class="go">${rec && rec.at ? 'View' : 'Play'}</span></button>
+      <div class="rowbtns"><button id="pzArchive">Archive</button></div>
+    </div>
+    <div class="pcard" id="pzJourney" role="button">
+      <div class="lbl" style="margin-bottom:8px">Puzzle Journey</div>
+      <div class="tier"><div class="bd" style="background:${TIERS[j.t][1]}">${j.prestige ? 'P' : TIERS[j.t][0][0]}</div>
+        <div class="tx"><b>${tierLabel(j)}</b><div class="meta">${j.into} / ${j.need} points to next level · ${PZ.pts} total</div><div class="pbar"><i style="width:${j.into / j.need * 100}%"></i></div></div></div>
+      <div class="quest">Daily quest: 3 accurate puzzles <span class="dots">${[0, 1, 2].map(i => `<i class="${q.n > i ? 'on' : ''}"></i>`).join('')}</span>${q.done ? '<span class="up">+50 done</span>' : ''}</div>
+    </div>`;
+  $('pzGear').onclick = openPzSettings;
+  $('pzPlay').onclick = () => startRated();
+  $('pzDaily').onclick = () => startDaily(today());
+  $('pzArchive').onclick = () => openArchive();
+  $('pzJourney').onclick = openJourney;
+}
+function openPzSettings() {
+  const o = document.createElement('div'); o.className = 'ov';
+  o.innerHTML = `<div class="card"><h3 style="font-size:21px">Puzzle difficulty</h3><div class="radio">${Object.entries(DIFFS).map(([k, d]) => `<button data-k="${k}" aria-pressed="${PZ.diff === k}"><b>${d.name}${k === 'std' ? ' (default)' : ''}</b><small>${d.note}</small></button>`).join('')}</div><p style="font-size:13px">Using a hint counts as a miss and costs rating points.</p><button class="btn" data-a="ok">Done</button></div>`;
+  document.body.append(o);
+  o.onclick = e => {
+    const b = e.target.closest('[data-k]');
+    if (b) { PZ.diff = b.dataset.k; save(); o.querySelectorAll('[data-k]').forEach(x => x.setAttribute('aria-pressed', x.dataset.k === PZ.diff)); renderPuzMenu(); return; }
+    if (e.target.closest('[data-a=ok]') || e.target === o) o.remove();
+  };
+}
+function openJourney() {
+  const j = journey(PZ.pts);
+  const o = document.createElement('div'); o.className = 'ov';
+  o.innerHTML = `<div class="card"><h3 style="font-size:21px">Puzzle Journey</h3>
+    <p class="howpts">Earn points for accurate rated solves (no mistakes, no hints): <b>+10</b> each (+5 Hard, +10 Extra Hard), <b>speed bonus</b> up to +10, <b>streak bonus</b> for solves in a row, <b>+25</b> for beating your hardest solve, and <b>+50</b> for the daily quest of 3 accurate puzzles.</p>
+    <div class="tiers">${TIERS.map(([n, c], t) => `<div class="${t === j.t && !j.prestige ? 'cur' : ''}"><span class="bd" style="background:${c}">${n[0]}</span>${n}<small>20 levels · ${levelCost(t)} pts each</small></div>`).join('')}<div class="${j.prestige ? 'cur' : ''}"><span class="bd" style="background:#2b2a27">P</span>Prestige<small>after Legend 20 · 1000 pts each</small></div></div>
+    <button class="btn" data-a="ok">Got it</button></div>`;
+  document.body.append(o);
+  o.onclick = e => { if (e.target.closest('[data-a=ok]') || e.target === o) o.remove(); };
+}
+
+// ---------- solving ----------
+const P = ENGINE();
+let PS = null; // current puzzle state
+const pzBoard = makeBoard($('pboard'), {
+  get eng() { return P; },
+  flipped: () => PS && PS.color === -1,
+  canMove: () => PS && !PS.busy && !PS.done && P.side === PS.color,
+  onMove: m => pzMove(m),
+  hl: () => PS ? { last: PS.last, hint: PS.hintSq, ok: PS.okSq, no: PS.noSq } : {},
+});
+function pickRated() {
+  const d = DIFFS[PZ.diff] || DIFFS.std;
+  const target = PZ.rating + d.off + (Math.random() - .5) * 120;
+  const tried = new Set(PZ.tried);
+  let best = null, bd = Infinity;
+  for (const p of PUZ) { if (tried.has(p.id)) continue; const dd = Math.abs(p.rating - target) + Math.random() * 40; if (dd < bd) { bd = dd; best = p; } }
+  if (!best) { PZ.tried = []; return pickRated(); }
+  return best;
+}
+async function startRated() {
+  try { await loadPuzzles(); } catch (e) { toast('Could not load puzzles. Check your connection.'); return; }
+  openPuzzle(pickRated(), { mode: 'rated' });
+}
+async function startDaily(ds) {
+  try { await loadPuzzles(); } catch (e) { toast('Could not load puzzles. Check your connection.'); return; }
+  const rec = PZ.daily[ds] || (PZ.daily[ds] = {});
+  const p = rec.id != null && PUZ[rec.id] ? PUZ[rec.id] : dailyPuzzle(ds);
+  rec.id = p.id; save();
+  openPuzzle(p, { mode: 'daily', date: ds });
+}
+function openPuzzle(p, o) {
+  PS = { p, mode: o.mode, date: o.date, step: 0, color: 0, mistakes: 0, hints: 0, rated: false, result: null, done: false, busy: true, t0: 0, time: 0, last: [], hintSq: [], okSq: [], noSq: [], retry: !!o.retry, showSol: false };
+  P.load(p.fen);
+  PS.color = -P.side; // the solver is the side that answers the opening move
+  showScreen('puzzle', '‹ Puzzles');
+  $('pzResult').hidden = true; $('pzTools').hidden = false;
+  if (o.mode === 'rated' && !o.retry) { PZ.tried.push(p.id); if (PZ.tried.length > 3000) PZ.tried.shift(); save(); }
+  pzHeader();
+  pzStatus('wait');
+  pzBoard.select(-1); pzBoard.draw();
+  setTimeout(() => { if (PS && PS.p === p) { pzPlayOpp(); PS.t0 = Date.now(); } }, 650);
+}
+function pzHeader() {
+  const s = PS, dl = s.delta != null ? `<span class="dl ${s.delta >= 0 ? 'up' : 'down'}">${s.delta >= 0 ? '+' : ''}${s.delta}</span>` : '';
+  if (s.mode === 'rated') $('pzMode').innerHTML = `Rated · ${(DIFFS[PZ.diff] || DIFFS.std).name}${s.retry ? ' · Retry' : ''}`;
+  else $('pzMode').innerHTML = `Daily · ${parseYmd(s.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`;
+  $('pzRate').innerHTML = s.mode === 'rated' ? `<b>${Math.round(PZ.rating)}</b>${dl}` : `${FLAME} <b>${dailyStreak()}</b>`;
+}
+function pzStatus(k, extra) {
+  const s = PS, side = s.color === 1 ? 'White' : 'Black', el = $('pzStat');
+  el.className = 'pzstat' + (k === 'good' || k === 'solved' ? ' good' : k === 'bad' ? ' bad' : '');
+  const ic = (bg, t) => `<span class="ic" style="background:${bg}">${t}</span>`;
+  const pc = `<span class="ic" style="background:${s.color === 1 ? '#fafaf7' : '#2c2b29'};box-shadow:inset 0 0 0 2px var(--line)"></span>`;
+  el.innerHTML = {
+    wait: `${pc}<div>Get ready...<small>Watch your opponent's move</small></div>`,
+    turn: `${pc}<div>${side} to move<small>Find the best move${s.p.themes.includes('mate') ? ` (${THEME_NAMES['mateIn' + solverMoves(s.p)] || 'mate'})` : ''}</small></div>`,
+    good: `${ic('#81b64c', '✓')}<div>${extra || 'Best move!'}<small>Keep going</small></div>`,
+    bad: `${ic('#d63a2f', '✕')}<div>Incorrect<small>${s.mode === 'rated' && !s.retry ? 'That counts as a miss. You can still keep trying.' : 'Try again, or tap Solution.'}</small></div>`,
+    solved: `${ic('#81b64c', '★')}<div>${s.mistakes || s.hints ? 'Solved' : 'Solved perfectly!'}<small>${extra || ''}</small></div>`,
+    shown: `${ic('#9a978f', '•')}<div>Solution shown<small>Try the next one</small></div>`,
+  }[k];
+  $('pzHint').disabled = s.done || k === 'wait';
+  $('pzSol').disabled = s.done || k === 'wait';
+  $('pzRetry').hidden = !(s.mistakes || s.done);
+  $('pzNext').hidden = !(s.done || (s.mode === 'rated' && (s.mistakes || s.hints)));
+}
+function pzPlayOpp() {
+  const s = PS; if (!s || s.step >= s.p.moves.length) return;
+  const u = s.p.moves[s.step], m = P.fromUci(u);
+  if (!m) { toast('Puzzle error, skipping'); return; }
+  const san = P.san(m);
+  pzBoard.anim = { from: P.from(m), to: P.to(m) };
+  P.make(m); s.step++; s.last = [P.from(m), P.to(m)]; s.hintSq = []; s.okSq = []; s.noSq = [];
+  moveSound(san);
+  s.busy = false;
+  pzBoard.draw();
+  if (!s.showSol) pzStatus('turn');
+}
+function pzMove(m) {
+  const s = PS; if (!s || s.done) return;
+  const exp = s.p.moves[s.step], u = P.uci(m), san = P.san(m);
+  P.make(m);
+  const mate = P.status() && P.status().reason === 'checkmate';
+  if (u === exp || mate) {
+    s.step++; s.last = [P.from(m), P.to(m)]; s.okSq = [P.to(m)]; s.hintSq = [];
+    moveSound(san); pzBoard.draw();
+    if (s.step >= s.p.moves.length || mate) { pzFinish(true); return; }
+    pzStatus('good', ['Best move!', 'Great move!', 'Correct!'][Math.floor(Math.random() * 3)]);
+    s.busy = true;
+    setTimeout(() => { if (PS === s) pzPlayOpp(); }, 450);
+    return;
+  }
+  // wrong
+  s.mistakes++;
+  s.noSq = [P.from(m), P.to(m)]; s.busy = true;
+  pzBoard.draw(); sound('lose');
+  if (s.mode === 'rated' && !s.retry && !s.rated) pzRate(false);
+  pzStatus('bad');
+  setTimeout(() => { if (PS !== s) return; P.unmake(); s.noSq = []; s.busy = false; pzBoard.draw(); }, 700);
+}
+function pzRate(ok) {
+  const s = PS;
+  s.rated = true; s.result = ok;
+  s.delta = rateResult(s.p, ok);
+  if (!ok) PZ.streak = 0;
+  save(); pzHeader();
+}
+function pzFinish(ok) {
+  const s = PS; s.done = true; s.busy = true; s.time = Math.round((Date.now() - s.t0) / 1000);
+  const accurate = ok && !s.mistakes && !s.hints && !s.showSol;
+  let pts = [];
+  if (s.mode === 'rated' && !s.retry) {
+    if (!s.rated) pzRate(accurate);
+    if (accurate) {
+      PZ.streak++; PZ.best = Math.max(PZ.best, PZ.streak);
+      const tt = targetTime(s.p);
+      pts.push(['Accurate solve', 10 + (PZ.diff === 'hard' ? 5 : PZ.diff === 'xhard' ? 10 : 0)]);
+      if (s.time <= tt / 2) pts.push(['Speed bonus', 10]); else if (s.time <= tt) pts.push(['Speed bonus', 5]);
+      if (PZ.streak > 1) pts.push([`Streak x${PZ.streak}`, Math.min(PZ.streak - 1, 10) * 2]);
+      if (s.p.rating > PZ.record) { if (PZ.record) pts.push(['New personal record', 25]); PZ.record = s.p.rating; }
+      const q = questToday(); q.n++;
+      if (q.n >= 3 && !q.done) { q.done = true; pts.push(['Daily quest complete', 50]); }
+      const before = journey(PZ.pts);
+      PZ.pts += pts.reduce((a, b) => a + b[1], 0);
+      const after = journey(PZ.pts);
+      if (after.t !== before.t || after.l !== before.l || after.prestige !== before.prestige) setTimeout(() => toast(`Level up! ${tierLabel(after)}`), 600);
+    }
+  }
+  if (s.mode === 'daily' && ok && !s.showSol) {
+    const r = PZ.daily[s.date] || (PZ.daily[s.date] = { id: s.p.id });
+    if (!r.at && !r.sol) { r.at = Date.now(); r.perfect = accurate; r.time = s.time; }
+  }
+  save();
+  sound(accurate ? 'win' : 'move');
+  pzStatus(s.showSol ? 'shown' : 'solved', s.mode === 'daily' && ok && !s.showSol ? (onTime(s.date) ? `Streak: ${dailyStreak()} days` : 'Solved late. Doesn\'t count toward your streak.') : '');
+  pzHeader();
+  pzResult(pts, accurate);
+}
+function pzResult(pts, accurate) {
+  const s = PS, p = s.p, tt = targetTime(p), el = $('pzResult');
+  const total = pts.reduce((a, b) => a + b[1], 0), j = journey(PZ.pts);
+  el.innerHTML = `<div class="res">
+    <h3>${s.showSol ? 'Puzzle missed' : accurate ? 'Solved!' : 'Solved with help'}${s.delta != null && s.mode === 'rated' ? `<span class="dl ${s.delta >= 0 ? 'up' : 'down'}">${s.delta >= 0 ? '+' : ''}${s.delta}</span>` : ''}</h3>
+    <div class="grid"><div>Puzzle rating<b>${p.rating}</b></div><div>Pass rate (est.)<b>${passRate(p)}%</b></div><div>Target time<b>${tt}s</b></div><div>Your time<b class="${s.time <= tt ? 'up' : ''}">${s.showSol ? '-' : s.time + 's'}</b></div></div>
+    <div class="themes">${p.themes.map(t => `<span class="chip2">${THEME_NAMES[t] || t}</span>`).join('')}</div>
+    ${pts.length ? `<div class="pts">${pts.map(([n, v]) => `<div>${n}<b>+${v}</b></div>`).join('')}<div class="tot">Puzzle points<b>+${total}</b></div><div>${tierLabel(j)}<span>${j.into}/${j.need}</span></div></div>` : ''}
+    <div class="row"><button class="btn alt" id="rsAna">Analysis</button><button class="btn alt" id="rsRetry">Retry</button>${s.mode === 'rated' ? '<button class="btn" id="rsNext">Next puzzle</button>' : '<button class="btn" id="rsBack">Done</button>'}</div></div>`;
+  el.hidden = false; $('pzTools').hidden = true;
+  $('rsAna').onclick = () => openAnalysis(p);
+  $('rsRetry').onclick = () => openPuzzle(p, { mode: s.mode, date: s.date, retry: true });
+  if ($('rsNext')) $('rsNext').onclick = () => startRated();
+  if ($('rsBack')) $('rsBack').onclick = () => s.date === today() ? openPuzMenu() : openArchive(s.date.slice(0, 7));
+}
+$('pzHint').onclick = () => {
+  const s = PS; if (!s || s.done || s.busy) return;
+  const u = s.p.moves[s.step]; if (!u) return;
+  s.hints++;
+  if (s.mode === 'rated' && !s.retry && !s.rated) { pzRate(false); toast('Hint used: counted as a miss'); }
+  s.hintSq = s.hints === 1 ? [sqN(u.slice(0, 2))] : [sqN(u.slice(0, 2)), sqN(u.slice(2, 4))];
+  pzBoard.select(-1); pzBoard.draw(); pzStatus('turn');
+};
+$('pzSol').onclick = () => {
+  const s = PS; if (!s || s.done) return;
+  if (s.mode === 'rated' && !s.retry && !s.rated) pzRate(false);
+  if (s.mode === 'daily') { const r = PZ.daily[s.date] || (PZ.daily[s.date] = { id: s.p.id }); if (!r.at) r.sol = true; save(); }
+  s.showSol = true; s.busy = true;
+  const stepOne = () => {
+    if (PS !== s) return;
+    if (s.step >= s.p.moves.length) { pzFinish(false); return; }
+    const m = P.fromUci(s.p.moves[s.step]); const san = P.san(m);
+    pzBoard.anim = { from: P.from(m), to: P.to(m) };
+    P.make(m); s.step++; s.last = [P.from(m), P.to(m)]; s.hintSq = []; moveSound(san); pzBoard.draw();
+    setTimeout(stepOne, 700);
+  };
+  pzStatus('shown'); stepOne();
+};
+$('pzRetry').onclick = () => { if (PS) openPuzzle(PS.p, { mode: PS.mode, date: PS.date, retry: true }); };
+$('pzNext').onclick = () => { if (!PS) return; if (PS.mode === 'rated') startRated(); else openPuzMenu(); };
+
+// ---------- archive ----------
+let calMonth = null;
+function openArchive(month) {
+  loadPuzzles().catch(() => { });
+  calMonth = month || today().slice(0, 7);
+  showScreen('archSec', '‹ Puzzles');
+  drawCal();
+}
+function drawCal() {
+  const [y, m] = calMonth.split('-').map(Number), first = new Date(y, m - 1, 1), days = new Date(y, m, 0).getDate(), t = today();
+  $('calTitle').textContent = first.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+  $('calPrev').disabled = calMonth <= ARCHIVE_START.slice(0, 7);
+  $('calNext').disabled = calMonth >= t.slice(0, 7);
+  let h = ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => `<div class="wd">${d}</div>`).join('');
+  for (let i = 0; i < first.getDay(); i++) h += '<div></div>';
+  for (let d = 1; d <= days; d++) {
+    const ds = `${calMonth}-${String(d).padStart(2, '0')}`, r = PZ.daily[ds];
+    const c = r && r.at ? (onTime(ds) ? 'solved' : 'late') : r && r.id != null ? 'tried' : '';
+    h += `<button data-d="${ds}" class="${c}${ds === t ? ' today' : ''}" ${ds > t ? 'disabled' : ''}>${d}</button>`;
+  }
+  $('cal').innerHTML = h;
+}
+$('calPrev').onclick = () => { const [y, m] = calMonth.split('-').map(Number); const d = new Date(y, m - 2, 1); calMonth = ymd(d).slice(0, 7); drawCal(); };
+$('calNext').onclick = () => { const [y, m] = calMonth.split('-').map(Number); const d = new Date(y, m, 1); calMonth = ymd(d).slice(0, 7); drawCal(); };
+$('cal').onclick = e => { const b = e.target.closest('[data-d]'); if (b) startDaily(b.dataset.d); };
+
+// ---------- analysis board ----------
+const A = ENGINE();
+let AS = null;
+const anBoard = makeBoard($('aboard'), {
+  get eng() { return A; },
+  flipped: () => AS && AS.flip,
+  canMove: () => AS && !AS.busy && !A.status(),
+  onMove: m => anMove(m, true),
+  hl: () => AS ? { last: AS.last, hint: AS.best ? [sqN(AS.best.slice(0, 2)), sqN(AS.best.slice(2, 4))] : [] } : {},
+});
+function openAnalysis(p) {
+  AS = { p, line: [], sans: [], flip: PS ? PS.color === -1 : false, last: [], best: null, busy: false, reply: AS ? AS.reply : true };
+  A.load(p.fen); A.make(A.fromUci(p.moves[0]));
+  const u = p.moves[0]; AS.last = [sqN(u.slice(0, 2)), sqN(u.slice(2, 4))];
+  showScreen('anaSec', '‹ Puzzle');
+  anRender(); anEval();
+}
+function anMove(m, byUser) {
+  const san = A.san(m);
+  anBoard.anim = { from: A.from(m), to: A.to(m) };
+  A.make(m); AS.line.push(A.uci(m)); AS.sans.push(san); AS.last = [A.from(m), A.to(m)]; AS.best = null;
+  moveSound(san); anRender();
+  if (byUser && AS.reply && !A.status()) {
+    AS.busy = true; $('anInfo').innerHTML = 'Engine is thinking...';
+    cancelBrain();
+    ask({ time: 900, depth: 30, noise: 0, random: 0 }, u2 => { AS.busy = false; const m2 = u2 && A.fromUci(u2); if (m2) anMove(m2, false); else anEval(); }, [AS.p.moves[0], ...AS.line], AS.p.fen);
+    return;
+  }
+  anEval();
+}
+function anEval() {
+  const st = A.status();
+  if (st) { $('anInfo').innerHTML = `<div class="ln">${st.reason === 'checkmate' ? 'Checkmate' : 'Draw: ' + st.reason}</div>`; $('anEval').textContent = st.result; return; }
+  $('anInfo').innerHTML = 'Evaluating...';
+  cancelBrain();
+  const at = AS.line.length;
+  ask({ time: 800, depth: 30, noise: 0, random: 0 }, (u, d) => {
+    if (!AS || AS.line.length !== at || !u) return;
+    AS.best = u;
+    const m = A.fromUci(u), s = d && d.score != null ? d.score : 0, w = A.side === 1 ? s : -s;
+    const ev = Math.abs(w) > 90000 ? (w > 0 ? '' : '-') + 'M' + Math.max(1, Math.ceil((100000 - Math.abs(w)) / 2)) : (w >= 0 ? '+' : '') + (w / 100).toFixed(1);
+    $('anEval').innerHTML = `<b>${ev}</b>`;
+    $('anInfo').innerHTML = `<div class="ln">Best move: <b>${m ? A.san(m) : u}</b> <span class="ev">${ev}</span></div><div class="sub" style="font-size:12.5px">Shown in blue. Plus means White is better.</div>`;
+    anBoard.draw();
+  }, [AS.p.moves[0], ...AS.line], AS.p.fen);
+}
+function anRender() {
+  anBoard.select(-1); anBoard.draw();
+  $('anReply').setAttribute('aria-checked', !!AS.reply);
+  let h = '';
+  const startNo = parseInt(A.fen().split(' ')[5]) || 1;
+  AS.sans.forEach((s, i) => { h += `<span><b${i === AS.sans.length - 1 ? ' class="last"' : ''}>${s}</b></span>`; });
+  $('anMoves').innerHTML = h || '<span>Make a move on the board to explore.</span>';
+  $('anMoves').scrollLeft = 1e6;
+  $('anUndo').disabled = !AS.line.length;
+}
+$('anReply').onclick = () => { AS.reply = !AS.reply; $('anReply').setAttribute('aria-checked', AS.reply); };
+$('anUndo').onclick = () => {
+  if (!AS.line.length) return;
+  cancelBrain(); AS.busy = false;
+  const n = AS.reply && AS.line.length >= 2 && A.side === (PS ? PS.color : A.side) ? 2 : 1;
+  for (let i = 0; i < n && AS.line.length; i++) { A.unmake(); AS.line.pop(); AS.sans.pop(); }
+  const u = AS.line.length ? AS.line[AS.line.length - 1] : AS.p.moves[0];
+  AS.last = [sqN(u.slice(0, 2)), sqN(u.slice(2, 4))]; AS.best = null;
+  anRender(); anEval();
+};
+$('anBest').onclick = () => { if (AS && AS.best && !AS.busy) { const m = A.fromUci(AS.best); if (m) anMove(m, false); } };
+$('anFlip').onclick = () => { AS.flip = !AS.flip; anBoard.draw(); };
+$('anReset').onclick = () => { cancelBrain(); openAnalysis(AS.p); };
+
+// ---------- navigation ----------
+function openPuzMenu() { cancelBrain(); PS = null; SV.mode = 'puz'; save(); showMenu(); }
+$('modeSeg').onclick = e => { const b = e.target.closest('[data-m]'); if (!b) return; SV.mode = b.dataset.m; save(); showMenu(); };
+function pzBack() {
+  if (!$('anaSec').hidden) { cancelBrain(); if (PS) { showScreen('puzzle', '‹ Puzzles'); pzBoard.draw(); } else openPuzMenu(); return true; }
+  if (!$('puzzle').hidden || !$('archSec').hidden) { openPuzMenu(); return true; }
+  return false;
+}
+
+window.__chess = { get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
 showMenu();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('./sw.js').catch(() => { });
 })();

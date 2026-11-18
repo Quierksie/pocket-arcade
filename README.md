@@ -14,4 +14,7 @@ Tap to mine, sell ores, upgrade your gear and drill toward the planet core.
 ## Chess
 Play against six bots, from Pip (250) to Titan (2300). Pick your color, drag or tap to move, and use hints when you're stuck (games with hints don't count toward your rating). Takebacks are optional: turn them on before a game and wins give half the rating points. After a game, every move gets rated (best, excellent, good, inaccuracy, mistake, blunder) with your accuracy, and bad moves show the better move. While the bot is thinking you can premove: pick a piece and a square and it plays as soon as it's your turn.
 
+### Chess puzzles
+Rated puzzles matched to your skill (Standard, Hard or Extra Hard), a daily puzzle with a streak and an archive back to 2016, and the Puzzle Journey from Wood to Legend. After each puzzle you get its rating, themes and target time, and you can open it on an analysis board to test other lines against the engine.
+
 Tip: in Safari, tap Share → Add to Home Screen to play it like an app.
