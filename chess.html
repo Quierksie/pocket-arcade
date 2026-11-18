@@ -89,8 +89,10 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
 .sq.chk::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle, rgba(255,40,40,.95) 0%, rgba(230,30,30,.6) 40%, rgba(200,0,0,0) 72%); }
 .sq .pc { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
 .sq .pc.lift { opacity: .35; }
-.sq.dot::after { content: ''; position: absolute; left: 35%; top: 35%; width: 30%; height: 30%; border-radius: 50%; background: rgba(0,0,0,.16); z-index: 2; }
-.sq.ring::after { content: ''; position: absolute; inset: 0; border-radius: 50%; box-shadow: inset 0 0 0 5px rgba(0,0,0,.16); z-index: 2; }
+.sq.dot::after { content: ''; position: absolute; left: 35%; top: 35%; width: 30%; height: 30%; border-radius: 50%; background: var(--dot-l, rgba(0,0,0,.2)); z-index: 2; }
+.sq.d.dot::after { background: var(--dot-d, rgba(0,0,0,.2)); }
+.sq.ring::after { content: ''; position: absolute; inset: 0; border-radius: 50%; box-shadow: inset 0 0 0 5px var(--dot-l, rgba(0,0,0,.2)); z-index: 2; }
+.sq.d.ring::after { box-shadow: inset 0 0 0 5px var(--dot-d, rgba(0,0,0,.2)); }
 .sq .cf, .sq .cr { position: absolute; font-size: clamp(9px, 2.6vw, 12px); font-weight: 900; line-height: 1; z-index: 0; color: var(--sq-d); }
 .sq.d .cf, .sq.d .cr { color: var(--sq-l); }
 .sq .cr { left: 3px; top: 3px; } .sq .cf { right: 3px; bottom: 2px; }
@@ -317,9 +319,8 @@ body.focus .app { padding-top: 16px; }
 .presets button { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 800; color: var(--soft); padding: 6px 2px; border-radius: 10px; background: var(--panel2); position: relative; }
 .presets span { width: 30px; height: 30px; border-radius: 8px; }
 .presets b { position: absolute; top: 4px; right: calc(50% - 19px); width: 11px; height: 11px; border-radius: 50%; box-shadow: 0 0 0 2px var(--panel2); }
-.mini2 { display: grid; grid-template-columns: repeat(2, 44px); grid-template-rows: repeat(2, 44px); border-radius: 8px; overflow: hidden; }
-.mini2 span { display: block; background: var(--l); }
-.mini2 span:nth-child(2), .mini2 span:nth-child(3) { background: var(--d); }
+.mini2 { display: grid; grid-template-columns: repeat(3, 42px); grid-template-rows: repeat(2, 42px); border-radius: 8px; overflow: hidden; }
+.mini2 span { display: block; position: relative; }
 .mini2 svg { width: 100%; height: 100%; display: block; }
 .hsl { display: grid; gap: 6px; padding: 2px 0 10px 2px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
 .hsl label { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 900; color: var(--soft); }
@@ -2608,7 +2609,7 @@ const UI_PRESETS = [
   ['Night', '#c9c9c9', '#4d4d4d', '#ff5d5d'], ['Blood', '#e9d6d6', '#8b1a1a', '#c1121f'],
 ];
 const PIECE_PRESETS = [['Classic', '#fafaf7', '#2c2b29'], ['Gold & Silver', '#f2c94c', '#9aa3ad'], ['Red & Blue', '#e23b3b', '#2f5fd0'], ['Ivory & Wood', '#f3e6c8', '#6b4226'], ['Mint & Plum', '#9ff0c8', '#6a2d6e'], ['Neon', '#39ff88', '#ff2bd6'], ['Ghost', '#ffffff', '#5a5a5a'], ['Blood', '#f2e3e3', '#8b0000']];
-const UI_DEF = { light: '#ebecd0', dark: '#779556', accent: '#81b64c', pw: '#fafaf7', pb: '#2c2b29' };
+const UI_DEF = { light: '#ebecd0', dark: '#779556', accent: '#81b64c', pw: '#fafaf7', pb: '#2c2b29', dot: '#ffffff', dotAuto: true, dotA: 35 };
 const hexOk = h => /^#[0-9a-f]{6}$/i.test(h);
 const toRgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
 const toHex = a => '#' + a.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
@@ -2627,6 +2628,11 @@ function fromHsl(h, s, l) {
 function applyUI() {
   const u = Object.assign({}, UI_DEF, SV.ui || {}), r = document.documentElement.style;
   PIECE.w = u.pw; PIECE.b = u.pb;
+  // move dots: Auto picks dark dots on light squares and light dots on dark squares
+  const rgba = (h, a) => { const [x, y, z] = toRgb(h); return `rgba(${x},${y},${z},${a})`; };
+  const autoDot = sqc => lum(sqc) > 0.45 ? `rgba(0,0,0,${(u.dotA / 100 * 0.75).toFixed(2)})` : `rgba(255,255,255,${(u.dotA / 100 * 1.2).toFixed(2)})`;
+  r.setProperty('--dot-l', u.dotAuto ? autoDot(u.light) : rgba(u.dot, u.dotA / 100));
+  r.setProperty('--dot-d', u.dotAuto ? autoDot(u.dark) : rgba(u.dot, u.dotA / 100));
   if (!SV.ui) { ['--sq-l', '--sq-d', '--mv-l', '--mv-d', '--accent', '--accent-d'].forEach(v => r.removeProperty(v)); }
   else {
     r.setProperty('--sq-l', u.light); r.setProperty('--sq-d', u.dark);
@@ -2655,14 +2661,18 @@ function openColors() {
       <label>S<input type="range" min="0" max="100" value="${sa}" data-hsl="s" style="background:linear-gradient(90deg,${fromHsl(h, 0, l)},${fromHsl(h, 100, l)})"></label>
       <label>L<input type="range" min="0" max="100" value="${l}" data-hsl="l" style="background:linear-gradient(90deg,#000,${fromHsl(h, sa, 50)},#fff)"></label></div>`; };
   const row = (k, n) => `<div class="crow"><span>${n}</span><input type="color" data-k="${k}" value="${draft[k]}" aria-label="${n} color"><input class="hex" data-h="${k}" value="${draft[k]}" maxlength="7" spellcheck="false" autocapitalize="off"></div>${sliders(k)}`;
-  const preview = () => `<div class="cprev"><div class="mini2" style="--l:${draft.light};--d:${draft.dark}"><span>${pieceSVG(4, '')}</span><span>${pieceSVG(2, '')}</span><span>${pieceSVG(-5, '')}</span><span>${pieceSVG(-6, '')}</span></div><button class="btn" style="background:${draft.accent};box-shadow:0 4px 0 ${mix(draft.accent, '#000000', .3)}">Accent</button></div>`;
+  const preview = () => `<div class="cprev"><div class="mini2"><span class="sq" style="background:${draft.light}">${pieceSVG(4, '')}</span><span class="sq d dot" style="background:${draft.dark}"></span><span class="sq ring" style="background:${draft.light}">${pieceSVG(-2, '')}</span><span class="sq d" style="background:${draft.dark}">${pieceSVG(-5, '')}</span><span class="sq dot" style="background:${draft.light}"></span><span class="sq d" style="background:${draft.dark}">${pieceSVG(6, '')}</span></div><button class="btn" style="background:${draft.accent};box-shadow:0 4px 0 ${mix(draft.accent, '#000000', .3)}">Accent</button></div>`;
   const draw = () => {
     PIECE.w = draft.pw; PIECE.b = draft.pb;
     o.innerHTML = `<div class="card colors"><h3 style="font-size:21px">Customize colors</h3>
       ${preview()}
       <div class="seg" style="margin-bottom:12px"><button data-tab="board" aria-pressed="${tab === 'board'}">Board</button><button data-tab="pieces" aria-pressed="${tab === 'pieces'}">Pieces</button></div>
       ${tab === 'board'
-        ? `<div class="presets">${UI_PRESETS.map(([n, l, d, a], i) => `<button data-p="${i}" title="${n}"><span style="background:linear-gradient(135deg,${l} 50%,${d} 50%)"></span><b style="background:${a}"></b>${n}</button>`).join('')}</div>${row('light', 'Light squares')}${row('dark', 'Dark squares')}${row('accent', 'Accent')}`
+        ? `<div class="presets">${UI_PRESETS.map(([n, l, d, a], i) => `<button data-p="${i}" title="${n}"><span style="background:linear-gradient(135deg,${l} 50%,${d} 50%)"></span><b style="background:${a}"></b>${n}</button>`).join('')}</div>${row('light', 'Light squares')}${row('dark', 'Dark squares')}${row('accent', 'Accent')}
+          <div class="crow"><span>Move dots</span><button class="chip2 ${draft.dotAuto ? 'on' : ''}" data-auto>Auto</button><input type="color" data-k="dot" value="${draft.dot}" aria-label="Move dot color"><input class="hex" data-h="dot" value="${draft.dot}" maxlength="7" spellcheck="false" autocapitalize="off"></div>
+          ${sliders('dot')}
+          <div class="hsl"><label>Strength<input type="range" min="10" max="100" value="${draft.dotA}" data-str style="background:linear-gradient(90deg,transparent,${draft.dotAuto ? '#888' : draft.dot})"></label></div>
+          <small class="note" style="display:block;color:var(--soft);font-size:12px;margin-bottom:6px">Auto uses dark dots on light squares and light dots on dark squares. Pick a color to use your own.</small>`
         : `<div class="presets">${PIECE_PRESETS.map(([n, w, b], i) => `<button data-pp="${i}" title="${n}"><span style="background:linear-gradient(135deg,${w} 50%,${b} 50%)"></span>${n}</button>`).join('')}</div>${row('pw', 'White pieces')}${row('pb', 'Black pieces')}`}
       <p style="font-size:12.5px;margin:8px 0 12px">Tap a color circle for the color wheel, type a hex code like #ff8800, or drag the sliders (H = color, S = how strong, L = how light).</p>
       <div class="row"><button class="btn alt" data-a="reset">Reset</button><button class="btn" data-a="save">Save</button></div></div>`;
@@ -2673,12 +2683,12 @@ function openColors() {
     o.querySelector('.cprev').outerHTML = preview();
     o.querySelectorAll('[data-k]').forEach(x => { if (x.value !== draft[x.dataset.k]) x.value = draft[x.dataset.k]; });
     o.querySelectorAll('[data-h]').forEach(x => { if (document.activeElement !== x) x.value = draft[x.dataset.h]; });
-    o.querySelectorAll('.hsl').forEach(box => {
+    o.querySelectorAll('.hsl[data-hk]').forEach(box => {
       const k = box.dataset.hk; if (k === skip) return;
       const [h, sa, l] = toHsl(draft[k]);
       box.querySelector('[data-hsl=h]').value = h; box.querySelector('[data-hsl=s]').value = sa; box.querySelector('[data-hsl=l]').value = l;
     });
-    o.querySelectorAll('.hsl').forEach(box => {
+    o.querySelectorAll('.hsl[data-hk]').forEach(box => {
       const k = box.dataset.hk, h = +box.querySelector('[data-hsl=h]').value, sa = +box.querySelector('[data-hsl=s]').value, l = +box.querySelector('[data-hsl=l]').value;
       box.querySelector('[data-hsl=s]').style.background = `linear-gradient(90deg,${fromHsl(h, 0, l)},${fromHsl(h, 100, l)})`;
       box.querySelector('[data-hsl=l]').style.background = `linear-gradient(90deg,#000,${fromHsl(h, sa, 50)},#fff)`;
@@ -2687,18 +2697,22 @@ function openColors() {
   };
   draw();
   document.body.append(o);
+  const syncAuto = () => { const c = o.querySelector('[data-auto]'); if (c) c.classList.toggle('on', !!draft.dotAuto); const st = o.querySelector('[data-str]'); if (st) st.style.background = `linear-gradient(90deg,transparent,${draft.dotAuto ? '#888' : draft.dot})`; };
   o.addEventListener('input', e => {
-    const t = e.target, k = t.dataset.k, h = t.dataset.h, box = t.closest('.hsl');
-    if (k) { draft[k] = t.value; refresh(); }
-    if (h) { let v = t.value.trim(); if (!v.startsWith('#')) v = '#' + v; if (/^#[0-9a-f]{3}$/i.test(v)) v = '#' + v.slice(1).split('').map(c => c + c).join(''); if (hexOk(v)) { draft[h] = v.toLowerCase(); refresh(); } }
+    const t = e.target, k = t.dataset.k, h = t.dataset.h, box = t.closest('.hsl[data-hk]');
+    if (t.dataset.str != null) { draft.dotA = +t.value; refresh(); return; }
+    if (k) { draft[k] = t.value; if (k === 'dot') { draft.dotAuto = false; syncAuto(); } refresh(); }
+    if (h) { let v = t.value.trim(); if (!v.startsWith('#')) v = '#' + v; if (/^#[0-9a-f]{3}$/i.test(v)) v = '#' + v.slice(1).split('').map(c => c + c).join(''); if (hexOk(v)) { draft[h] = v.toLowerCase(); if (h === 'dot') { draft.dotAuto = false; syncAuto(); } refresh(); } }
     if (box) {
       const kk = box.dataset.hk;
       draft[kk] = fromHsl(+box.querySelector('[data-hsl=h]').value, +box.querySelector('[data-hsl=s]').value, +box.querySelector('[data-hsl=l]').value);
+      if (kk === 'dot') { draft.dotAuto = false; syncAuto(); }
       refresh(kk);
     }
   });
   o.addEventListener('click', e => {
     const tb = e.target.closest('[data-tab]'); if (tb) { tab = tb.dataset.tab; draw(); return; }
+    if (e.target.closest('[data-auto]')) { draft.dotAuto = !draft.dotAuto; syncAuto(); refresh(); return; }
     const p = e.target.closest('[data-p]');
     if (p) { const [, l, d, a] = UI_PRESETS[+p.dataset.p]; Object.assign(draft, { light: l, dark: d, accent: a }); refresh(); return; }
     const pp = e.target.closest('[data-pp]');
