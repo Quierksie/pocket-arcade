@@ -201,6 +201,14 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
 .pzstat .ic { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 900; font-size: 15px; flex: none; }
 .pzstat small { display: block; color: var(--soft); font-size: 12.5px; font-weight: 700; }
 .pzstat.good { box-shadow: inset 0 0 0 2px #81b64c; }
+.streak { margin-left: auto; display: flex; align-items: center; gap: 2px; font-weight: 900; font-size: 18px; flex: none; }
+.streak svg { display: block; overflow: visible; }
+.streak.l3 svg, .streak.l4 svg, .streak.l5 svg, .streak.l6 svg { filter: drop-shadow(0 0 6px var(--glow)); }
+.streak.l5 svg, .streak.l6 svg { animation: flick .9s ease-in-out infinite alternate; transform-origin: 50% 90%; }
+@keyframes flick { 0% { transform: scale(1) rotate(-2deg); } 100% { transform: scale(1.08, 1.12) rotate(2deg); } }
+.streak.pop svg { animation: firepop .5s cubic-bezier(.3,1.6,.5,1); transform-origin: 50% 90%; }
+@keyframes firepop { 0% { transform: scale(.4); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .streak svg { animation: none !important; } }
 .pzstat.bad { box-shadow: inset 0 0 0 2px #d63a2f; }
 .sq.ok { background: #9fd36a; } .sq.d.ok { background: #6fae3f; }
 .sq.no { background: #f08a7e; } .sq.d.no { background: #d65a4c; }
@@ -1735,6 +1743,16 @@ function pzHeader() {
   else $('pzMode').innerHTML = `Daily · ${parseYmd(s.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`;
   $('pzRate').innerHTML = s.mode === 'rated' ? `<b>${Math.round(PZ.rating)}</b>${dl}` : `${FLAME} <b>${dailyStreak()}</b>`;
 }
+// Fire that grows and changes color as your streak of perfect rated solves climbs.
+const FIRE_LV = [[50, 6, 38, '#ffcf4d', '#fffbe0', '#ffcf4d'], [20, 5, 35, '#a259ff', '#f3c4ff', '#b77bff'], [10, 4, 32, '#2f7dff', '#a8d8ff', '#4d9bff'], [5, 3, 29, '#ff3d2e', '#ffc04d', '#ff5a3d'], [3, 2, 26, '#ff7a2e', '#ffd166', '#ff7a2e'], [1, 1, 22, '#ffa13d', '#ffe08a', '#ffa13d']];
+let shownStreak = 0;
+function streakHTML(n) {
+  if (!n) return '';
+  const [, lv, size, outer, inner, glow] = FIRE_LV.find(f => n >= f[0]);
+  const pop = n > shownStreak ? ' pop' : '';
+  shownStreak = n;
+  return `<span class="streak l${lv}${pop}" style="--glow:${glow};color:${outer}" title="${n} perfect in a row"><svg width="${size}" height="${size}" viewBox="0 0 24 24"><path fill="${outer}" d="M12 1.5c1.2 4.3 6.5 6.8 6.5 12.6A6.5 6.5 0 0 1 5.5 14c0-2.8 1.4-4.7 2.7-6 .1 2.3 1.2 3.6 2.5 3.8C10.2 8 9.6 4.8 12 1.5z"/><path fill="${inner}" d="M12.2 10.5c.6 2 3.3 3.3 3.3 6a3.5 3.5 0 0 1-7 .1c0-1.5.8-2.5 1.6-3.2.1 1.2.7 1.9 1.4 2 0-1.7-.3-3.1.7-4.9z"/>${lv >= 6 ? '<path fill="#fff" d="M12.2 15.2c.3 1 1.5 1.6 1.5 2.8a1.5 1.5 0 0 1-3 0c0-.9.6-1.4 1.1-1.8.1.5.3.7.6.8-.1-.6-.4-1.1-.2-1.8z"/>' : ''}</svg>${n}</span>`;
+}
 function pzStatus(k, extra) {
   const s = PS, side = s.color === 1 ? 'White' : 'Black', el = $('pzStat');
   el.className = 'pzstat' + (k === 'good' || k === 'solved' ? ' good' : k === 'bad' ? ' bad' : '');
@@ -1747,7 +1765,8 @@ function pzStatus(k, extra) {
     bad: `${ic('#d63a2f', '✕')}<div>Incorrect<small>${s.mode === 'rated' && !s.retry ? 'That counts as a miss. You can still keep trying.' : 'Try again, or tap Solution.'}</small></div>`,
     solved: `${ic('#81b64c', '★')}<div>${s.mistakes || s.hints ? 'Solved' : 'Solved perfectly!'}<small>${extra || ''}</small></div>`,
     shown: `${ic('#9a978f', '•')}<div>Solution shown<small>Try the next one</small></div>`,
-  }[k];
+  }[k] + (s.mode === 'rated' && !s.retry ? streakHTML(PZ.streak) : '');
+  if (!PZ.streak) shownStreak = 0;
   $('pzHint').disabled = s.done || k === 'wait';
   $('pzSol').disabled = s.done || k === 'wait';
   $('pzRetry').hidden = !(s.mistakes || s.done);
