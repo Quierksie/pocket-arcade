@@ -317,6 +317,15 @@ body.focus .app { padding-top: 16px; }
 .presets button { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 800; color: var(--soft); padding: 6px 2px; border-radius: 10px; background: var(--panel2); position: relative; }
 .presets span { width: 30px; height: 30px; border-radius: 8px; }
 .presets b { position: absolute; top: 4px; right: calc(50% - 19px); width: 11px; height: 11px; border-radius: 50%; box-shadow: 0 0 0 2px var(--panel2); }
+.mini2 { display: grid; grid-template-columns: repeat(2, 44px); grid-template-rows: repeat(2, 44px); border-radius: 8px; overflow: hidden; }
+.mini2 span { display: block; background: var(--l); }
+.mini2 span:nth-child(2), .mini2 span:nth-child(3) { background: var(--d); }
+.mini2 svg { width: 100%; height: 100%; display: block; }
+.hsl { display: grid; gap: 6px; padding: 2px 0 10px 2px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+.hsl label { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 900; color: var(--soft); }
+.hsl input[type=range] { flex: 1; -webkit-appearance: none; appearance: none; height: 12px; border-radius: 99px; outline: none; border: 1px solid var(--line); }
+.hsl input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 2px solid #222; box-shadow: 0 1px 4px rgba(0,0,0,.4); }
+.hsl input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: #fff; border: 2px solid #222; }
 .crow { display: flex; align-items: center; gap: 10px; padding: 7px 0; font-weight: 800; font-size: 14px; }
 .crow span { flex: 1; }
 .crow input[type=color] { width: 44px; height: 44px; border: 0; padding: 0; background: none; border-radius: 50%; cursor: pointer; }
@@ -995,9 +1004,12 @@ const SHAPES = {
   5: { b: '<path d="M9 13l4.5 8L16 9.5l3.5 9.5L22.5 8l3 11L29 9.5l2.5 11.5L36 13l-5 16H14z"/><circle cx="9" cy="12.5" r="2.3"/><circle cx="16" cy="9" r="2.3"/><circle cx="22.5" cy="7.5" r="2.3"/><circle cx="29" cy="9" r="2.3"/><circle cx="36" cy="12.5" r="2.3"/><path d="M14 29h17l-1 4.5H15z"/><rect x="11" y="33.5" width="23" height="5.5" rx="1.5"/>', d: '' },
   6: { b: '<path d="M21 3.5h3v3h3v3h-3v3.5h-3V9.5h-3v-3h3z"/><path d="M22.5 13.5c-1.6-2.2-3.8-3.2-6.4-2.6-6 1.4-7.4 9.6-1.8 18.1h16.4c5.6-8.5 4.2-16.7-1.8-18.1-2.6-.6-4.8.4-6.4 2.6z"/><path d="M14.3 29h16.4l-.8 4.5H15.1z"/><rect x="11" y="33.5" width="23" height="5.5" rx="1.5"/>', d: '<path d="M22.5 13.5v15" fill="none"/>' },
 };
+const PIECE = { w: '#fafaf7', b: '#2c2b29' };
+const lum = h => { const [r, g, b] = [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
 function pieceSVG(p, cls = 'pc') {
   const t = Math.abs(p), w = p > 0, s = SHAPES[t];
-  const fill = w ? '#fafaf7' : '#2c2b29', line = w ? '#1c1b19' : '#0c0c0b', det = w ? '#1c1b19' : '#e9e7df';
+  const fill = w ? PIECE.w : PIECE.b, light = lum(fill) > 0.45;
+  const line = light ? '#1c1b19' : '#0c0c0b', det = light ? '#1c1b19' : '#e9e7df';
   return `<svg class="${cls}${cls === 'pc' && !w ? ' bk' : ''}" viewBox="0 0 45 45"><g fill="${fill}" stroke="${line}" stroke-width="1.5" stroke-linejoin="round">${s.b}</g>${s.d ? `<g stroke="${det}" stroke-width="1.4" stroke-linecap="round">${s.d.replace('fill="D"', `fill="${det}"`)}</g>` : ''}</svg>`;
 }
 const avatar = (b, cls = 'av') => `<div class="${cls}" style="background:${b.bg}">${pieceSVG(-b.t, '')}</div>`;
@@ -2595,50 +2607,106 @@ const UI_PRESETS = [
   ['Grape', '#e8dff5', '#9b7bc4', '#9b6bff'], ['Bubblegum', '#fde4ec', '#e88aa8', '#e8508a'], ['Ice', '#e6f2f7', '#6fa8c4', '#2fb2d6'],
   ['Night', '#c9c9c9', '#4d4d4d', '#ff5d5d'], ['Blood', '#e9d6d6', '#8b1a1a', '#c1121f'],
 ];
+const PIECE_PRESETS = [['Classic', '#fafaf7', '#2c2b29'], ['Gold & Silver', '#f2c94c', '#9aa3ad'], ['Red & Blue', '#e23b3b', '#2f5fd0'], ['Ivory & Wood', '#f3e6c8', '#6b4226'], ['Mint & Plum', '#9ff0c8', '#6a2d6e'], ['Neon', '#39ff88', '#ff2bd6'], ['Ghost', '#ffffff', '#5a5a5a'], ['Blood', '#f2e3e3', '#8b0000']];
+const UI_DEF = { light: '#ebecd0', dark: '#779556', accent: '#81b64c', pw: '#fafaf7', pb: '#2c2b29' };
 const hexOk = h => /^#[0-9a-f]{6}$/i.test(h);
 const toRgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
 const toHex = a => '#' + a.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
 const mix = (a, b, t) => { const x = toRgb(a), y = toRgb(b); return toHex(x.map((v, i) => v + (y[i] - v) * t)); };
-function applyUI() {
-  const u = SV.ui, r = document.documentElement.style;
-  if (!u) { ['--sq-l', '--sq-d', '--mv-l', '--mv-d', '--accent', '--accent-d'].forEach(v => r.removeProperty(v)); return; }
-  r.setProperty('--sq-l', u.light); r.setProperty('--sq-d', u.dark);
-  r.setProperty('--mv-l', mix(u.light, '#f6f669', .6)); r.setProperty('--mv-d', mix(u.dark, '#c9d23a', .6));
-  r.setProperty('--accent', u.accent); r.setProperty('--accent-d', mix(u.accent, '#000000', .3));
+function toHsl(hex) {
+  let [r, g, b] = toRgb(hex).map(v => v / 255); const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2;
+  let h = 0, s = 0;
+  if (mx !== mn) { const d = mx - mn; s = l > .5 ? d / (2 - mx - mn) : d / (mx + mn); h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h *= 60; }
+  return [Math.round(h), Math.round(s * 100), Math.round(l * 100)];
 }
+function fromHsl(h, s, l) {
+  s /= 100; l /= 100; const k = n => (n + h / 30) % 12, a = s * Math.min(l, 1 - l);
+  const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  return toHex([f(0) * 255, f(8) * 255, f(4) * 255]);
+}
+function applyUI() {
+  const u = Object.assign({}, UI_DEF, SV.ui || {}), r = document.documentElement.style;
+  PIECE.w = u.pw; PIECE.b = u.pb;
+  if (!SV.ui) { ['--sq-l', '--sq-d', '--mv-l', '--mv-d', '--accent', '--accent-d'].forEach(v => r.removeProperty(v)); }
+  else {
+    r.setProperty('--sq-l', u.light); r.setProperty('--sq-d', u.dark);
+    r.setProperty('--mv-l', mix(u.light, '#f6f669', .6)); r.setProperty('--mv-d', mix(u.dark, '#c9d23a', .6));
+    r.setProperty('--accent', u.accent); r.setProperty('--accent-d', mix(u.accent, '#000000', .3));
+  }
+  // redraw whatever is on screen with the new colors
+  try {
+    if (G && !$('game').hidden) render();
+    if (!$('puzzle').hidden) pzBoard.draw();
+    if (!$('anaSec').hidden) anBoard.draw();
+    if (!$('menu').hidden) showMenu();
+  } catch (e) { }
+}
+PIECE.w = (SV.ui && SV.ui.pw) || UI_DEF.pw; PIECE.b = (SV.ui && SV.ui.pb) || UI_DEF.pb;
 applyUI();
 function openColors() {
   const saved = SV.ui ? Object.assign({}, SV.ui) : null;
-  const draft = Object.assign({ light: '#ebecd0', dark: '#779556', accent: '#81b64c' }, saved || {});
+  const draft = Object.assign({}, UI_DEF, saved || {});
+  let tab = 'board';
   const o = document.createElement('div'); o.className = 'ov';
   const mini = () => { let h = ''; for (let i = 0; i < 16; i++) { const r = Math.floor(i / 4), c = i % 4; h += `<i style="background:${(r + c) % 2 ? draft.dark : draft.light}"></i>`; } return h; };
-  const row = (k, n) => `<div class="crow"><span>${n}</span><input type="color" data-k="${k}" value="${draft[k]}" aria-label="${n} color"><input class="hex" data-h="${k}" value="${draft[k]}" maxlength="7" spellcheck="false" autocapitalize="off"></div>`;
-  o.innerHTML = `<div class="card colors"><h3 style="font-size:21px">Customize colors</h3>
-    <div class="cprev"><div class="mini">${mini()}</div><button class="btn" style="background:${draft.accent};box-shadow:0 4px 0 ${mix(draft.accent, '#000000', .3)}">Accent</button></div>
-    <div class="presets">${UI_PRESETS.map(([n, l, d, a], i) => `<button data-p="${i}" title="${n}"><span style="background:linear-gradient(135deg,${l} 50%,${d} 50%)"></span><b style="background:${a}"></b>${n}</button>`).join('')}</div>
-    ${row('light', 'Light squares')}${row('dark', 'Dark squares')}${row('accent', 'Accent')}
-    <p style="font-size:12.5px;margin:4px 0 12px">Tap a color circle for the color wheel, or type a hex code like #ff8800.</p>
-    <div class="row"><button class="btn alt" data-a="reset">Reset</button><button class="btn" data-a="save">Save</button></div></div>`;
-  document.body.append(o);
-  const refresh = () => {
-    o.querySelector('.mini').innerHTML = mini();
-    const b = o.querySelector('.cprev .btn'); b.style.background = draft.accent; b.style.boxShadow = `0 4px 0 ${mix(draft.accent, '#000000', .3)}`;
+  const sliders = k => { const [h, sa, l] = toHsl(draft[k]);
+    return `<div class="hsl" data-hk="${k}">
+      <label>H<input type="range" min="0" max="359" value="${h}" data-hsl="h" style="background:linear-gradient(90deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)"></label>
+      <label>S<input type="range" min="0" max="100" value="${sa}" data-hsl="s" style="background:linear-gradient(90deg,${fromHsl(h, 0, l)},${fromHsl(h, 100, l)})"></label>
+      <label>L<input type="range" min="0" max="100" value="${l}" data-hsl="l" style="background:linear-gradient(90deg,#000,${fromHsl(h, sa, 50)},#fff)"></label></div>`; };
+  const row = (k, n) => `<div class="crow"><span>${n}</span><input type="color" data-k="${k}" value="${draft[k]}" aria-label="${n} color"><input class="hex" data-h="${k}" value="${draft[k]}" maxlength="7" spellcheck="false" autocapitalize="off"></div>${sliders(k)}`;
+  const preview = () => `<div class="cprev"><div class="mini2" style="--l:${draft.light};--d:${draft.dark}"><span>${pieceSVG(4, '')}</span><span>${pieceSVG(2, '')}</span><span>${pieceSVG(-5, '')}</span><span>${pieceSVG(-6, '')}</span></div><button class="btn" style="background:${draft.accent};box-shadow:0 4px 0 ${mix(draft.accent, '#000000', .3)}">Accent</button></div>`;
+  const draw = () => {
+    PIECE.w = draft.pw; PIECE.b = draft.pb;
+    o.innerHTML = `<div class="card colors"><h3 style="font-size:21px">Customize colors</h3>
+      ${preview()}
+      <div class="seg" style="margin-bottom:12px"><button data-tab="board" aria-pressed="${tab === 'board'}">Board</button><button data-tab="pieces" aria-pressed="${tab === 'pieces'}">Pieces</button></div>
+      ${tab === 'board'
+        ? `<div class="presets">${UI_PRESETS.map(([n, l, d, a], i) => `<button data-p="${i}" title="${n}"><span style="background:linear-gradient(135deg,${l} 50%,${d} 50%)"></span><b style="background:${a}"></b>${n}</button>`).join('')}</div>${row('light', 'Light squares')}${row('dark', 'Dark squares')}${row('accent', 'Accent')}`
+        : `<div class="presets">${PIECE_PRESETS.map(([n, w, b], i) => `<button data-pp="${i}" title="${n}"><span style="background:linear-gradient(135deg,${w} 50%,${b} 50%)"></span>${n}</button>`).join('')}</div>${row('pw', 'White pieces')}${row('pb', 'Black pieces')}`}
+      <p style="font-size:12.5px;margin:8px 0 12px">Tap a color circle for the color wheel, type a hex code like #ff8800, or drag the sliders (H = color, S = how strong, L = how light).</p>
+      <div class="row"><button class="btn alt" data-a="reset">Reset</button><button class="btn" data-a="save">Save</button></div></div>`;
+  };
+  // refresh just the parts that show colors, so sliders keep working while you drag
+  const refresh = (skip) => {
+    PIECE.w = draft.pw; PIECE.b = draft.pb;
+    o.querySelector('.cprev').outerHTML = preview();
     o.querySelectorAll('[data-k]').forEach(x => { if (x.value !== draft[x.dataset.k]) x.value = draft[x.dataset.k]; });
     o.querySelectorAll('[data-h]').forEach(x => { if (document.activeElement !== x) x.value = draft[x.dataset.h]; });
-    SV.ui = draft; applyUI(); // live preview on the real board too
+    o.querySelectorAll('.hsl').forEach(box => {
+      const k = box.dataset.hk; if (k === skip) return;
+      const [h, sa, l] = toHsl(draft[k]);
+      box.querySelector('[data-hsl=h]').value = h; box.querySelector('[data-hsl=s]').value = sa; box.querySelector('[data-hsl=l]').value = l;
+    });
+    o.querySelectorAll('.hsl').forEach(box => {
+      const k = box.dataset.hk, h = +box.querySelector('[data-hsl=h]').value, sa = +box.querySelector('[data-hsl=s]').value, l = +box.querySelector('[data-hsl=l]').value;
+      box.querySelector('[data-hsl=s]').style.background = `linear-gradient(90deg,${fromHsl(h, 0, l)},${fromHsl(h, 100, l)})`;
+      box.querySelector('[data-hsl=l]').style.background = `linear-gradient(90deg,#000,${fromHsl(h, sa, 50)},#fff)`;
+    });
+    SV.ui = Object.assign({}, draft); applyUI(); // live preview on the real board too
   };
+  draw();
+  document.body.append(o);
   o.addEventListener('input', e => {
-    const k = e.target.dataset.k, h = e.target.dataset.h;
-    if (k) { draft[k] = e.target.value; refresh(); }
-    if (h) { let v = e.target.value.trim(); if (!v.startsWith('#')) v = '#' + v; if (/^#[0-9a-f]{3}$/i.test(v)) v = '#' + v.slice(1).split('').map(c => c + c).join(''); if (hexOk(v)) { draft[h] = v.toLowerCase(); refresh(); } }
+    const t = e.target, k = t.dataset.k, h = t.dataset.h, box = t.closest('.hsl');
+    if (k) { draft[k] = t.value; refresh(); }
+    if (h) { let v = t.value.trim(); if (!v.startsWith('#')) v = '#' + v; if (/^#[0-9a-f]{3}$/i.test(v)) v = '#' + v.slice(1).split('').map(c => c + c).join(''); if (hexOk(v)) { draft[h] = v.toLowerCase(); refresh(); } }
+    if (box) {
+      const kk = box.dataset.hk;
+      draft[kk] = fromHsl(+box.querySelector('[data-hsl=h]').value, +box.querySelector('[data-hsl=s]').value, +box.querySelector('[data-hsl=l]').value);
+      refresh(kk);
+    }
   });
   o.addEventListener('click', e => {
+    const tb = e.target.closest('[data-tab]'); if (tb) { tab = tb.dataset.tab; draw(); return; }
     const p = e.target.closest('[data-p]');
     if (p) { const [, l, d, a] = UI_PRESETS[+p.dataset.p]; Object.assign(draft, { light: l, dark: d, accent: a }); refresh(); return; }
+    const pp = e.target.closest('[data-pp]');
+    if (pp) { const [, w, b] = PIECE_PRESETS[+pp.dataset.pp]; Object.assign(draft, { pw: w, pb: b }); refresh(); return; }
     const a = e.target.closest('[data-a]');
-    if (a && a.dataset.a === 'save') { SV.ui = Object.assign({}, draft); save(); applyUI(); o.remove(); toast('Colors saved'); }
-    else if (a && a.dataset.a === 'reset') { SV.ui = null; save(); applyUI(); o.remove(); toast('Colors reset'); }
-    else if (e.target === o) { SV.ui = saved; applyUI(); o.remove(); } // tap outside = cancel
+    if (a && a.dataset.a === 'save') { SV.ui = Object.assign({}, draft); save(); o.remove(); applyUI(); toast('Colors saved'); }
+    else if (a && a.dataset.a === 'reset') { SV.ui = null; save(); o.remove(); applyUI(); toast('Colors reset'); }
+    else if (e.target === o) { SV.ui = saved; o.remove(); applyUI(); } // tap outside = cancel
   });
 }
 $('colorBtn').onclick = openColors;
