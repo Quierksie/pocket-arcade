@@ -178,6 +178,10 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
 .bigbtn small { opacity: .85; font-size: 13px; }
 .bigbtn .go { margin-left: auto; font-weight: 900; background: rgba(255,255,255,.18); padding: 8px 14px; border-radius: 10px; }
 .bigbtn.daily { background: linear-gradient(120deg, #c9822a, #9b4f1f); }
+.bigbtn.redeem { background: linear-gradient(120deg, #ff6a2e, #c2185b); }
+.bigbtn.redeem .flame { width: 20px; height: 20px; }
+.bigbtn.redeem .go { display: flex; align-items: center; gap: 2px; white-space: nowrap; }
+.res .bigbtn { margin-top: 12px; }
 .bigbtn.done { background: linear-gradient(120deg, #4f7d26, #2f5a1a); }
 .flame { width: 18px; height: 18px; vertical-align: -3px; }
 .rowbtns { display: flex; gap: 8px; margin-top: 10px; }
@@ -1654,6 +1658,7 @@ function renderPuzMenu() {
         <div class="meta" style="margin-left:14px">Peak <b>${Math.round(PZ.peak)}</b><br>Solved <b>${PZ.solved}</b> · Missed <b>${PZ.failed}</b></div>
         <button class="gear" id="pzGear" aria-label="Puzzle settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div>
       ${hist ? `<div class="hist">${hist}</div>` : ''}
+      ${PZ.lost ? `<button class="bigbtn redeem" id="pzRedeem"><div><b>Redemption puzzle</b><small>Win back your ${PZ.lost.streak} streak with a harder puzzle</small></div><span class="go">${FLAME}${PZ.lost.streak}</span></button>` : ''}
       <button class="bigbtn" id="pzPlay"><div><b>Rated puzzles</b><small>${d.name} · ${PZ.streak > 1 ? `${PZ.streak} in a row` : 'matched to your rating'}</small></div><span class="go">Solve</span></button>
     </div>
     <div class="pcard">
@@ -1670,6 +1675,7 @@ function renderPuzMenu() {
     </div>`;
   $('pzGear').onclick = openPzSettings;
   $('pzPlay').onclick = () => startRated();
+  if ($('pzRedeem')) $('pzRedeem').onclick = () => startRedeem();
   $('pzDaily').onclick = () => startDaily(today());
   $('pzArchive').onclick = () => openArchive();
   $('pzJourney').onclick = openJourney;
@@ -1716,7 +1722,26 @@ function pickRated() {
 }
 async function startRated() {
   try { await loadPuzzles(); } catch (e) { toast('Could not load puzzles. Check your connection.'); return; }
+  if (PZ.lost) { PZ.lost = null; save(); } // moving on gives up the redemption chance
   openPuzzle(pickRated(), { mode: 'rated' });
+}
+// A harder puzzle than the one that broke your streak. Solve it perfectly to get the streak back.
+function pickRedeem() {
+  const L = PZ.lost, tried = new Set(PZ.tried), want = L.rating + 250;
+  let best = null, bd = Infinity;
+  for (const p of PUZ) {
+    if (tried.has(p.id) || p.rating <= L.rating + 100) continue;
+    const dd = Math.abs(p.rating - want) + Math.random() * 40;
+    if (dd < bd) { bd = dd; best = p; }
+  }
+  if (!best) for (const p of PUZ) if (p.id !== L.id && p.rating > L.rating && (!best || p.rating < best.rating)) best = p;
+  if (!best) best = PUZ.reduce((a, b) => b.rating > a.rating && b.id !== L.id ? b : a);
+  return best;
+}
+async function startRedeem() {
+  try { await loadPuzzles(); } catch (e) { toast('Could not load puzzles. Check your connection.'); return; }
+  if (!PZ.lost) return startRated();
+  openPuzzle(pickRedeem(), { mode: 'rated', redeem: true });
 }
 async function startDaily(ds) {
   try { await loadPuzzles(); } catch (e) { toast('Could not load puzzles. Check your connection.'); return; }
@@ -1726,7 +1751,7 @@ async function startDaily(ds) {
   openPuzzle(p, { mode: 'daily', date: ds });
 }
 function openPuzzle(p, o) {
-  PS = { p, mode: o.mode, date: o.date, step: 0, color: 0, mistakes: 0, hints: 0, rated: false, result: null, done: false, busy: true, t0: 0, time: 0, last: [], hintSq: [], okSq: [], noSq: [], retry: !!o.retry, showSol: false };
+  PS = { p, mode: o.mode, date: o.date, step: 0, color: 0, mistakes: 0, hints: 0, rated: false, result: null, done: false, busy: true, t0: 0, time: 0, last: [], hintSq: [], okSq: [], noSq: [], retry: !!o.retry, redeem: !!o.redeem, showSol: false };
   P.load(p.fen);
   PS.color = -P.side; // the solver is the side that answers the opening move
   showScreen('puzzle', '‹ Puzzles');
@@ -1739,7 +1764,7 @@ function openPuzzle(p, o) {
 }
 function pzHeader() {
   const s = PS, dl = s.delta != null ? `<span class="dl ${s.delta >= 0 ? 'up' : 'down'}">${s.delta >= 0 ? '+' : ''}${s.delta}</span>` : '';
-  if (s.mode === 'rated') $('pzMode').innerHTML = `Rated · ${(DIFFS[PZ.diff] || DIFFS.std).name}${s.retry ? ' · Retry' : ''}`;
+  if (s.mode === 'rated') $('pzMode').innerHTML = s.redeem ? `Rated · <span style="color:#ff6a2e">Redemption</span>` : `Rated · ${(DIFFS[PZ.diff] || DIFFS.std).name}${s.retry ? ' · Retry' : ''}`;
   else $('pzMode').innerHTML = `Daily · ${parseYmd(s.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`;
   $('pzRate').innerHTML = s.mode === 'rated' ? `<b>${Math.round(PZ.rating)}</b>${dl}` : `${FLAME} <b>${dailyStreak()}</b>`;
 }
@@ -1763,7 +1788,7 @@ function pzStatus(k, extra) {
     turn: `${pc}<div>${side} to move<small>Find the best move${s.p.themes.includes('mate') ? ` (${THEME_NAMES['mateIn' + solverMoves(s.p)] || 'mate'})` : ''}</small></div>`,
     good: `${ic('#81b64c', '✓')}<div>${extra || 'Best move!'}<small>Keep going</small></div>`,
     bad: `${ic('#d63a2f', '✕')}<div>Incorrect<small>${s.mode === 'rated' && !s.retry ? 'That counts as a miss. You can still keep trying.' : 'Try again, or tap Solution.'}</small></div>`,
-    solved: `${ic('#81b64c', '★')}<div>${s.mistakes || s.hints ? 'Solved' : 'Solved perfectly!'}<small>${extra || ''}</small></div>`,
+    solved: `${ic('#81b64c', '★')}<div>${s.mistakes || s.hints ? 'Solved' : s.redeemed ? 'Streak redeemed!' : 'Solved perfectly!'}<small>${extra || ''}</small></div>`,
     shown: `${ic('#9a978f', '•')}<div>Solution shown<small>Try the next one</small></div>`,
   }[k] + (s.mode === 'rated' && !s.retry ? streakHTML(PZ.streak) : '');
   if (!PZ.streak) shownStreak = 0;
@@ -1810,7 +1835,12 @@ function pzRate(ok) {
   const s = PS;
   s.rated = true; s.result = ok;
   s.delta = rateResult(s.p, ok);
-  if (!ok) PZ.streak = 0;
+  if (!ok) {
+    if (s.redeem) { PZ.lost = null; toast('Redemption failed. Streak lost.'); }
+    else if (PZ.streak >= 2) PZ.lost = { streak: PZ.streak, rating: s.p.rating, id: s.p.id };
+    else PZ.lost = null;
+    PZ.streak = 0;
+  }
   save(); pzHeader();
 }
 function pzFinish(ok) {
@@ -1820,6 +1850,7 @@ function pzFinish(ok) {
   if (s.mode === 'rated' && !s.retry) {
     if (!s.rated) pzRate(accurate);
     if (accurate) {
+      if (s.redeem && PZ.lost) { PZ.streak = PZ.lost.streak; PZ.lost = null; s.redeemed = true; pts.push(['Streak redeemed', 20]); }
       PZ.streak++; PZ.best = Math.max(PZ.best, PZ.streak);
       const tt = targetTime(s.p);
       pts.push(['Accurate solve', 10 + (PZ.diff === 'hard' ? 5 : PZ.diff === 'xhard' ? 10 : 0)]);
@@ -1849,14 +1880,16 @@ function pzResult(pts, accurate) {
   const total = pts.reduce((a, b) => a + b[1], 0), j = journey(PZ.pts);
   el.innerHTML = `<div class="res">
     <h3>${s.showSol ? 'Puzzle missed' : accurate ? 'Solved!' : 'Solved with help'}${s.delta != null && s.mode === 'rated' ? `<span class="dl ${s.delta >= 0 ? 'up' : 'down'}">${s.delta >= 0 ? '+' : ''}${s.delta}</span>` : ''}</h3>
-    <div class="grid"><div>Puzzle rating<b>${p.rating}</b></div><div>Pass rate (est.)<b>${passRate(p)}%</b></div><div>Target time<b>${tt}s</b></div><div>Your time<b class="${s.time <= tt ? 'up' : ''}">${s.showSol ? '-' : s.time + 's'}</b></div></div>
+    <div class="grid"><div>Puzzle rating<b>${p.rating}</b></div><div>Pass rate (est.)<b>${passRate(p)}%</b></div><div>Target time<b>${tt}s</b></div><div>Your time<b class="${!s.showSol && s.time <= tt ? 'up' : ''}">${s.showSol ? '-' : s.time + 's'}</b></div></div>
     <div class="themes">${p.themes.map(t => `<span class="chip2">${THEME_NAMES[t] || t}</span>`).join('')}</div>
     ${pts.length ? `<div class="pts">${pts.map(([n, v]) => `<div>${n}<b>+${v}</b></div>`).join('')}<div class="tot">Puzzle points<b>+${total}</b></div><div>${tierLabel(j)}<span>${j.into}/${j.need}</span></div></div>` : ''}
+    ${s.mode === 'rated' && PZ.lost && !s.redeem ? `<button class="bigbtn redeem" id="rsRedeem"><div><b>Redemption puzzle</b><small>Solve a harder one perfectly to win back your ${PZ.lost.streak} streak</small></div><span class="go">${FLAME}${PZ.lost.streak}</span></button>` : ''}
     <div class="row"><button class="btn alt" id="rsAna">Analysis</button><button class="btn alt" id="rsRetry">Retry</button>${s.mode === 'rated' ? '<button class="btn" id="rsNext">Next puzzle</button>' : '<button class="btn" id="rsBack">Done</button>'}</div></div>`;
   el.hidden = false; $('pzTools').hidden = true;
   $('rsAna').onclick = () => openAnalysis(p);
   $('rsRetry').onclick = () => openPuzzle(p, { mode: s.mode, date: s.date, retry: true });
   if ($('rsNext')) $('rsNext').onclick = () => startRated();
+  if ($('rsRedeem')) $('rsRedeem').onclick = () => startRedeem();
   if ($('rsBack')) $('rsBack').onclick = () => s.date === today() ? openPuzMenu() : openArchive(s.date.slice(0, 7));
 }
 $('pzHint').onclick = () => {
