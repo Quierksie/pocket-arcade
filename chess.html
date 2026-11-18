@@ -109,6 +109,23 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
 .review button:active:not(:disabled) { background: var(--panel2); }
 .review .pos { font-size: 13px; font-weight: 800; color: var(--soft); text-align: center; min-width: 74px; line-height: 1.25; }
 .review .pos b { color: var(--ink); font-size: 15px; display: block; }
+.sq.pre { background: #e3a294; } .sq.d.pre { background: #c7735f; }
+.sq .bdg { position: absolute; right: 2%; top: 2%; width: 36%; height: 36%; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 900; font-size: clamp(9px, 2.7vw, 13px); line-height: 1; z-index: 4; box-shadow: 0 1px 3px rgba(0,0,0,.4); letter-spacing: -.5px; }
+.moves .tag { display: inline-block; min-width: 15px; padding: 0 3px; height: 15px; line-height: 15px; border-radius: 8px; font-size: 10px; color: #fff; margin-left: 3px; text-align: center; vertical-align: 1px; }
+.anal { background: var(--panel); border-radius: 14px; padding: 12px 14px; margin: 0 0 10px; font-size: 14px; font-weight: 700; color: var(--soft); min-height: 64px; }
+.anal .ln { display: flex; align-items: center; gap: 8px; color: var(--ink); }
+.anal .ln + .ln, .anal .sub { margin-top: 6px; }
+.anal .ic { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 12px; font-weight: 900; flex: none; letter-spacing: -.5px; }
+.anal .ev { margin-left: auto; font-size: 13px; font-weight: 900; background: var(--panel2); color: var(--ink); padding: 3px 8px; border-radius: 8px; }
+.anal .bar { height: 8px; border-radius: 99px; background: var(--panel2); overflow: hidden; margin-top: 8px; }
+.anal .bar i { display: block; height: 100%; background: var(--accent); transition: width .2s; }
+.anal .acc { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.anal .acc div { background: var(--panel2); border-radius: 10px; padding: 8px 10px; }
+.anal .acc b { display: block; font-size: 22px; color: var(--ink); }
+.anal .cnt { display: flex; flex-wrap: wrap; gap: 6px 10px; margin-top: 8px; font-size: 13px; }
+.anal .cnt span { display: inline-flex; align-items: center; gap: 4px; }
+.anal .cnt i { font-style: normal; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; color: #fff; font-size: 10.5px; display: grid; place-items: center; font-weight: 900; }
+.anal .nx { margin-top: 10px; width: 100%; padding: 9px; border-radius: 10px; background: var(--panel2); color: var(--ink); font-weight: 800; font-size: 13.5px; }
 .bestbtn { width: 100%; margin: 0 0 10px; padding: 11px; border-radius: 12px; background: var(--panel); font-weight: 800; font-size: 14px; color: var(--soft); display: flex; align-items: center; justify-content: center; gap: 8px; }
 .bestbtn svg { width: 18px; height: 18px; }
 .opt { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); width: 100%; text-align: left; margin-top: 8px; }
@@ -184,7 +201,7 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
         <button id="rvNext" aria-label="Next move"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
         <button id="rvLast" aria-label="Last move"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 5v14M6 6l7 6-7 6"/></svg></button>
       </div>
-      <button class="bestbtn" id="bestBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V16h8v-1.3A7 7 0 0 0 12 2z"/></svg><span>Show best move here</span></button>
+      <div class="anal" id="anal"></div>
       <div class="overbar"><button class="btn alt" id="botsBtn">Change bot</button><button class="btn" id="rematchBtn">Rematch</button></div>
     </div>
   </section>
@@ -811,6 +828,8 @@ let G = null;          // { bot, me: 1 | -1, moves: [uci], takebacks, hints, ove
 let sans = [];
 let sel = -1, targets = [], hintSq = [], flipped = false, thinking = false, anim = null;
 let view = 0; // ply shown while reviewing a finished game
+let premove = null, ptargets = []; // move queued while the bot is thinking
+let AN = null, analyst = null;     // post-game analysis
 const tbOn = g => g.tb !== false; // older saved games had takebacks available
 
 function replay() {
@@ -826,7 +845,7 @@ function newGame(botId) {
 }
 function startGame() {
   replay();
-  sel = -1; targets = []; hintSq = []; flipped = G.me === -1; anim = null;
+  sel = -1; targets = []; ptargets = []; hintSq = []; premove = null; flipped = G.me === -1; anim = null; stopAnalysis(); AN = null;
   $('menu').hidden = true; $('game').hidden = false;
   $('back').textContent = '‹ Bots';
   render();
@@ -855,7 +874,11 @@ function render() {
   const B = E.board, lastU = G.moves[shown - 1];
   const last = lastU ? [sqOf(lastU.slice(0, 2)), sqOf(lastU.slice(2, 4))] : [];
   const chk = E.inCheck() ? E.king[E.side === 1 ? 0 : 1] : -1;
-  const tset = new Set(targets.map(m => E.to(m)));
+  const tset = new Set([...targets.map(m => E.to(m)), ...ptargets]);
+  const info = G.over && shown ? moveInfo(shown - 1) : null;
+  const bad = info && ['inaccuracy', 'mistake', 'blunder'].includes(info.k);
+  const bestSq = bad && info.best ? [sqOf(info.best.slice(0, 2)), sqOf(info.best.slice(2, 4))] : [];
+  const bdgSq = info ? sqOf(G.moves[shown - 1].slice(2, 4)) : -1;
   let h = '';
   for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) {
     const rank = flipped ? i : 7 - i, file = flipped ? 7 - j : j, sq = rank * 16 + file;
@@ -863,13 +886,15 @@ function render() {
     let c = 'sq' + ((rank + file) % 2 === 0 ? ' d' : '');
     if (last.includes(sq)) c += ' mv';
     if (sq === sel) c += ' sel';
-    if (hintSq.includes(sq)) c += ' hint';
+    if (hintSq.includes(sq) || bestSq.includes(sq)) c += ' hint';
+    if (premove && (sq === premove.from || sq === premove.to)) c += ' pre';
     if (sq === chk) c += ' chk';
     if (tset.has(sq)) c += p ? ' ring' : ' dot';
     let inner = '';
     if (j === 0) inner += `<span class="cr">${rank + 1}</span>`;
     if (i === 7) inner += `<span class="cf">${'abcdefgh'[file]}</span>`;
     if (p) inner += pieceSVG(p);
+    if (sq === bdgSq) inner += `<span class="bdg" style="background:${CLS[info.k].c}">${CLS[info.k].s}</span>`;
     h += `<div class="${c}" data-sq="${sq}">${inner}</div>`;
   }
   $('board').innerHTML = h;
@@ -891,8 +916,9 @@ function render() {
   $('botPl').innerHTML = flipped === (G.me === -1) ? meRow : botRow;
   // move list
   let mh = '';
+  const tag = i => { if (!G.over) return ''; const f = moveInfo(i); return f && ['inaccuracy', 'mistake', 'blunder'].includes(f.k) ? `<span class="tag" style="background:${CLS[f.k].c}">${CLS[f.k].s}</span>` : ''; };
   const mc = i => G.over ? ` class="rv${i === shown - 1 ? ' cur' : ''}" data-ply="${i + 1}"` : i === sans.length - 1 ? ' class="last"' : '';
-  for (let i = 0; i < sans.length; i += 2) mh += `<span>${i / 2 + 1}. <b${mc(i)}>${sans[i]}</b>${sans[i + 1] ? ` <b${mc(i + 1)}>${sans[i + 1]}</b>` : ''}</span>`;
+  for (let i = 0; i < sans.length; i += 2) mh += `<span>${i / 2 + 1}. <b${mc(i)}>${sans[i]}${tag(i)}</b>${sans[i + 1] ? ` <b${mc(i + 1)}>${sans[i + 1]}${tag(i + 1)}</b>` : ''}</span>`;
   $('moves').innerHTML = mh || '<span>Good luck!</span>';
   const cur = $('moves').querySelector('.cur');
   if (G.over && cur) cur.scrollIntoView({ block: 'nearest', inline: 'center' });
@@ -906,6 +932,7 @@ function render() {
     $('rvPos').innerHTML = shown ? `<b>${sans[shown - 1]}</b>Move ${Math.ceil(shown / 2)} of ${Math.ceil(sans.length / 2)}` : `<b>Start</b>${sans.length} moves`;
     $('rvFirst').disabled = $('rvPrev').disabled = shown === 0;
     $('rvNext').disabled = $('rvLast').disabled = shown >= G.moves.length;
+    renderAnalysis(shown);
   }
   $('hintBtn').disabled = thinking || E.side !== G.me;
 }
@@ -921,10 +948,30 @@ function sqFromPoint(x, y) {
   return (flipped ? i : 7 - i) * 16 + (flipped ? 7 - j : j);
 }
 const myTurn = () => G && !G.over && !thinking && E.side === G.me;
-function selectSq(sq) {
+function selectSq(sq, pre = false) {
   sel = sq;
-  targets = sq < 0 ? [] : E.legalMoves().filter(m => E.from(m) === sq);
+  targets = sq < 0 || pre ? [] : E.legalMoves().filter(m => E.from(m) === sq);
+  ptargets = sq >= 0 && pre ? preTargets(sq) : [];
 }
+const canPre = () => G && !G.over && thinking && E.side !== G.me;
+// Squares a piece could reach after the bot moves (pieces in the way are ignored, like lichess premoves).
+function preTargets(sq) {
+  const B = E.board, p = B[sq], t = Math.abs(p), c = p > 0 ? 1 : -1, out = new Set();
+  const add = x => { if (!(x & 0x88) && B[x] !== 6 * c) out.add(x); };
+  if (t === 1) { add(sq + 16 * c); if ((sq >> 4) === (c === 1 ? 1 : 6)) add(sq + 32 * c); add(sq + 16 * c - 1); add(sq + 16 * c + 1); }
+  else if (t === 2) [33, 31, 18, 14, -33, -31, -18, -14].forEach(d => add(sq + d));
+  else if (t === 6) {
+    [17, 16, 15, 1, -1, -15, -16, -17].forEach(d => add(sq + d));
+    const cr = E.fen().split(' ')[2];
+    if (c === 1 && sq === 4) { if (cr.includes('K')) add(6); if (cr.includes('Q')) add(2); }
+    if (c === -1 && sq === 116) { if (cr.includes('k')) add(118); if (cr.includes('q')) add(114); }
+  } else {
+    const dirs = t === 3 ? [17, 15, -17, -15] : t === 4 ? [16, -16, 1, -1] : [17, 16, 15, 1, -1, -15, -16, -17];
+    for (const d of dirs) for (let x = sq + d; !(x & 0x88); x += d) add(x);
+  }
+  return [...out];
+}
+function setPremove(from, to) { premove = { from, to }; selectSq(-1); hintSq = []; tone(520, 0, .04); render(); }
 function tryMove(to, animate) {
   const opts = targets.filter(m => E.to(m) === to);
   if (!opts.length) return false;
@@ -933,17 +980,22 @@ function tryMove(to, animate) {
   return true;
 }
 $('board').addEventListener('pointerdown', e => {
-  if (!myTurn()) return;
+  const pre = canPre();
+  if (!myTurn() && !pre) return;
   const sq = sqFromPoint(e.clientX, e.clientY);
   if (sq < 0) return;
-  const p = E.board[sq];
-  if (sel >= 0 && targets.some(m => E.to(m) === sq)) { tryMove(sq, true); return; }
-  if (p && (p > 0) === (G.me > 0)) {
+  const p = E.board[sq], own = p && (p > 0) === (G.me > 0);
+  if (sel >= 0 && !own) {
+    if (pre && ptargets.includes(sq)) { setPremove(sel, sq); return; }
+    if (!pre && targets.some(m => E.to(m) === sq)) { tryMove(sq, true); return; }
+  }
+  if (own) {
     const again = sel === sq;
-    selectSq(sq); hintSq = []; render();
+    if (pre) premove = null;
+    selectSq(sq, pre); hintSq = []; render();
     drag = { sq, x: e.clientX, y: e.clientY, on: false, again, id: e.pointerId };
     try { $('board').setPointerCapture(e.pointerId); } catch (err) { }
-  } else { selectSq(-1); render(); }
+  } else { premove = null; selectSq(-1); render(); }
 });
 $('board').addEventListener('pointermove', e => {
   if (!drag || e.pointerId !== drag.id) return;
@@ -963,7 +1015,10 @@ function endDrag(e) {
   if (d.g) d.g.remove();
   if (d.on) {
     const to = sqFromPoint(e.clientX, e.clientY);
-    if (to >= 0 && to !== d.sq && tryMove(to, false)) return;
+    if (to >= 0 && to !== d.sq) {
+      if (canPre()) { if (ptargets.includes(to)) { setPremove(d.sq, to); return; } }
+      else { if (myTurn() && !targets.length) selectSq(d.sq); if (tryMove(to, false)) return; }
+    }
     render();
   } else if (d.again) { selectSq(-1); render(); }
 }
@@ -983,15 +1038,23 @@ function promoPick(opts, animate) {
 }
 
 function play(m, animate) {
-  const s = E.san(m), cap = E.flag(m) & 1;
+  const s = E.san(m), cap = E.flag(m) & 1, mover = E.side, keep = sel;
   if (animate) anim = { from: E.from(m), to: E.to(m) };
   E.make(m);
   G.moves.push(E.uci(m)); sans.push(s);
-  selectSq(-1); hintSq = [];
+  const mine = p => p && (p > 0) === (G.me > 0);
+  if (mover !== G.me && !premove && keep >= 0 && mine(E.board[keep])) selectSq(keep); else selectSq(-1);
+  hintSq = [];
   save();
   sound(s.includes('+') || s.includes('#') ? 'check' : cap ? 'cap' : 'move');
   const st = E.status();
-  if (st) { render(); finish(st); return; }
+  if (st) { premove = null; render(); finish(st); return; }
+  if (mover !== G.me && premove) {
+    const pm = premove; premove = null;
+    const c = E.legalMoves().filter(x => E.from(x) === pm.from && E.to(x) === pm.to);
+    const mv = c.find(x => !E.promo(x) || E.promo(x) === 5);
+    if (mv) { render(); setTimeout(() => { if (G && !G.over && !thinking && E.side === G.me) play(mv, true); }, 200); return; }
+  }
   maybeBot();
 }
 function maybeBot() {
@@ -1016,6 +1079,7 @@ function maybeBot() {
 $('undoBtn').onclick = () => {
   if (!G || G.over || !tbOn(G) || myMoveCount() === 0) return;
   if (thinking) { cancelBrain(); thinking = false; }
+  premove = null;
   // pop back to the position before my last move
   do { G.moves.pop(); } while (G.moves.length && (G.moves.length % 2 === 0 ? 1 : -1) !== G.me);
   if ((G.moves.length % 2 === 0 ? 1 : -1) !== G.me) G.moves.length = 0;
@@ -1053,7 +1117,6 @@ function goTo(n) {
   for (let i = 0; i < n; i++) E.make(E.fromUci(G.moves[i]));
   if (step) { anim = { from: sqOf(step.slice(0, 2)), to: sqOf(step.slice(2, 4)) }; const s = sans[n - 1]; sound(s.includes('+') || s.includes('#') ? 'check' : s.includes('x') ? 'cap' : 'move'); }
   view = n; selectSq(-1); render();
-  $('bestBtn').querySelector('span').textContent = 'Show best move here';
 }
 $('rvFirst').onclick = () => goTo(0);
 $('rvPrev').onclick = () => goTo(view - 1);
@@ -1066,21 +1129,82 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'ArrowRight') { e.preventDefault(); goTo(view + 1); }
   else if (e.key === 'Home') goTo(0); else if (e.key === 'End') goTo(G.moves.length);
 });
-$('bestBtn').onclick = () => {
-  if (!G || !G.over) return;
-  const at = view, lbl = $('bestBtn').querySelector('span');
-  if (!E.legalMoves().length) { lbl.textContent = 'Game over in this position'; return; }
-  lbl.textContent = 'Thinking...';
-  ask({ time: 1200, depth: 30, noise: 0, random: 0 }, u => {
-    if (!u || view !== at) return;
-    const m = E.fromUci(u);
-    hintSq = [sqOf(u.slice(0, 2)), sqOf(u.slice(2, 4))];
-    lbl.textContent = `Best move: ${m ? E.san(m) : u}` + (at < G.moves.length ? ` (played ${sans[at]})` : '');
-    render();
-  }, G.moves.slice(0, at));
+// ---------- post-game analysis ----------
+const CLS = {
+  best: { s: '★', c: '#81b64c', n: 'the best move' },
+  excellent: { s: '!', c: '#96bc4b', n: 'excellent' },
+  good: { s: '✓', c: '#86a46a', n: 'good' },
+  inaccuracy: { s: '?!', c: '#e3ae1f', n: 'an inaccuracy' },
+  mistake: { s: '?', c: '#e8862a', n: 'a mistake' },
+  blunder: { s: '??', c: '#d63a2f', n: 'a blunder' },
+  forced: { s: '□', c: '#9a978f', n: 'the only move' },
 };
+const winPct = cp => 50 + 50 * (2 / (1 + Math.exp(-0.00368208 * Math.max(-2000, Math.min(2000, cp)))) - 1);
+function stopAnalysis() { if (analyst) { analyst.terminate(); analyst = null; } }
+function startAnalysis() {
+  stopAnalysis();
+  AN = { res: [], info: [], done: false, moves: G.moves.slice() };
+  if (!G.moves.length) { AN.done = true; return; }
+  const src = ENGINE.toString() + '\nconst E = ENGINE();\nonmessage = e => { const d = e.data; E.load(d.fen);\n' +
+    'for (let i = 0; i <= d.moves.length; i++) { if (i) E.make(E.fromUci(d.moves[i - 1])); const L = E.legalMoves(), n = L.length; let r;\n' +
+    'if (!n) r = { score: E.inCheck() ? -100000 : 0, best: null, n };\n' +
+    'else if (E.status()) r = { score: 0, best: null, n };\n' +
+    'else if (n === 1) r = { score: null, best: E.uci(L[0]), bs: E.san(L[0]), n };\n' +
+    'else { const t = E.think(d.opts); r = { score: t.score || 0, best: t.move ? E.uci(t.move) : null, bs: t.move ? E.san(t.move) : "", n }; }\n' +
+    'postMessage({ i, r }); }\npostMessage({ done: true }); };';
+  try {
+    analyst = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+    const a = AN;
+    analyst.onmessage = e => { if (AN !== a) return; const d = e.data; if (d.done) { AN.done = true; stopAnalysis(); } else AN.res[d.i] = d.r; if (G && G.over && !$('game').hidden) render(); };
+    analyst.postMessage({ fen: E.START, moves: AN.moves, opts: { time: 220, depth: 8, noise: 0, random: 0 } });
+  } catch (e) { AN.failed = true; }
+}
+// score of position i from the side to move's point of view
+function posScore(i) { const r = AN && AN.res[i]; if (!r) return null; if (r.score != null) return r.score; const nx = posScore(i + 1); return nx == null ? null : -nx; }
+function moveInfo(i) {
+  if (!AN || AN.moves.length !== G.moves.length) return null;
+  if (AN.info[i]) return AN.info[i];
+  const a = AN.res[i], sb = posScore(i), sn = posScore(i + 1);
+  if (!a || sb == null || sn == null) return null;
+  const played = G.moves[i], sa = -sn;
+  const drop = played === a.best ? 0 : Math.max(0, winPct(sb) - winPct(sa));
+  const k = a.n === 1 ? 'forced' : played === a.best || drop < 1 ? 'best' : drop < 4 ? 'excellent' : drop < 10 ? 'good' : drop < 20 ? 'inaccuracy' : drop < 30 ? 'mistake' : 'blunder';
+  const acc = Math.max(0, Math.min(100, 103.1668 * Math.exp(-0.04354 * drop) - 3.1669));
+  return AN.info[i] = { k, drop, acc, best: a.best, bestSan: a.bs };
+}
+const isMine = i => (i % 2 === 0 ? 1 : -1) === G.me;
+function evalText(n) {
+  const s = posScore(n); if (s == null) return '';
+  const w = n % 2 === 0 ? s : -s;
+  if (Math.abs(w) > 90000) { const m = Math.ceil((100000 - Math.abs(w)) / 2); return m ? (w > 0 ? '' : '-') + 'M' + m : (w > 0 ? '1-0' : '0-1'); }
+  return (w >= 0 ? '+' : '') + (w / 100).toFixed(1);
+}
+function nextMistake(from) { for (let i = from; i < G.moves.length; i++) { const f = moveInfo(i); if (isMine(i) && f && ['inaccuracy', 'mistake', 'blunder'].includes(f.k)) return i; } return -1; }
+function renderAnalysis(n) {
+  const el = $('anal'), bot = botById(G.bot);
+  if (!AN || AN.failed) { el.innerHTML = 'Move analysis is not available on this device.'; return; }
+  const total = G.moves.length + 1, got = AN.res.filter(Boolean).length;
+  if (!AN.done) { el.innerHTML = `<div class="ln">Analyzing your game...<span class="ev">${Math.floor(got / total * 100)}%</span></div><div class="bar"><i style="width:${got / total * 100}%"></i></div>`; return; }
+  const nm = nextMistake(n);
+  const nxBtn = nm >= 0 ? `<button class="nx" data-go="${nm + 1}">Next mistake: move ${Math.floor(nm / 2) + 1} ›</button>` : '';
+  if (!n) {
+    const mine = [], theirs = [], cnt = {};
+    for (let i = 0; i < G.moves.length; i++) { const f = moveInfo(i); if (!f) continue; (isMine(i) ? mine : theirs).push(f.acc); if (isMine(i)) cnt[f.k] = (cnt[f.k] || 0) + 1; }
+    const avg = a => a.length ? (a.reduce((x, y) => x + y, 0) / a.length).toFixed(1) : '-';
+    el.innerHTML = `<div class="acc"><div>Your accuracy<b>${avg(mine)}</b></div><div>${bot.name}<b>${avg(theirs)}</b></div></div>
+      <div class="cnt">${['best', 'excellent', 'good', 'inaccuracy', 'mistake', 'blunder'].map(k => `<span><i style="background:${CLS[k].c}">${CLS[k].s}</i>${cnt[k] || 0}</span>`).join('')}</div>${nxBtn}`;
+    return;
+  }
+  const i = n - 1, f = moveInfo(i);
+  if (!f) { el.innerHTML = ''; return; }
+  const who = isMine(i) ? 'You' : bot.name;
+  const bad = ['inaccuracy', 'mistake', 'blunder'].includes(f.k);
+  el.innerHTML = `<div class="ln"><span class="ic" style="background:${CLS[f.k].c}">${CLS[f.k].s}</span><span>${who}: <b>${sans[i]}</b> is ${CLS[f.k].n}</span><span class="ev">${evalText(n)}</span></div>` +
+    (bad && f.bestSan ? `<div class="ln"><span class="ic" style="background:${CLS.best.c}">★</span><span>Better was <b>${f.bestSan}</b> (shown in blue)</span></div>` : '') + nxBtn;
+}
+$('anal').addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) goTo(+b.dataset.go); });
 $('botsBtn').onclick = showMenu;
-$('back').onclick = e => { if (!$('game').hidden) { e.preventDefault(); cancelBrain(); thinking = false; showMenu(); } };
+$('back').onclick = e => { if (!$('game').hidden) { e.preventDefault(); cancelBrain(); stopAnalysis(); premove = null; thinking = false; showMenu(); } };
 
 // ---------- results + rating ----------
 function finish(st) {
@@ -1101,7 +1225,7 @@ function finish(st) {
   if (score === 1) r.w++; else if (score === 0) r.l++; else r.d++;
   G.over = { ...st, score, delta, rated };
   SV.game = null; save();
-  thinking = false; view = G.moves.length; render();
+  premove = null; thinking = false; view = G.moves.length; startAnalysis(); render();
   sound(score === 1 ? 'win' : score === 0 ? 'lose' : 'move');
   setTimeout(() => showResult(), st.reason === 'resignation' ? 0 : 700);
 }
@@ -1121,6 +1245,7 @@ function showResult() {
 
 // ---------- menu ----------
 function showMenu() {
+  stopAnalysis(); premove = null;
   $('game').hidden = true; $('menu').hidden = false; $('back').textContent = '‹ Arcade';
   document.querySelectorAll('.ov').forEach(o => o.remove());
   let w = 0, l = 0, d = 0; for (const k in SV.rec) { w += SV.rec[k].w; l += SV.rec[k].l; d += SV.rec[k].d; }
