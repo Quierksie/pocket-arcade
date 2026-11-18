@@ -34,7 +34,7 @@ button:disabled { opacity: .4; cursor: default; }
 header { display: flex; align-items: center; gap: 10px; padding: 4px 2px 10px; }
 header a, header .back { color: var(--soft); text-decoration: none; font-weight: 800; font-size: 14px; min-width: 70px; text-align: left; }
 header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; margin: 0; letter-spacing: .5px; }
-.ib { width: 38px; height: 38px; border-radius: 12px; background: var(--panel); display: grid; place-items: center; margin-left: 32px; }
+.ib { width: 38px; height: 38px; border-radius: 12px; background: var(--panel); display: grid; place-items: center; }
 .ib svg { width: 20px; height: 20px; }
 
 /* menu */
@@ -44,7 +44,7 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
 .rate .num small { display: block; font-size: 12px; color: var(--soft); font-weight: 800; letter-spacing: .5px; margin-bottom: 4px; }
 .rate .meta { color: var(--soft); font-size: 13px; font-weight: 700; line-height: 1.55; margin-left: auto; text-align: right; }
 .rate .meta b { color: var(--ink); }
-.cont { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 16px; background: linear-gradient(120deg, #5d8a33, #3e6b2a); color: #fff; width: 100%; text-align: left; margin-top: 12px; }
+.cont { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 16px; background: linear-gradient(120deg, var(--accent), var(--accent-d)); color: #fff; width: 100%; text-align: left; margin-top: 12px; }
 .cont b { font-size: 17px; display: block; }
 .cont small { opacity: .85; font-size: 13px; }
 .cont .go { margin-left: auto; font-weight: 900; background: rgba(255,255,255,.18); padding: 8px 14px; border-radius: 10px; }
@@ -173,7 +173,7 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
 .gear svg { width: 20px; height: 20px; }
 .chip2 { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 99px; background: var(--panel2); font-size: 12px; font-weight: 800; color: var(--soft); }
 .chip2.on { background: var(--accent); color: #fff; }
-.bigbtn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px; border-radius: 16px; background: linear-gradient(120deg, #5d8a33, #3e6b2a); color: #fff; text-align: left; margin-top: 12px; }
+.bigbtn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px; border-radius: 16px; background: linear-gradient(120deg, var(--accent), var(--accent-d)); color: #fff; text-align: left; margin-top: 12px; }
 .bigbtn b { font-size: 17px; display: block; }
 .bigbtn small { opacity: .85; font-size: 13px; }
 .bigbtn .go { margin-left: auto; font-weight: 900; background: rgba(255,255,255,.18); padding: 8px 14px; border-radius: 10px; }
@@ -254,6 +254,36 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
 .tiers small { margin-left: auto; color: var(--soft); font-size: 12px; }
 .tiers .cur { color: var(--accent); }
 .howpts { text-align: left; font-size: 13px; color: var(--soft); line-height: 1.6; margin: 0 0 12px; }
+
+/* leaderboard */
+.lb { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.lb .r { display: grid; grid-template-columns: 38px 1fr auto; gap: 8px; align-items: center; padding: 10px 14px; border-top: 1px solid var(--line); font-weight: 800; }
+.lb .r:first-child { border-top: 0; }
+.lb .r.me { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+.lb .rk { color: var(--soft); font-size: 14px; }
+.lb .r:nth-child(1) .rk { color: #ffcf4d; } .lb .r:nth-child(2) .rk { color: #c9d1e8; } .lb .r:nth-child(3) .rk { color: #e0a070; }
+.lb .nm small { display: block; color: var(--soft); font-size: 11.5px; font-weight: 700; }
+.lb .msg { padding: 16px; color: var(--soft); font-size: 14px; line-height: 1.5; text-align: center; }
+.lb .msg a, .lnk { color: var(--accent); font-weight: 900; text-decoration: none; }
+.pcard .lb { margin-top: 8px; border-radius: 12px; }
+.field { width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); font: inherit; font-size: 17px; font-weight: 800; margin-bottom: 12px; user-select: text; -webkit-user-select: text; }
+/* color editor */
+.hdr-r { display: flex; gap: 8px; }
+.colors { text-align: left; max-height: 92vh; overflow: auto; }
+.colors h3 { text-align: center; }
+.cprev { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 6px 0 12px; }
+.mini { display: grid; grid-template-columns: repeat(4, 22px); grid-template-rows: repeat(4, 22px); border-radius: 6px; overflow: hidden; }
+.presets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; }
+.presets button { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 800; color: var(--soft); padding: 6px 2px; border-radius: 10px; background: var(--panel2); position: relative; }
+.presets span { width: 30px; height: 30px; border-radius: 8px; }
+.presets b { position: absolute; top: 4px; right: calc(50% - 19px); width: 11px; height: 11px; border-radius: 50%; box-shadow: 0 0 0 2px var(--panel2); }
+.crow { display: flex; align-items: center; gap: 10px; padding: 7px 0; font-weight: 800; font-size: 14px; }
+.crow span { flex: 1; }
+.crow input[type=color] { width: 44px; height: 44px; border: 0; padding: 0; background: none; border-radius: 50%; cursor: pointer; }
+.crow input[type=color]::-webkit-color-swatch-wrapper { padding: 0; }
+.crow input[type=color]::-webkit-color-swatch { border: 2px solid var(--line); border-radius: 50%; }
+.crow input[type=color]::-moz-color-swatch { border: 2px solid var(--line); border-radius: 50%; }
+.crow .hex { width: 96px; padding: 9px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); font: inherit; font-size: 15px; font-weight: 800; text-transform: lowercase; user-select: text; -webkit-user-select: text; }
 @media (prefers-reduced-motion: reduce) { .card, .toast { animation: none; } .pc.anim { transition: none; } }
 </style>
 </head>
@@ -262,7 +292,7 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
   <header>
     <a href="./" id="back">‹ Arcade</a>
     <h1>Chess</h1>
-    <button class="ib" id="themeBtn" aria-label="Switch light or dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+    <div class="hdr-r"><button class="ib" id="colorBtn" aria-label="Customize colors"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4c0-4.4-4-8-9-8z"/><circle cx="7.5" cy="11" r="1.3" fill="currentColor"/><circle cx="10.5" cy="7" r="1.3" fill="currentColor"/><circle cx="15" cy="7.5" r="1.3" fill="currentColor"/></svg></button><button class="ib" id="themeBtn" aria-label="Switch light or dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button></div>
   </header>
 
   <section class="menu" id="menu">
@@ -275,6 +305,8 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
     <button class="opt" id="tbOpt" role="switch"><div class="tx"><b>Takebacks</b><small id="tbNote"></small></div><span class="sw"></span></button>
     <h2>Choose your opponent</h2>
     <div class="bots" id="bots"></div>
+    <h2>Leaderboard</h2>
+    <div class="lb" id="lbChess"></div>
     </div>
     <div id="puzMenu" hidden></div>
   </section>
@@ -1354,6 +1386,7 @@ function finish(st) {
   const r = SV.rec[bot.id] || (SV.rec[bot.id] = { w: 0, l: 0, d: 0 });
   if (score === 1) r.w++; else if (score === 0) r.l++; else r.d++;
   G.over = { ...st, score, delta, rated };
+  setTimeout(pushBoard, 50);
   SV.game = null; save();
   premove = null; thinking = false; view = G.moves.length; startAnalysis(); render();
   sound(score === 1 ? 'win' : score === 0 ? 'lose' : 'move');
@@ -1383,6 +1416,7 @@ function showMenu() {
   $('playMenu').hidden = pm; $('puzMenu').hidden = !pm;
   $('modeSeg').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.m === (pm ? 'puz' : 'play')));
   if (pm) { renderPuzMenu(); loadPuzzles().catch(() => { }); }
+  renderBoards();
   let w = 0, l = 0, d = 0; for (const k in SV.rec) { w += SV.rec[k].w; l += SV.rec[k].l; d += SV.rec[k].d; }
   $('rateCard').innerHTML = `<div class="num"><small>YOUR RATING</small>${Math.round(SV.rating)}</div><div class="meta">Peak <b>${Math.round(SV.peak)}</b><br>W <b>${w}</b> · L <b>${l}</b> · D <b>${d}</b></div>`;
   const g = SV.game;
@@ -1524,12 +1558,20 @@ const DAY_T = [1950, 700, 900, 1100, 1300, 1500, 1700]; // Sunday..Saturday
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const DAY_DIFF = ['Hardest', 'Easy', 'Easy+', 'Medium', 'Medium+', 'Hard', 'Harder'];
 const dailyPools = {};
+const EXTREME_FROM = '2026-11-18'; // daily puzzles from this date on come from the very hardest puzzles
 function dailyPuzzle(ds) {
   // only puzzles added before this date, so a day's puzzle never changes when new ones arrive
   const d = parseYmd(ds), wd = d.getDay(), cut = +ds.replace(/-/g, ''), t = DAY_T[wd];
   const avail = PUZ.filter(p => !p.off && p.added < cut);
-  const ck = wd + ':' + avail.length;
+  const extreme = ds >= EXTREME_FROM;
+  const ck = (extreme ? 'x' : wd) + ':' + avail.length;
   let pool = dailyPools[ck];
+  if (!pool && extreme) {
+    // the hardest multi-move puzzles: top 6% by rating (at least 12)
+    const hard = avail.filter(p => solverMoves(p) >= 2 && !p.themes.includes('hangingPiece')).sort((a, b) => b.rating - a.rating);
+    pool = dailyPools[ck] = hard.slice(0, Math.max(12, Math.ceil(avail.length * 0.06))).map(p => p.id);
+    if (!pool.length) pool = dailyPools[ck] = avail.slice().sort((a, b) => b.rating - a.rating).slice(0, 12).map(p => p.id);
+  }
   if (!pool) {
     let w = 160;
     do { pool = avail.filter(p => Math.abs(p.rating - t) <= w && solverMoves(p) >= 2); w += 80; } while (pool.length < 40 && w < 1200);
@@ -1537,7 +1579,7 @@ function dailyPuzzle(ds) {
     if (!pool.length) pool = avail;
     pool = dailyPools[ck] = pool.map(p => p.id);
   }
-  const week = Math.floor((d - parseYmd('2000-01-02')) / 864e5 / 7);
+  const week = extreme ? Math.round((d - parseYmd('2000-01-02')) / 864e5) : Math.floor((d - parseYmd('2000-01-02')) / 864e5 / 7);
   let k = 97; while (pool.length % k === 0) k += 2;
   return PUZ[pool[((week * k) % pool.length + pool.length) % pool.length]];
 }
@@ -1667,7 +1709,7 @@ function renderPuzMenu() {
       <button class="bigbtn" id="pzPlay"><div><b>Rated puzzles</b><small>${d.name} · ${PZ.streak > 1 ? `${PZ.streak} in a row` : 'matched to your rating'}</small></div><span class="go">Solve</span></button>
     </div>
     <div class="pcard">
-      <div class="top"><div><div class="lbl">Daily puzzle</div><b style="font-size:17px">${DAY_NAMES[new Date().getDay()]} · ${DAY_DIFF[new Date().getDay()]}</b></div>
+      <div class="top"><div><div class="lbl">Daily puzzle</div><b style="font-size:17px">${DAY_NAMES[new Date().getDay()]} · ${today() >= EXTREME_FROM ? '<span style="color:#ff5d5d">Extreme</span>' : DAY_DIFF[new Date().getDay()]}</b></div>
         <div class="meta" style="margin-left:auto;text-align:right">${FLAME} <b>${streak}</b> day streak<br>Best <b>${PZ.bestDaily}</b></div></div>
       <button class="bigbtn ${rec && rec.at ? 'done' : 'daily'}" id="pzDaily"><div><b>${rec && rec.at ? 'Solved today' : 'Today\'s puzzle'}</b><small>${rec && rec.at ? 'Come back tomorrow for a new one' : 'Solve within 48 hours to keep your streak'}</small></div><span class="go">${rec && rec.at ? 'View' : 'Play'}</span></button>
       <div class="rowbtns"><button id="pzArchive">Archive</button></div>
@@ -1684,6 +1726,8 @@ function renderPuzMenu() {
   $('pzDaily').onclick = () => startDaily(today());
   $('pzArchive').onclick = () => openArchive();
   $('pzJourney').onclick = openJourney;
+  host.insertAdjacentHTML('beforeend', '<div class="pcard"><div class="lbl">Puzzle leaderboard</div><div class="lb" id="lbPuz"></div></div>');
+  renderBoards();
 }
 function openPzSettings() {
   const o = document.createElement('div'); o.className = 'ov';
@@ -1751,8 +1795,9 @@ async function startRedeem() {
 async function startDaily(ds) {
   try { await loadPuzzles(); } catch (e) { toast('Could not load puzzles. Check your connection.'); return; }
   const rec = PZ.daily[ds] || (PZ.daily[ds] = {});
+  if (ds >= EXTREME_FROM && !rec.at && !rec.x) delete rec.id; // switch unsolved ones to the new extreme puzzles
   const p = rec.id != null && PUZ[rec.id] ? PUZ[rec.id] : dailyPuzzle(ds);
-  rec.id = p.id; save();
+  rec.id = p.id; if (ds >= EXTREME_FROM) rec.x = 1; save();
   openPuzzle(p, { mode: 'daily', date: ds });
 }
 function openPuzzle(p, o) {
@@ -1840,6 +1885,7 @@ function pzRate(ok) {
   const s = PS;
   s.rated = true; s.result = ok;
   s.delta = rateResult(s.p, ok);
+  setTimeout(pushBoard, 50);
   if (!ok) {
     if (s.redeem) { PZ.lost = null; toast('Redemption failed. Streak lost.'); }
     else if (PZ.streak >= 2) PZ.lost = { streak: PZ.streak, rating: s.p.rating, id: s.p.id };
@@ -2028,7 +2074,138 @@ function pzBack() {
   return false;
 }
 
-window.__chess = { get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
+// =====================================================================
+// LEADERBOARDS (chess rating + puzzle rating) on the arcade's Firebase accounts
+// =====================================================================
+const FB_CONFIG = {"apiKey": "AIzaSyDKdZ2RGPp45SrXGtpse9-kBpcJOQ9gVoQ", "authDomain": "pocket-arcade-9bcbf.firebaseapp.com", "projectId": "pocket-arcade-9bcbf", "storageBucket": "pocket-arcade-9bcbf.firebasestorage.app", "messagingSenderId": "187036226775", "appId": "1:187036226775:web:6628259ce35cfabd668c92"};
+const fb = { state: 'loading', user: null, db: null, rows: { chess: [], puz: [] }, err: '' };
+const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const loadScript = src => new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = rej; document.head.appendChild(el); });
+function lbName() {
+  if (SV.lbName) return SV.lbName;
+  try { const s = JSON.parse(localStorage.getItem('pocketArcade.sudoku.v1') || '{}'); if (s.lbName) return s.lbName; } catch (e) { }
+  return '';
+}
+async function initFB() {
+  try {
+    const base = 'https://www.gstatic.com/firebasejs/10.12.2/';
+    await loadScript(base + 'firebase-app-compat.js');
+    await Promise.all([loadScript(base + 'firebase-auth-compat.js'), loadScript(base + 'firebase-firestore-compat.js')]);
+    if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+    fb.db = firebase.firestore();
+    firebase.auth().onAuthStateChanged(u => { fb.user = u; fb.state = 'ready'; pushBoard(); loadBoards(); });
+  } catch (e) { fb.state = 'offline'; renderBoards(); }
+}
+async function loadBoards() {
+  if (!fb.db) return;
+  for (const [k, field] of [['chess', 'chessRating'], ['puz', 'puzzleRating']]) {
+    try { const q = await fb.db.collection('leaderboard').orderBy(field, 'desc').limit(50).get(); fb.rows[k] = q.docs.map(d => Object.assign({ id: d.id }, d.data())); fb.err = ''; }
+    catch (e) { fb.err = (e && e.code) || 'error'; }
+  }
+  renderBoards();
+}
+let pushT = 0;
+async function pushBoard() {
+  const name = lbName();
+  if (!fb.db || !fb.user || !name) return;
+  const d = { name, updated: firebase.firestore.FieldValue.serverTimestamp() };
+  if (SV.games > 0) { d.chessRating = Math.round(SV.rating); d.chessPeak = Math.round(SV.peak); d.chessGames = SV.games; }
+  if (PZ.solved + PZ.failed > 0) { d.puzzleRating = Math.round(PZ.rating); d.puzzlePeak = Math.round(PZ.peak); d.puzzlesSolved = PZ.solved; }
+  if (d.chessRating == null && d.puzzleRating == null) return;
+  try { await fb.db.collection('leaderboard').doc(fb.user.uid).set(d, { merge: true }); fb.err = ''; clearTimeout(pushT); pushT = setTimeout(loadBoards, 400); }
+  catch (e) { fb.err = (e && e.code) || 'error'; renderBoards(); }
+}
+function boardHTML(k) {
+  const isChess = k === 'chess';
+  if (fb.state === 'loading') return '<div class="msg">Loading...</div>';
+  if (fb.state === 'offline') return '<div class="msg">The leaderboard needs an internet connection.</div>';
+  if (fb.err === 'permission-denied') return '<div class="msg">The leaderboard couldn\'t be reached. Your rating is saved and will show up once it can.</div>';
+  let top = '';
+  const played = isChess ? SV.games > 0 : PZ.solved + PZ.failed > 0;
+  if (!fb.user) top = '<div class="msg"><a href="./">Sign in on the Arcade page</a> to put your rating on the leaderboard.</div>';
+  else if (!lbName()) top = '<div class="msg">Pick a name to join the leaderboard. <button class="lnk" data-lbname>Choose name</button></div>';
+  else if (!played) top = `<div class="msg">${isChess ? 'Finish a rated game' : 'Finish a rated puzzle'} to get on the board, ${esc(lbName())}.</div>`;
+  const rows = fb.rows[k].map((r, i) => {
+    const me = fb.user && r.id === fb.user.uid;
+    const sub = isChess ? `${r.chessGames || 0} games · peak ${r.chessPeak || r.chessRating}` : `${r.puzzlesSolved || 0} solved · peak ${r.puzzlePeak || r.puzzleRating}`;
+    return `<div class="r ${me ? 'me' : ''}"><span class="rk">#${i + 1}</span><span class="nm">${esc(r.name)}${me ? ' (you)' : ''}<small>${sub}</small></span><span>${isChess ? r.chessRating : r.puzzleRating}</span></div>`;
+  }).join('');
+  return top + (rows || (fb.err ? '<div class="msg">Couldn\'t load the leaderboard right now.</div>' : '<div class="msg">No one is on this board yet. Be the first!</div>')) + (fb.user && lbName() ? `<div class="msg" style="padding:10px"><button class="lnk" data-lbname>Change name</button></div>` : '');
+}
+function renderBoards() {
+  for (const [id, k] of [['lbChess', 'chess'], ['lbPuz', 'puz']]) { const el = $(id); if (el) el.innerHTML = boardHTML(k); }
+}
+document.addEventListener('click', e => { if (e.target.closest('[data-lbname]')) askName(); });
+function askName() {
+  const o = document.createElement('div'); o.className = 'ov';
+  o.innerHTML = `<div class="card"><h3 style="font-size:21px">Leaderboard name</h3><p>Everyone can see this. 2 to 16 letters or numbers.</p><input class="field" id="nm" maxlength="16" autocomplete="off" value="${esc(lbName())}"><div class="row"><button class="btn alt" data-a="no">Cancel</button><button class="btn" data-a="yes">Save</button></div></div>`;
+  document.body.append(o); const inp = o.querySelector('#nm'); inp.focus();
+  o.querySelector('[data-a=no]').onclick = () => o.remove();
+  o.querySelector('[data-a=yes]').onclick = () => {
+    const v = inp.value.trim().replace(/\s+/g, ' ');
+    if (!/^[A-Za-z0-9 _.-]{2,16}$/.test(v)) { toast('Use 2-16 letters, numbers, spaces, _ . or -'); return; }
+    SV.lbName = v; save(); o.remove(); pushBoard(); renderBoards();
+  };
+}
+
+// =====================================================================
+// CUSTOM COLORS (board squares + accent), color wheel or hex code
+// =====================================================================
+const UI_PRESETS = [
+  ['Classic', '#ebecd0', '#779556', '#81b64c'], ['Ocean', '#dee3e6', '#8ca2ad', '#4d8fd6'], ['Wood', '#f0d9b5', '#b58863', '#c08a3e'],
+  ['Grape', '#e8dff5', '#9b7bc4', '#9b6bff'], ['Bubblegum', '#fde4ec', '#e88aa8', '#e8508a'], ['Ice', '#e6f2f7', '#6fa8c4', '#2fb2d6'],
+  ['Night', '#c9c9c9', '#4d4d4d', '#ff5d5d'], ['Blood', '#e9d6d6', '#8b1a1a', '#c1121f'],
+];
+const hexOk = h => /^#[0-9a-f]{6}$/i.test(h);
+const toRgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const toHex = a => '#' + a.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
+const mix = (a, b, t) => { const x = toRgb(a), y = toRgb(b); return toHex(x.map((v, i) => v + (y[i] - v) * t)); };
+function applyUI() {
+  const u = SV.ui, r = document.documentElement.style;
+  if (!u) { ['--sq-l', '--sq-d', '--mv-l', '--mv-d', '--accent', '--accent-d'].forEach(v => r.removeProperty(v)); return; }
+  r.setProperty('--sq-l', u.light); r.setProperty('--sq-d', u.dark);
+  r.setProperty('--mv-l', mix(u.light, '#f6f669', .6)); r.setProperty('--mv-d', mix(u.dark, '#c9d23a', .6));
+  r.setProperty('--accent', u.accent); r.setProperty('--accent-d', mix(u.accent, '#000000', .3));
+}
+applyUI();
+function openColors() {
+  const saved = SV.ui ? Object.assign({}, SV.ui) : null;
+  const draft = Object.assign({ light: '#ebecd0', dark: '#779556', accent: '#81b64c' }, saved || {});
+  const o = document.createElement('div'); o.className = 'ov';
+  const mini = () => { let h = ''; for (let i = 0; i < 16; i++) { const r = Math.floor(i / 4), c = i % 4; h += `<i style="background:${(r + c) % 2 ? draft.dark : draft.light}"></i>`; } return h; };
+  const row = (k, n) => `<div class="crow"><span>${n}</span><input type="color" data-k="${k}" value="${draft[k]}" aria-label="${n} color"><input class="hex" data-h="${k}" value="${draft[k]}" maxlength="7" spellcheck="false" autocapitalize="off"></div>`;
+  o.innerHTML = `<div class="card colors"><h3 style="font-size:21px">Customize colors</h3>
+    <div class="cprev"><div class="mini">${mini()}</div><button class="btn" style="background:${draft.accent};box-shadow:0 4px 0 ${mix(draft.accent, '#000000', .3)}">Accent</button></div>
+    <div class="presets">${UI_PRESETS.map(([n, l, d, a], i) => `<button data-p="${i}" title="${n}"><span style="background:linear-gradient(135deg,${l} 50%,${d} 50%)"></span><b style="background:${a}"></b>${n}</button>`).join('')}</div>
+    ${row('light', 'Light squares')}${row('dark', 'Dark squares')}${row('accent', 'Accent')}
+    <p style="font-size:12.5px;margin:4px 0 12px">Tap a color circle for the color wheel, or type a hex code like #ff8800.</p>
+    <div class="row"><button class="btn alt" data-a="reset">Reset</button><button class="btn" data-a="save">Save</button></div></div>`;
+  document.body.append(o);
+  const refresh = () => {
+    o.querySelector('.mini').innerHTML = mini();
+    const b = o.querySelector('.cprev .btn'); b.style.background = draft.accent; b.style.boxShadow = `0 4px 0 ${mix(draft.accent, '#000000', .3)}`;
+    o.querySelectorAll('[data-k]').forEach(x => { if (x.value !== draft[x.dataset.k]) x.value = draft[x.dataset.k]; });
+    o.querySelectorAll('[data-h]').forEach(x => { if (document.activeElement !== x) x.value = draft[x.dataset.h]; });
+    SV.ui = draft; applyUI(); // live preview on the real board too
+  };
+  o.addEventListener('input', e => {
+    const k = e.target.dataset.k, h = e.target.dataset.h;
+    if (k) { draft[k] = e.target.value; refresh(); }
+    if (h) { let v = e.target.value.trim(); if (!v.startsWith('#')) v = '#' + v; if (/^#[0-9a-f]{3}$/i.test(v)) v = '#' + v.slice(1).split('').map(c => c + c).join(''); if (hexOk(v)) { draft[h] = v.toLowerCase(); refresh(); } }
+  });
+  o.addEventListener('click', e => {
+    const p = e.target.closest('[data-p]');
+    if (p) { const [, l, d, a] = UI_PRESETS[+p.dataset.p]; Object.assign(draft, { light: l, dark: d, accent: a }); refresh(); return; }
+    const a = e.target.closest('[data-a]');
+    if (a && a.dataset.a === 'save') { SV.ui = Object.assign({}, draft); save(); applyUI(); o.remove(); toast('Colors saved'); }
+    else if (a && a.dataset.a === 'reset') { SV.ui = null; save(); applyUI(); o.remove(); toast('Colors reset'); }
+    else if (e.target === o) { SV.ui = saved; applyUI(); o.remove(); } // tap outside = cancel
+  });
+}
+$('colorBtn').onclick = openColors;
+initFB();
+
+window.__chess = { fb, pushBoard, openColors, get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
 showMenu();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('./sw.js').catch(() => { });
 })();

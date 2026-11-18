@@ -299,7 +299,7 @@ async function loadBoard() {
 async function pushBoard() {
   if (!fb.db || !fb.user || !SV.lbName || !SV.rated) return;
   try {
-    await fb.db.collection('leaderboard').doc(fb.user.uid).set({ name: SV.lbName, rating: Math.round(SV.rating), peak: Math.round(SV.peak), solved: Object.values(SV.wins || {}).reduce((a, b) => a + b, 0), updated: firebase.firestore.FieldValue.serverTimestamp() });
+    await fb.db.collection('leaderboard').doc(fb.user.uid).set({ name: SV.lbName, rating: Math.round(SV.rating), peak: Math.round(SV.peak), solved: Object.values(SV.wins || {}).reduce((a, b) => a + b, 0), updated: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
     fb.err = ''; loadBoard();
   } catch (e) { fb.err = (e && e.code) || 'error'; renderBoard(); }
 }
