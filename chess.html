@@ -1471,7 +1471,7 @@ const ARCHIVE_START = '2016-01-01';
 let PUZ = null, pzLoading = null;
 function loadPuzzles() {
   if (PUZ) return Promise.resolve(PUZ);
-  if (!pzLoading) pzLoading = fetch('puzzles.json').then(r => r.json()).then(d => { PUZ = d.p.map((a, i) => ({ id: i, fen: a[0], moves: a[1].split(' '), rating: a[2], themes: a[3] ? a[3].split(' ') : [] })); return PUZ; }).catch(e => { pzLoading = null; throw e; });
+  if (!pzLoading) pzLoading = fetch('puzzles.json').then(r => r.json()).then(d => { PUZ = d.p.map((a, i) => ({ id: i, fen: a[0], moves: a[1].split(' '), rating: a[2], themes: a[3] ? a[3].split(' ') : [], off: !(a[2] > 0) })); return PUZ; }).catch(e => { pzLoading = null; throw e; });
   return pzLoading;
 }
 const solverMoves = p => Math.floor(p.moves.length / 2);
@@ -1527,8 +1527,8 @@ let dailyPools = null;
 function dailyPuzzle(ds) {
   if (!dailyPools) dailyPools = DAY_T.map(t => {
     let w = 160, pool;
-    do { pool = PUZ.filter(p => Math.abs(p.rating - t) <= w && solverMoves(p) >= 2); w += 80; } while (pool.length < 40 && w < 1200);
-    if (pool.length < 10) pool = PUZ.filter(p => Math.abs(p.rating - t) <= 400);
+    do { pool = PUZ.filter(p => !p.off && Math.abs(p.rating - t) <= w && solverMoves(p) >= 2); w += 80; } while (pool.length < 40 && w < 1200);
+    if (pool.length < 10) pool = PUZ.filter(p => !p.off && Math.abs(p.rating - t) <= 400);
     return pool.map(p => p.id);
   });
   const d = parseYmd(ds), pool = dailyPools[d.getDay()];
@@ -1716,7 +1716,7 @@ function pickRated() {
   const target = PZ.rating + d.off + (Math.random() - .5) * 120;
   const tried = new Set(PZ.tried);
   let best = null, bd = Infinity;
-  for (const p of PUZ) { if (tried.has(p.id)) continue; const dd = Math.abs(p.rating - target) + Math.random() * 40; if (dd < bd) { bd = dd; best = p; } }
+  for (const p of PUZ) { if (p.off || tried.has(p.id)) continue; const dd = Math.abs(p.rating - target) + Math.random() * 40; if (dd < bd) { bd = dd; best = p; } }
   if (!best) { PZ.tried = []; return pickRated(); }
   return best;
 }
@@ -1730,12 +1730,12 @@ function pickRedeem() {
   const L = PZ.lost, tried = new Set(PZ.tried), want = L.rating + 250;
   let best = null, bd = Infinity;
   for (const p of PUZ) {
-    if (tried.has(p.id) || p.rating <= L.rating + 100) continue;
+    if (p.off || tried.has(p.id) || p.rating <= L.rating + 100) continue;
     const dd = Math.abs(p.rating - want) + Math.random() * 40;
     if (dd < bd) { bd = dd; best = p; }
   }
-  if (!best) for (const p of PUZ) if (p.id !== L.id && p.rating > L.rating && (!best || p.rating < best.rating)) best = p;
-  if (!best) best = PUZ.reduce((a, b) => b.rating > a.rating && b.id !== L.id ? b : a);
+  if (!best) for (const p of PUZ) if (!p.off && p.id !== L.id && p.rating > L.rating && (!best || p.rating < best.rating)) best = p;
+  if (!best) best = PUZ.filter(p => !p.off).reduce((a, b) => b.rating > a.rating && b.id !== L.id ? b : a);
   return best;
 }
 async function startRedeem() {
