@@ -1,7 +1,7 @@
 // Offline mode for Pocket Arcade.
 // Game files: try the network first so updates show up right away, fall back to the saved copy when offline.
 // Fonts and the Firebase sign-in library: use the saved copy first, since those files never change.
-const CACHE = 'pocket-arcade-v12';
+const CACHE = 'pocket-arcade-v13';
 const CORE = ['./', './index.html', './manifest.json', './icon.png', './icon-192.png', './apple-touch-icon.png', './tidy.html', './card-shop.html', './sudoku.html', './chess.html', './puzzles.json'];
 
 self.addEventListener('install', e => {
@@ -41,7 +41,8 @@ self.addEventListener('fetch', e => {
   e.respondWith((async () => {
     const c = await caches.open(CACHE);
     try {
-      const res = await withTimeout(fetch(req), 4000);
+      // no-cache: always check GitHub for a newer copy instead of using the browser's 10-minute cache
+      const res = await withTimeout(fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' }), 4000);
       if (res.ok) c.put(req.mode === 'navigate' ? './index.html' : req, res.clone());
       return res;
     } catch (err) {
