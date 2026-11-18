@@ -343,6 +343,25 @@ body.focus .app { padding-top: 16px; }
 .crow input[type=color]::-webkit-color-swatch-wrapper { padding: 0; }
 .crow input[type=color]::-webkit-color-swatch { border: 2px solid var(--line); border-radius: 50%; }
 .crow input[type=color]::-moz-color-swatch { border: 2px solid var(--line); border-radius: 50%; }
+/* saved color setups */
+.setups { margin: 0 0 12px; }
+.shd { font-size: 12.5px; font-weight: 900; color: var(--soft); text-transform: uppercase; letter-spacing: .5px; margin: 0 2px 6px; }
+.shd small { text-transform: none; letter-spacing: 0; font-weight: 700; margin-left: 6px; }
+.srow { display: flex; gap: 6px; overflow-x: auto; padding: 2px; margin: 0 -2px 8px; scrollbar-width: none; }
+.srow::-webkit-scrollbar { display: none; }
+.srow button { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: 74px; padding: 7px 5px; border-radius: 12px; background: var(--panel2); border: 2px solid transparent; font-size: 11px; font-weight: 800; color: var(--soft); }
+.srow button[aria-pressed="true"] { border-color: var(--accent); color: var(--ink); }
+.srow button span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.srow i { position: relative; display: block; width: 30px; height: 30px; border-radius: 8px; }
+.srow i b { position: absolute; top: -3px; right: -3px; width: 11px; height: 11px; border-radius: 50%; box-shadow: 0 0 0 2px var(--panel2); }
+.srow .snew { background: transparent; border: 2px dashed var(--line); color: var(--accent); font-size: 12px; line-height: 1.2; }
+.srow .snew em { font-style: normal; font-size: 20px; line-height: 1; }
+.sname { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
+.sname .field { margin: 0; flex: 1; min-width: 0; font-size: 16px; padding: 9px 12px; }
+.sname .btn { padding: 9px 14px; font-size: 14px; box-shadow: none; }
+.sacts { display: flex; gap: 6px; flex-wrap: wrap; }
+.sacts .chip2 { padding: 6px 11px; font-size: 12.5px; }
+.sacts .chip2.warn { background: var(--bad); color: #fff; }
 .crow .hex { width: 96px; padding: 9px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); font: inherit; font-size: 15px; font-weight: 800; text-transform: lowercase; user-select: text; -webkit-user-select: text; }
 @media (prefers-reduced-motion: reduce) { .card, .toast { animation: none; } .pc.anim { transition: none; } }
 </style>
@@ -352,7 +371,7 @@ body.focus .app { padding-top: 16px; }
   <header>
     <a href="./" id="back">‹ Arcade</a>
     <h1>Chess</h1>
-    <div class="hdr-r"><button class="ib" id="colorBtn" aria-label="Customize colors"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4c0-4.4-4-8-9-8z"/><circle cx="7.5" cy="11" r="1.3" fill="currentColor"/><circle cx="10.5" cy="7" r="1.3" fill="currentColor"/><circle cx="15" cy="7.5" r="1.3" fill="currentColor"/></svg></button><button class="ib" id="themeBtn" aria-label="Switch light or dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button></div>
+    <div class="hdr-r"><button class="ib" id="setupBtn" aria-label="Switch to your next color setup" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg></button><button class="ib" id="colorBtn" aria-label="Customize colors"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4c0-4.4-4-8-9-8z"/><circle cx="7.5" cy="11" r="1.3" fill="currentColor"/><circle cx="10.5" cy="7" r="1.3" fill="currentColor"/><circle cx="15" cy="7.5" r="1.3" fill="currentColor"/></svg></button><button class="ib" id="themeBtn" aria-label="Switch light or dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button></div>
   </header>
 
   <section class="menu" id="menu">
@@ -2728,11 +2747,50 @@ function applyUI() {
 }
 PIECE.w = (SV.ui && SV.ui.pw) || UI_DEF.pw; PIECE.b = (SV.ui && SV.ui.pb) || UI_DEF.pb;
 applyUI();
+// ---------- saved color setups: save whole color configs by name and switch between them ----------
+const MAX_SETUPS = 20;
+const setups = () => (SV.setups = Array.isArray(SV.setups) ? SV.setups : []);
+// two color configs match if every color is the same (missing colors count as the built-in ones)
+function sameUI(a, b) {
+  const A = Object.assign({}, UI_DEF, a || {}), B = Object.assign({}, UI_DEF, b || {});
+  return [...new Set([...Object.keys(A), ...Object.keys(B)])].every(k => (A[k] ?? null) === (B[k] ?? null));
+}
+const setupIx = ui => setups().findIndex(s => sameUI(s.ui, ui));
+const setupSwatch = ui => { const u = Object.assign({}, UI_DEF, ui || {}); return `<i style="background:linear-gradient(135deg,${u.light} 50%,${u.dark} 50%)"><b style="background:${u.accent}"></b></i>`; };
+function updSetupBtn() { $('setupBtn').hidden = setups().length < 2; }
+// header button: jump to the next saved setup
+function cycleSetup() {
+  const S = setups(); if (!S.length) return;
+  const n = (setupIx(SV.ui) + 1) % S.length;
+  SV.ui = Object.assign({}, S[n].ui); save(); applyUI();
+  document.querySelectorAll('.toast').forEach(t => t.remove()); // fast tapping shows one name, not a pile
+  toast(`${S[n].name} (${n + 1}/${S.length})`);
+}
+$('setupBtn').onclick = cycleSetup;
+updSetupBtn();
 function openColors() {
   const saved = SV.ui ? Object.assign({}, SV.ui) : null;
   const draft = Object.assign({}, UI_DEF, saved || {});
   const val = k => draft[k] || defOf(k);
   let tab = 'board';
+  let loaded = setupIx(draft); // the setup you last picked, so it can be updated, renamed or deleted
+  let naming = null, delArm = false; // naming: 'new' or 'rename' while the name box is open
+  // save the setup list without saving colors you're still trying out
+  const persist = () => { const cur = SV.ui; SV.ui = saved; save(); SV.ui = cur; updSetupBtn(); };
+  const setupsHTML = () => {
+    const S = setups(), cur = setupIx(draft), L = S[loaded];
+    const nameVal = naming === 'rename' && L ? L.name : `Setup ${S.length + 1}`;
+    return `<div class="setups"><div class="shd">My setups<small>${S.length ? 'tap one to switch' : 'save your colors to switch between them'}</small></div>
+      <div class="srow">${S.map((s, i) => `<button data-su="${i}" aria-pressed="${i === cur}" title="${esc(s.name)}">${setupSwatch(s.ui)}<span>${esc(s.name)}</span></button>`).join('')}${S.length < MAX_SETUPS ? `<button class="snew" data-sa="new"><em>+</em>Save as new</button>` : ''}</div>
+      ${naming ? `<div class="sname"><input class="field" id="suName" maxlength="20" value="${esc(nameVal)}" placeholder="Name this setup" autocomplete="off"><button class="btn" data-sa="ok">${naming === 'new' ? 'Save' : 'Rename'}</button><button class="btn alt" data-sa="cancel" aria-label="Cancel">✕</button></div>`
+      : L ? `<div class="sacts">${cur !== loaded ? `<button class="chip2 on" data-sa="update">Update “${esc(L.name)}”</button>` : ''}<button class="chip2" data-sa="rename">Rename</button><button class="chip2 ${delArm ? 'warn' : ''}" data-sa="del">${delArm ? 'Tap again to delete' : 'Delete'}</button></div>` : ''}</div>`;
+  };
+  // after a color change: keep the highlighted setup and the Update button in step without closing the name box
+  const updSetups = () => {
+    const box = o.querySelector('.setups'); if (!box) return;
+    if (naming) { const cur = setupIx(draft); box.querySelectorAll('[data-su]').forEach(b => b.setAttribute('aria-pressed', +b.dataset.su === cur)); }
+    else box.outerHTML = setupsHTML();
+  };
   const open = new Set(); // which colors have their sliders dropped down
   const o = document.createElement('div'); o.className = 'ov';
   const sliders = k => { const [h, sa, l] = toHsl(val(k));
@@ -2750,6 +2808,7 @@ function openColors() {
     const [, , keys] = COLOR_TABS().find(t => t[0] === tab);
     o.innerHTML = `<div class="card colors"><h3 style="font-size:21px">Customize colors</h3>
       ${preview()}
+      ${setupsHTML()}
       <div class="ctabs">${COLOR_TABS().map(([id, n]) => `<button data-tab="${id}" aria-pressed="${tab === id}">${n}</button>`).join('')}</div>
       ${tab === 'board' ? `<div class="presets">${UI_PRESETS.map(([n, l, d, a], i) => `<button data-p="${i}" title="${n}"><span style="background:linear-gradient(135deg,${l} 50%,${d} 50%)"></span><b style="background:${a}"></b>${n}</button>`).join('')}</div>` : ''}
       ${tab === 'pieces' ? `<div class="presets">${PIECE_PRESETS.map(([n, w, b], i) => `<button data-pp="${i}" title="${n}"><span style="background:linear-gradient(135deg,${w} 50%,${b} 50%)"></span>${n}</button>`).join('')}</div>` : ''}
@@ -2760,6 +2819,28 @@ function openColors() {
       <div class="row"><button class="btn alt" data-a="reset">Reset all</button><button class="btn" data-a="save">Save</button></div></div>`;
     o.querySelector('.colors').scrollTop = sc;
     const at = o.querySelector('.ctabs [aria-pressed="true"]'); if (at && !draw.scrolled) { at.scrollIntoView({ inline: 'center', block: 'nearest' }); }
+    const on = o.querySelector('.srow [aria-pressed="true"]'); if (on) on.scrollIntoView({ inline: 'nearest', block: 'nearest' });
+    const nm = o.querySelector('#suName'); if (nm) { nm.focus(); nm.select(); }
+  };
+  // load a saved setup into the editor (live preview, still needs Save to keep it)
+  const loadSetup = i => { for (const k of Object.keys(draft)) delete draft[k]; Object.assign(draft, UI_DEF, setups()[i].ui); loaded = i; naming = null; delArm = false; draw(); refresh(); };
+  const setupAction = act => {
+    const S = setups();
+    if (act === 'new') { naming = naming === 'new' ? null : 'new'; delArm = false; draw(); return; }
+    if (act === 'rename') { naming = 'rename'; delArm = false; draw(); return; }
+    if (act === 'cancel') { naming = null; draw(); return; }
+    if (act === 'ok') {
+      const name = (o.querySelector('#suName').value || '').trim().slice(0, 20);
+      if (!name) { toast('Give it a name first'); return; }
+      if (naming === 'new') { S.push({ name, ui: Object.assign({}, draft) }); loaded = S.length - 1; toast(`Saved “${name}”`); }
+      else if (S[loaded]) { S[loaded].name = name; toast('Renamed'); }
+      naming = null; persist(); draw(); return;
+    }
+    if (act === 'update' && S[loaded]) { S[loaded].ui = Object.assign({}, draft); persist(); draw(); toast(`Updated “${S[loaded].name}”`); return; }
+    if (act === 'del' && S[loaded]) {
+      if (!delArm) { delArm = true; draw(); return; }
+      const nm = S[loaded].name; S.splice(loaded, 1); loaded = -1; delArm = false; persist(); draw(); toast(`Deleted “${nm}”`); return;
+    }
   };
   // refresh just the parts that show colors, so sliders keep working while you drag
   const refresh = (skip) => {
@@ -2777,6 +2858,7 @@ function openColors() {
     const c = o.querySelector('[data-auto]'); if (c) c.classList.toggle('on', !!draft.dotAuto);
     const st = o.querySelector('[data-str]'); if (st) st.style.background = `linear-gradient(90deg,transparent,${draft.dotAuto ? '#888' : draft.dot})`;
     SV.ui = Object.assign({}, draft); applyUI(); // live preview on the real screen too
+    updSetups();
   };
   const setColor = (k, v) => { draft[k] = v; if (k === 'dot') draft.dotAuto = false; };
   draw();
@@ -2791,6 +2873,8 @@ function openColors() {
   o.addEventListener('click', e => {
     const dd = e.target.closest('[data-dd]');
     if (dd) { const k = dd.dataset.dd, box = o.querySelector(`.hsl[data-hk="${k}"]`); if (open.has(k)) open.delete(k); else open.add(k); box.hidden = !open.has(k); dd.setAttribute('aria-expanded', open.has(k)); return; }
+    const su = e.target.closest('[data-su]'); if (su) { loadSetup(+su.dataset.su); return; }
+    const sa = e.target.closest('[data-sa]'); if (sa) { setupAction(sa.dataset.sa); return; }
     const tb = e.target.closest('[data-tab]'); if (tb) { tab = tb.dataset.tab; draw(); return; }
     if (e.target.closest('[data-auto]')) { draft.dotAuto = !draft.dotAuto; refresh(); return; }
     const p = e.target.closest('[data-p]');
@@ -2801,13 +2885,14 @@ function openColors() {
     if (a && a.dataset.a === 'tabreset') { COLOR_TABS().find(t => t[0] === tab)[2].forEach(k => { if (k in UI_DEF) draft[k] = UI_DEF[k]; else delete draft[k]; }); if (tab === 'board') Object.assign(draft, { dotAuto: true, dotA: 35 }); draw(); refresh(); return; }
     if (a && a.dataset.a === 'save') { SV.ui = Object.assign({}, draft); save(); o.remove(); applyUI(); toast('Colors saved'); }
     else if (a && a.dataset.a === 'reset') { SV.ui = null; save(); o.remove(); applyUI(); toast('Colors reset'); }
-    else if (e.target === o) { SV.ui = saved; o.remove(); applyUI(); } // tap outside = cancel
+    else if (e.target === o) { SV.ui = saved; save(); o.remove(); applyUI(); } // tap outside = cancel
   });
+  o.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'suName') { e.preventDefault(); setupAction('ok'); } else if (e.key === 'Escape' && naming) { setupAction('cancel'); } });
 }
 $('colorBtn').onclick = openColors;
 initFB();
 
-window.__chess = { fb, pushBoard, openColors, get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
+window.__chess = { fb, pushBoard, openColors, cycleSetup, get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
 showMenu();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('./sw.js').catch(() => { });
 })();
