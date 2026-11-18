@@ -294,6 +294,14 @@ a.cab { color: inherit; text-decoration: none; box-sizing: border-box; }
           <span class="chip play">PLAY</span><span class="best" id="cab-sudoku-best"></span>
         </div>
       </a>
+      <a class="cab" id="cab-chess" href="./chess.html">
+        <canvas width="16" height="16" id="thumb-chess"></canvas>
+        <div>
+          <h2>CHESS</h2>
+          <p>Play six bots from total beginner to master. Takebacks, hints and your own rating.</p>
+          <span class="chip play">PLAY</span><span class="best" id="cab-chess-best"></span>
+        </div>
+      </a>
       <div class="cab locked">
         <canvas width="16" height="16" id="thumb-run"></canvas>
         <div>
@@ -1864,6 +1872,8 @@ window.addEventListener('pagehide', save);
   try { const t = JSON.parse(localStorage.getItem('pocketArcade.cardshop.v2') || '{}'); const n = Object.values(t.own || {}).filter(o => o.n + o.f + o.s > 0).length; if (n) $('cab-cards-best').textContent = `${n}/36 cards`; } catch (e) {}
   drawMap($('thumb-sudoku').getContext('2d'), ['1111111111111111', '1222222222222221', '1233343334333321', '1235343335333321', '1233343334353321', '1244444444444421', '1233343534333321', '1233343334335321', '1253343334333321', '1244444444444421', '1233353334333321', '1233343334353321', '1233343354333321', '1222222222222221', '1111111111111111', '1111111111111111'], { 1: '#151a2e', 2: '#8a92c4', 3: '#1f2540', 4: '#8a92c4', 5: '#7fb8ff' });
   try { const t = JSON.parse(localStorage.getItem('pocketArcade.sudoku.v1') || '{}'); const w = Object.values(t.wins || {}).reduce((a, b) => a + b, 0); if (w) $('cab-sudoku-best').textContent = `${w} solved`; } catch (e) {}
+  drawMap($('thumb-chess').getContext('2d'), ['1122112OO1221122', '112211OKKO221122', '22112OKKKKO12211', '22112OOKKOO12211', '1122OKKKKKKO1122', '112OKKKKKKKKO122', '221OKKKKKKKKO211', '2211OKKKKKKO2211', '11221OKKKKO21122', '11221OKKKKO21122', '2211OKKKKKKO2211', '221OKKKKKKKKO211', '11OKKKKKKKKKKO22', '11OKKKKKKKKKKO22', '221OOOOOOOOOO211', '2211221122112211'], { 1: '#ebecd0', 2: '#779556', K: '#fafaf7', O: '#1c1b19' });
+  try { const t = JSON.parse(localStorage.getItem('pocketArcade.chess.v1') || '{}'); if (t.games || Object.keys(t.rec || {}).length) { const w = Object.values(t.rec || {}).reduce((a, r) => a + r.w, 0); $('cab-chess-best').textContent = `Rating ${Math.round(t.rating || 800)}` + (w ? ` · ${w} wins` : ''); } } catch (e) {}
   drawMap($('thumb-run').getContext('2d'), ['1111111111111111', '1111111111111111', '1111111111111111', '1111111111111111', '1111111111111111', '1111111QQ1111111', '111111QQQQ111111', '1111111QQ1111111', '111111QQQQ111111', '11111Q1QQ1Q11111', '1111111QQ1111111', '111111Q11Q11R111', '11111Q1111Q1RR11', '2222222222222222', '3333333333333333', '3333333333333333'], { 1: '#1d2647', Q: '#f4ead8', R: '#ff6b5e', 2: '#5ee08a', 3: '#2a6b3a' });
   drawMap($('thumb-tower').getContext('2d'), ['1111111111111111', '1111111111111111', '11111S1S1S111111', '11111SSSSS111111', '111111SSS1111111', '111111SYS1111111', '111111SSS1111111', '111111SSS11RR111', '2222222222RR2222', '2222222222222222', '3333333333333333', '3333RR3333333333', '3333RR3333333333', '3333333333333333', '2222222222222222', '2222222222222222'], { 1: '#14204a', S: '#a0a3aa', Y: '#f5c518', R: '#ff6b5e', 2: '#2a6b3a', 3: '#7a5230' });
   drawMap($('thumb-horde').getContext('2d'), ['1111111111111111', '1R11111111111R11', '1111111R11111111', '1111111111111111', '1111R11111111R11', '1111111Y11111111', '1111111111111111', '1111111Y11111111', '1111111111111111', '1R11111QQ11111R1', '111111QQQQ111111', '11111QQQQQQ11111', '1111111111111111', '11R1111111111R11', '1111111111111111', '1111111111111111'], { 1: '#120a1c', R: '#ff6b5e', Y: '#f5c518', Q: '#5ff0f0' });
