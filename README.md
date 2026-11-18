@@ -17,6 +17,9 @@ Play against six bots, from Pip (250) to Titan (2300). Pick your color, drag or 
 ### Color setups
 Tap the palette button to customize every color, then **Save as new** under *My setups* to keep that look under a name. Tap a setup to switch to it, and use **Update**, **Rename** or **Delete** on the one you picked. Once you have two or more, the ⇄ button next to the palette flips through them without opening the editor.
 
+### Your own pictures
+In the color editor, the **Screen** tab lets you upload any picture as the background (with a Fade slider so text stays readable), and the **Pieces** tab lets you tap any of the 12 pieces to replace it with your own picture. Transparent PNGs work best for pieces. Empty space around them is trimmed off automatically. Pictures are shrunk and saved on your device, and they're included when you save a color setup.
+
 ### Chess puzzles
 Rated puzzles matched to your skill (Standard, Hard or Extra Hard), a daily puzzle with a streak and an archive back to 2016, and the Puzzle Journey from Wood to Legend. After each puzzle you get its rating, themes and target time, and you can open it on an analysis board to test other lines against the engine.
 

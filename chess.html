@@ -97,7 +97,7 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
 .sq.d .cf, .sq.d .cr { color: var(--sq-l); }
 .sq .cr { left: 3px; top: 3px; } .sq .cf { right: 3px; bottom: 2px; }
 .ghost { position: fixed; z-index: 50; pointer-events: none; transform: translate(-50%, -60%); }
-.pc.anim { transition: transform .18s ease-out; }
+.pc.anim { transition: transform .22s cubic-bezier(.2,.8,.25,1); }
 .moves { display: flex; gap: 4px; overflow-x: auto; padding: 8px 2px 4px; scrollbar-width: none; font-size: 13px; font-weight: 800; min-height: 34px; }
 .moves::-webkit-scrollbar { display: none; }
 .moves span { white-space: nowrap; color: var(--soft); }
@@ -162,7 +162,7 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
 .promo button { aspect-ratio: 1; border-radius: 14px; background: var(--sq-l); }
 .promo button:nth-child(even) { background: var(--sq-d); }
 .promo svg { width: 100%; height: 100%; }
-.toast { position: fixed; left: 50%; top: 14px; transform: translateX(-50%); background: var(--panel2); border: 1px solid var(--line); padding: 10px 16px; border-radius: 14px; font-weight: 800; font-size: 14px; z-index: 30; animation: rise .3s; box-shadow: 0 8px 20px rgba(0,0,0,.35); white-space: nowrap; }
+.toast { position: fixed; left: 50%; top: 14px; transform: translateX(-50%); animation: toastIn .32s cubic-bezier(.2,1.3,.4,1) !important; background: var(--panel2); border: 1px solid var(--line); padding: 10px 16px; border-radius: 14px; font-weight: 800; font-size: 14px; z-index: 30; animation: rise .3s; box-shadow: 0 8px 20px rgba(0,0,0,.35); white-space: nowrap; }
 /* ---------- puzzles ---------- */
 .modeseg { margin-bottom: 14px; }
 .pcard { padding: 14px 16px; border-radius: 18px; background: var(--panel); border: 1px solid var(--line); margin-top: 10px; }
@@ -343,6 +343,19 @@ body.focus .app { padding-top: 16px; }
 .crow input[type=color]::-webkit-color-swatch-wrapper { padding: 0; }
 .crow input[type=color]::-webkit-color-swatch { border: 2px solid var(--line); border-radius: 50%; }
 .crow input[type=color]::-moz-color-swatch { border: 2px solid var(--line); border-radius: 50%; }
+/* uploaded pictures */
+.bgbox { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.bgthumb { width: 96px; height: 64px; border-radius: 10px; background: var(--panel2) center/cover; border: 1px solid var(--line); display: grid; place-items: center; font-size: 12px; font-weight: 800; color: var(--soft); flex: none; }
+.bgacts { display: flex; gap: 6px; flex-wrap: wrap; }
+.bgacts .chip2, .sacts .chip2 { padding: 7px 12px; font-size: 13px; }
+.fade { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 900; color: var(--soft); margin-bottom: 8px; }
+.fade input[type=range] { flex: 1; -webkit-appearance: none; appearance: none; height: 12px; border-radius: 99px; outline: none; border: 1px solid var(--line); }
+.fade input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 2px solid #222; box-shadow: 0 1px 4px rgba(0,0,0,.4); }
+.fade input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: #fff; border: 2px solid #222; }
+.pgrid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 10px; }
+.pgrid button { position: relative; aspect-ratio: 1; border-radius: 10px; background: linear-gradient(135deg, var(--sq-l, #ebecd0) 50%, var(--sq-d, #779556) 50%); padding: 3px; }
+.pgrid button svg { width: 100%; height: 100%; display: block; }
+.pgrid i { position: absolute; top: -5px; right: -5px; width: 20px; height: 20px; border-radius: 50%; background: var(--bad); color: #fff; font-style: normal; font-size: 11px; font-weight: 900; display: grid; place-items: center; box-shadow: 0 1px 3px rgba(0,0,0,.35); }
 /* saved color setups */
 .setups { margin: 0 0 12px; }
 .shd { font-size: 12.5px; font-weight: 900; color: var(--soft); text-transform: uppercase; letter-spacing: .5px; margin: 0 2px 6px; }
@@ -363,7 +376,36 @@ body.focus .app { padding-top: 16px; }
 .sacts .chip2 { padding: 6px 11px; font-size: 12.5px; }
 .sacts .chip2.warn { background: var(--bad); color: #fff; }
 .crow .hex { width: 96px; padding: 9px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); font: inherit; font-size: 15px; font-weight: 800; text-transform: lowercase; user-select: text; -webkit-user-select: text; }
-@media (prefers-reduced-motion: reduce) { .card, .toast { animation: none; } .pc.anim { transition: none; } }
+/* ---------- smooth motion ---------- */
+:root { --ease: cubic-bezier(.2,.8,.25,1); }
+.app > section, #playMenu, #puzMenu { animation: screenIn .3s var(--ease); }
+@keyframes screenIn { from { opacity: 0; transform: translateY(10px); } }
+.ov { animation: ovIn .2s ease-out; }
+.ov.closing { animation: ovOut .18s ease-in forwards; pointer-events: none; }
+.ov.closing .card { animation: cardOut .18s ease-in forwards; }
+@keyframes ovIn { from { background: rgba(10,10,8,0); } }
+@keyframes ovOut { to { background: rgba(10,10,8,0); } }
+/* redrawn popups don't replay the pop-in */
+.card.still { animation: none; }
+@keyframes cardOut { to { transform: translateY(12px) scale(.96); opacity: 0; } }
+@keyframes toastIn { from { opacity: 0; transform: translate(-50%, -14px) scale(.95); } }
+.toast.out { animation: toastOut .25s ease-in forwards !important; }
+@keyframes toastOut { to { opacity: 0; transform: translate(-50%, -10px); } }
+button { transition: transform .14s var(--ease), background-color .2s, color .2s, box-shadow .14s, border-color .2s, opacity .2s; }
+button:active:not(:disabled) { transform: scale(.96); }
+.btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 var(--accent-d); }
+.btn.alt:active:not(:disabled) { box-shadow: 0 1px 0 rgba(0,0,0,.25); }
+.sw { transition: background .2s; } .sw::after { transition: transform .25s cubic-bezier(.3,1.4,.5,1); }
+.sq.dot::after, .sq.ring::after { animation: dotIn .16s var(--ease); }
+@keyframes dotIn { from { transform: scale(.3); opacity: 0; } }
+.hsl:not([hidden]) { animation: dropIn .2s var(--ease); }
+@keyframes dropIn { from { opacity: 0; transform: translateY(-6px); } }
+/* fade colors when switching light/dark or a saved setup */
+html.recolor, html.recolor * { transition: background-color .35s ease, color .35s ease, border-color .35s ease, fill .35s ease !important; }
+#bgImg { position: fixed; inset: 0; z-index: -1; background-size: cover; background-position: center; pointer-events: none; transition: opacity .4s; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
 </style>
 </head>
 <body>
@@ -1020,10 +1062,23 @@ let SV = { theme: null, color: 'w', tb: false, rating: 150, peak: 150, games: 0,
 try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s) { if (!s.v) { s.rating = Math.max(100, (s.rating || 800) - 650); s.peak = Math.max(s.rating, (s.peak || 800) - 650); s.v = 2; } SV = Object.assign(SV, s); } } catch (e) { }
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(SV)); } catch (e) { } };
 
+// ---------- smooth motion helpers ----------
+const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+// fade every color for a moment (light/dark switch, saved setups)
+function recolor() { if (calm()) return; const h = document.documentElement; h.classList.add('recolor'); clearTimeout(recolor.t); recolor.t = setTimeout(() => h.classList.remove('recolor'), 450); }
+// popups fade out instead of vanishing: removing one plays a short closing animation first
+const rmNode = Element.prototype.remove;
+Element.prototype.remove = function () {
+  if (this.classList && this.classList.contains('ov') && !this.classList.contains('closing') && this.isConnected && !calm()) {
+    this.classList.add('closing'); setTimeout(() => rmNode.call(this), 180); return;
+  }
+  return rmNode.call(this);
+};
+
 // ---------- theme ----------
 function applyTheme(t) { document.documentElement.dataset.theme = t; document.querySelector('meta[name=theme-color]').content = t === 'light' ? '#f4f2ec' : '#262421'; }
 applyTheme(SV.theme || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'));
-$('themeBtn').onclick = () => { SV.theme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'; applyTheme(SV.theme); save(); if (typeof applyUI === 'function') applyUI(); };
+$('themeBtn').onclick = () => { recolor(); SV.theme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'; applyTheme(SV.theme); save(); if (typeof applyUI === 'function') applyUI(); };
 
 // ---------- pieces ----------
 const SHAPES = {
@@ -1034,10 +1089,15 @@ const SHAPES = {
   5: { b: '<path d="M9 13l4.5 8L16 9.5l3.5 9.5L22.5 8l3 11L29 9.5l2.5 11.5L36 13l-5 16H14z"/><circle cx="9" cy="12.5" r="2.3"/><circle cx="16" cy="9" r="2.3"/><circle cx="22.5" cy="7.5" r="2.3"/><circle cx="29" cy="9" r="2.3"/><circle cx="36" cy="12.5" r="2.3"/><path d="M14 29h17l-1 4.5H15z"/><rect x="11" y="33.5" width="23" height="5.5" rx="1.5"/>', d: '' },
   6: { b: '<path d="M21 3.5h3v3h3v3h-3v3.5h-3V9.5h-3v-3h3z"/><path d="M22.5 13.5c-1.6-2.2-3.8-3.2-6.4-2.6-6 1.4-7.4 9.6-1.8 18.1h16.4c5.6-8.5 4.2-16.7-1.8-18.1-2.6-.6-4.8.4-6.4 2.6z"/><path d="M14.3 29h16.4l-.8 4.5H15.1z"/><rect x="11" y="33.5" width="23" height="5.5" rx="1.5"/>', d: '<path d="M22.5 13.5v15" fill="none"/>' },
 };
-const PIECE = { w: '#fafaf7', b: '#2c2b29' };
+const PIECE = { w: '#fafaf7', b: '#2c2b29', img: {} };
+// uploaded piece pictures: img_wK, img_bP ... (K Q R B N P)
+const PKEY = p => 'img_' + (p > 0 ? 'w' : 'b') + ' PNBRQK'[Math.abs(p)];
+const PIMG_KEYS = [6, 5, 4, 3, 2, 1, -6, -5, -4, -3, -2, -1].map(PKEY);
 const lum = h => { const [r, g, b] = [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
 function pieceSVG(p, cls = 'pc') {
   const t = Math.abs(p), w = p > 0, s = SHAPES[t];
+  const im = PIECE.img[PKEY(p)];
+  if (im) return `<svg class="${cls}${cls === 'pc' && !w ? ' bk' : ''}" viewBox="0 0 45 45"><image href="${im}" x="1.5" y="1.5" width="42" height="42" preserveAspectRatio="xMidYMid meet"/></svg>`;
   const fill = w ? PIECE.w : PIECE.b, light = lum(fill) > 0.45;
   const line = light ? '#1c1b19' : '#0c0c0b', det = light ? '#1c1b19' : '#e9e7df';
   return `<svg class="${cls}${cls === 'pc' && !w ? ' bk' : ''}" viewBox="0 0 45 45"><g fill="${fill}" stroke="${line}" stroke-width="1.5" stroke-linejoin="round">${s.b}</g>${s.d ? `<g stroke="${det}" stroke-width="1.4" stroke-linecap="round">${s.d.replace('fill="D"', `fill="${det}"`)}</g>` : ''}</svg>`;
@@ -1425,7 +1485,7 @@ $('rvNext').onclick = () => goTo(view + 1);
 $('rvLast').onclick = () => goTo(G.moves.length);
 $('moves').addEventListener('click', e => { const b = e.target.closest('[data-ply]'); if (!b) return; if (G && G.over) goTo(+b.dataset.ply); else scrubTo(+b.dataset.ply); });
 document.addEventListener('keydown', e => {
-  if (e.target.closest && e.target.closest('input, textarea') || document.querySelector('.ov')) return;
+  if (e.target.closest && e.target.closest('input, textarea') || document.querySelector('.ov:not(.closing)')) return;
   const k = e.key.toLowerCase();
   if (k === 'z' && !e.metaKey && !e.ctrlKey) { document.body.classList.toggle('focus'); return; }
   if (k === 'x' && !e.metaKey && !e.ctrlKey) {
@@ -1945,7 +2005,7 @@ function sound(k) {
   else if (k === 'win') [523, 659, 784, 1046].forEach((f, i) => tone(f, i * .1, .16));
   else if (k === 'lose') [392, 330, 262].forEach((f, i) => tone(f, i * .14, .2));
 }
-function toast(t) { const d = document.createElement('div'); d.className = 'toast'; d.textContent = t; document.body.append(d); setTimeout(() => d.remove(), 1800); }
+function toast(t) { document.querySelectorAll('.toast').forEach(x => x.remove()); const d = document.createElement('div'); d.className = 'toast'; d.textContent = t; document.body.append(d); setTimeout(() => d.classList.add('out'), 1550); setTimeout(() => d.remove(), 1800); }
 function confirmBox(title, text, ok, fn) {
   const o = document.createElement('div'); o.className = 'ov';
   o.innerHTML = `<div class="card"><h3 style="font-size:21px">${title}</h3><p>${text}</p><div class="row"><button class="btn alt" data-a="no">Cancel</button><button class="btn" data-a="yes">${ok}</button></div></div>`;
@@ -2638,7 +2698,79 @@ const UI_PRESETS = [
   ['Night', '#c9c9c9', '#4d4d4d', '#ff5d5d'], ['Blood', '#e9d6d6', '#8b1a1a', '#c1121f'],
 ];
 const PIECE_PRESETS = [['Classic', '#fafaf7', '#2c2b29'], ['Gold & Silver', '#f2c94c', '#9aa3ad'], ['Red & Blue', '#e23b3b', '#2f5fd0'], ['Ivory & Wood', '#f3e6c8', '#6b4226'], ['Mint & Plum', '#9ff0c8', '#6a2d6e'], ['Neon', '#39ff88', '#ff2bd6'], ['Ghost', '#ffffff', '#5a5a5a'], ['Blood', '#f2e3e3', '#8b0000']];
-const UI_DEF = { light: '#ebecd0', dark: '#779556', accent: '#81b64c', pw: '#fafaf7', pb: '#2c2b29', dot: '#ffffff', dotAuto: true, dotA: 35 };
+const UI_DEF = { light: '#ebecd0', dark: '#779556', accent: '#81b64c', pw: '#fafaf7', pb: '#2c2b29', dot: '#ffffff', dotAuto: true, dotA: 35, bgDim: 45 };
+
+// ---------- uploaded pictures (background + pieces) ----------
+// Pictures are shrunk on upload and kept in the browser's IndexedDB (localStorage is too small for images).
+// Color settings only store a short id for each picture, so saved setups can share them.
+const IMG = {}; // id -> blob URL
+let imgDBp = null;
+const imgDB = () => imgDBp || (imgDBp = new Promise((res, rej) => {
+  try { const r = indexedDB.open('pocketArcadeImages', 1); r.onupgradeneeded = () => r.result.createObjectStore('img'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); } catch (e) { rej(e); }
+}));
+async function idb(mode, fn) {
+  const db = await imgDB();
+  return new Promise((res, rej) => { const tx = db.transaction('img', mode), r = fn(tx.objectStore('img')); tx.oncomplete = () => res(r && r.result); tx.onerror = () => rej(tx.error); tx.onabort = () => rej(tx.error); });
+}
+const IMG_KEYS = ['img_bg', ...PIMG_KEYS];
+function usedImgIds(...extra) {
+  const ids = new Set();
+  [SV.ui, ...(Array.isArray(SV.setups) ? SV.setups.map(x => x.ui) : []), ...extra].forEach(u => u && IMG_KEYS.forEach(k => u[k] && ids.add(u[k])));
+  return ids;
+}
+async function loadImgs() {
+  for (const id of usedImgIds()) {
+    if (IMG[id]) continue;
+    try { const b = await idb('readonly', st => st.get(id)); if (b) IMG[id] = URL.createObjectURL(b); } catch (e) { }
+  }
+}
+// throw away pictures nothing uses any more
+async function gcImgs(...extra) {
+  try {
+    const keep = usedImgIds(...extra), all = await idb('readonly', st => st.getAllKeys());
+    const gone = (all || []).filter(id => !keep.has(id)); if (!gone.length) return;
+    await idb('readwrite', st => { gone.forEach(id => st.delete(id)); });
+    gone.forEach(id => { if (IMG[id]) { URL.revokeObjectURL(IMG[id]); delete IMG[id]; } });
+  } catch (e) { }
+}
+// shrink a picture: pieces get trimmed to what's drawn and fitted in a square, backgrounds get capped in size
+async function prepImage(file, piece) {
+  const src = URL.createObjectURL(file);
+  try {
+    const im = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('bad image')); i.src = src; });
+    let w = im.naturalWidth, h = im.naturalHeight; if (!w || !h) throw new Error('bad image');
+    const fit = Math.min(1, (piece ? 600 : 1600) / Math.max(w, h)); w = Math.max(1, Math.round(w * fit)); h = Math.max(1, Math.round(h * fit));
+    const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d'); x.drawImage(im, 0, 0, w, h);
+    const px = x.getImageData(0, 0, w, h).data;
+    let alpha = false, x0 = w, y0 = h, x1 = -1, y1 = -1;
+    for (let y = 0; y < h; y++) for (let i = 0; i < w; i++) { if (px[(y * w + i) * 4 + 3] > 10) { if (i < x0) x0 = i; if (i > x1) x1 = i; if (y < y0) y0 = y; if (y > y1) y1 = y; } else alpha = true; }
+    if (!piece) return await new Promise(r => c.toBlob(r, alpha ? 'image/png' : 'image/jpeg', .86));
+    if (x1 < 0) { x0 = 0; y0 = 0; x1 = w - 1; y1 = h - 1; } // fully see-through: keep as is
+    const S = 200, cw = x1 - x0 + 1, ch = y1 - y0 + 1, sc = S * .94 / Math.max(cw, ch);
+    const o = document.createElement('canvas'); o.width = o.height = S; const ox = o.getContext('2d');
+    ox.imageSmoothingQuality = 'high';
+    ox.drawImage(c, x0, y0, cw, ch, (S - cw * sc) / 2, (S - ch * sc) / 2, cw * sc, ch * sc);
+    return await new Promise(r => o.toBlob(r, 'image/png'));
+  } finally { URL.revokeObjectURL(src); }
+}
+async function storeImage(blob) {
+  if (!blob) throw new Error('could not read that picture');
+  const id = 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  await idb('readwrite', st => st.put(blob, id));
+  IMG[id] = URL.createObjectURL(blob);
+  return id;
+}
+function syncPieces(u) {
+  PIECE.w = u.pw || UI_DEF.pw; PIECE.b = u.pb || UI_DEF.pb; PIECE.img = {};
+  PIMG_KEYS.forEach(k => { if (u[k] && IMG[u[k]]) PIECE.img[k] = IMG[u[k]]; });
+}
+function applyBg(u) {
+  let el = document.getElementById('bgImg');
+  if (!el) { el = document.createElement('div'); el.id = 'bgImg'; document.body.prepend(el); }
+  const url = u.img_bg && IMG[u.img_bg];
+  el.hidden = !url;
+  if (url) { const d = Math.max(0, Math.min(95, +u.bgDim || 0)), f = `color-mix(in srgb, var(--bg) ${d}%, transparent)`; el.style.backgroundImage = `linear-gradient(${f}, ${f}), url("${url}")`; }
+}
 const hexOk = h => /^#[0-9a-f]{6}$/i.test(h);
 const toRgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
 const toHex = a => '#' + a.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
@@ -2707,7 +2839,7 @@ const COLOR_TABS = () => [
 ];
 function applyUI() {
   const u = Object.assign({}, UI_DEF, SV.ui || {}), r = document.documentElement.style, has = k => SV.ui && SV.ui[k];
-  PIECE.w = u.pw; PIECE.b = u.pb;
+  syncPieces(u); applyBg(u);
   const rgba = (h, a) => { const [x, y, z] = toRgb(h); return `rgba(${x},${y},${z},${a})`; };
   const set = (v, val) => val ? r.setProperty(v, val) : r.removeProperty(v);
   // board + accent
@@ -2747,6 +2879,8 @@ function applyUI() {
 }
 PIECE.w = (SV.ui && SV.ui.pw) || UI_DEF.pw; PIECE.b = (SV.ui && SV.ui.pb) || UI_DEF.pb;
 applyUI();
+// pictures load a moment later (they live in IndexedDB), then everything redraws with them
+loadImgs().then(() => { applyUI(); gcImgs(); });
 // ---------- saved color setups: save whole color configs by name and switch between them ----------
 const MAX_SETUPS = 20;
 const setups = () => (SV.setups = Array.isArray(SV.setups) ? SV.setups : []);
@@ -2762,8 +2896,7 @@ function updSetupBtn() { $('setupBtn').hidden = setups().length < 2; }
 function cycleSetup() {
   const S = setups(); if (!S.length) return;
   const n = (setupIx(SV.ui) + 1) % S.length;
-  SV.ui = Object.assign({}, S[n].ui); save(); applyUI();
-  document.querySelectorAll('.toast').forEach(t => t.remove()); // fast tapping shows one name, not a pile
+  recolor(); SV.ui = Object.assign({}, S[n].ui); save(); applyUI();
   toast(`${S[n].name} (${n + 1}/${S.length})`);
 }
 $('setupBtn').onclick = cycleSetup;
@@ -2804,14 +2937,16 @@ function openColors() {
   const tabNote = { screen: `These are for ${theme()} mode. Switch modes with the moon button to set the other one.`, hl: 'Highlights are blended into your square colors so the board pattern still shows.', board: 'Move dots on Auto stay visible on any square color.' };
   const draw = () => {
     const card = o.querySelector('.colors'), sc = card ? card.scrollTop : 0;
-    PIECE.w = val('pw'); PIECE.b = val('pb');
+    syncPieces(draft);
     const [, , keys] = COLOR_TABS().find(t => t[0] === tab);
-    o.innerHTML = `<div class="card colors"><h3 style="font-size:21px">Customize colors</h3>
+    o.innerHTML = `<div class="card colors${draw.done ? ' still' : ''}"><h3 style="font-size:21px">Customize colors</h3>
       ${preview()}
       ${setupsHTML()}
       <div class="ctabs">${COLOR_TABS().map(([id, n]) => `<button data-tab="${id}" aria-pressed="${tab === id}">${n}</button>`).join('')}</div>
       ${tab === 'board' ? `<div class="presets">${UI_PRESETS.map(([n, l, d, a], i) => `<button data-p="${i}" title="${n}"><span style="background:linear-gradient(135deg,${l} 50%,${d} 50%)"></span><b style="background:${a}"></b>${n}</button>`).join('')}</div>` : ''}
       ${tab === 'pieces' ? `<div class="presets">${PIECE_PRESETS.map(([n, w, b], i) => `<button data-pp="${i}" title="${n}"><span style="background:linear-gradient(135deg,${w} 50%,${b} 50%)"></span>${n}</button>`).join('')}</div>` : ''}
+      ${tab === 'screen' ? bgHTML() : ''}
+      ${tab === 'pieces' ? piecesHTML() : ''}
       ${tabNote[tab] ? `<p class="tnote">${tabNote[tab]}</p>` : ''}
       ${keys.map(row).join('')}
       <button class="swapn" data-a="tabreset" style="margin:10px 0 6px">Reset this tab</button>
@@ -2819,6 +2954,7 @@ function openColors() {
       <div class="row"><button class="btn alt" data-a="reset">Reset all</button><button class="btn" data-a="save">Save</button></div></div>`;
     o.querySelector('.colors').scrollTop = sc;
     const at = o.querySelector('.ctabs [aria-pressed="true"]'); if (at && !draw.scrolled) { at.scrollIntoView({ inline: 'center', block: 'nearest' }); }
+    draw.done = true; // only pop in the first time, not on every tab switch
     const on = o.querySelector('.srow [aria-pressed="true"]'); if (on) on.scrollIntoView({ inline: 'nearest', block: 'nearest' });
     const nm = o.querySelector('#suName'); if (nm) { nm.focus(); nm.select(); }
   };
@@ -2844,7 +2980,7 @@ function openColors() {
   };
   // refresh just the parts that show colors, so sliders keep working while you drag
   const refresh = (skip) => {
-    PIECE.w = val('pw'); PIECE.b = val('pb');
+    syncPieces(draft);
     o.querySelector('.cprev').outerHTML = preview();
     o.querySelectorAll('[data-k]').forEach(x => { if (x.value !== val(x.dataset.k)) x.value = val(x.dataset.k); });
     o.querySelectorAll('[data-h]').forEach(x => { if (document.activeElement !== x) x.value = val(x.dataset.h); });
@@ -2861,11 +2997,34 @@ function openColors() {
     updSetups();
   };
   const setColor = (k, v) => { draft[k] = v; if (k === 'dot') draft.dotAuto = false; };
+  // ----- uploaded pictures -----
+  const bgHTML = () => { const url = draft.img_bg && IMG[draft.img_bg];
+    return `<div class="shd">Background picture<small>same in light and dark mode</small></div>
+      <div class="bgbox"><div class="bgthumb" style="${url ? `background-image:url('${url}')` : ''}">${url ? '' : 'None'}</div>
+      <div class="bgacts"><button class="chip2 on" data-up="img_bg">${url ? 'Change picture' : 'Upload picture'}</button>${url ? '<button class="chip2" data-rm="img_bg">Remove</button>' : ''}</div></div>
+      ${url ? `<label class="fade">Fade<input type="range" min="0" max="90" value="${draft.bgDim}" data-bgdim style="background:linear-gradient(90deg,#888,${val(`bg.${theme()}`)})"></label><p class="tnote" style="margin-top:0">Fade blends the picture into the background color so text stays easy to read.</p>` : ''}`; };
+  const piecesHTML = () => { const any = PIMG_KEYS.some(k => draft[k]);
+    return `<div class="shd">Your own pieces<small>tap one to upload a picture</small></div>
+      <div class="pgrid">${[6, 5, 4, 3, 2, 1, -6, -5, -4, -3, -2, -1].map(p => { const k = PKEY(p); return `<button data-up="${k}" aria-label="Upload a picture for the ${p > 0 ? 'white' : 'black'} ${['', 'pawn', 'knight', 'bishop', 'rook', 'queen', 'king'][Math.abs(p)]}">${pieceSVG(p, '')}${draft[k] ? `<i data-rm="${k}" aria-label="Remove picture">✕</i>` : ''}</button>`; }).join('')}</div>
+      ${any ? '<button class="swapn" data-rmall style="margin:0 0 12px">Remove all piece pictures</button>' : ''}`; };
+  // one hidden file picker, reused for every upload button
+  const fileIn = document.createElement('input'); fileIn.type = 'file'; fileIn.accept = 'image/*'; fileIn.hidden = true;
+  let upKey = null;
+  fileIn.onchange = async () => {
+    const f = fileIn.files && fileIn.files[0], k = upKey; fileIn.value = ''; if (!f || !k) return;
+    try {
+      const id = await storeImage(await prepImage(f, k !== 'img_bg'));
+      draft[k] = id; draw(); refresh(); toast(k === 'img_bg' ? 'Background added' : 'Piece picture added');
+    } catch (err) { toast("Couldn't use that picture"); }
+  };
+  document.body.append(fileIn);
+  const close = () => { o.remove(); fileIn.remove(); setTimeout(gcImgs, 300); };
   draw();
   document.body.append(o);
   o.addEventListener('input', e => {
     const t = e.target, k = t.dataset.k, h = t.dataset.h, box = t.closest('.hsl[data-hk]');
     if (t.dataset.str != null) { draft.dotA = +t.value; refresh(); return; }
+    if (t.dataset.bgdim != null) { draft.bgDim = +t.value; refresh(); return; }
     if (k) { setColor(k, t.value); refresh(); return; }
     if (h) { let v = t.value.trim(); if (!v.startsWith('#')) v = '#' + v; if (/^#[0-9a-f]{3}$/i.test(v)) v = '#' + v.slice(1).split('').map(c => c + c).join(''); if (hexOk(v)) { setColor(h, v.toLowerCase()); refresh(); } return; }
     if (box) { const kk = box.dataset.hk; setColor(kk, fromHsl(+box.querySelector('[data-hsl=h]').value, +box.querySelector('[data-hsl=s]').value, +box.querySelector('[data-hsl=l]').value)); refresh(kk); }
@@ -2879,13 +3038,16 @@ function openColors() {
     if (e.target.closest('[data-auto]')) { draft.dotAuto = !draft.dotAuto; refresh(); return; }
     const p = e.target.closest('[data-p]');
     if (p) { const [, l, d, a] = UI_PRESETS[+p.dataset.p]; Object.assign(draft, { light: l, dark: d, accent: a }); refresh(); return; }
+    const rm = e.target.closest('[data-rm]'); if (rm) { delete draft[rm.dataset.rm]; draw(); refresh(); return; }
+    if (e.target.closest('[data-rmall]')) { PIMG_KEYS.forEach(k => delete draft[k]); draw(); refresh(); return; }
+    const up = e.target.closest('[data-up]'); if (up) { upKey = up.dataset.up; fileIn.click(); return; }
     const pp = e.target.closest('[data-pp]');
     if (pp) { const [, w, b] = PIECE_PRESETS[+pp.dataset.pp]; Object.assign(draft, { pw: w, pb: b }); refresh(); return; }
     const a = e.target.closest('[data-a]');
-    if (a && a.dataset.a === 'tabreset') { COLOR_TABS().find(t => t[0] === tab)[2].forEach(k => { if (k in UI_DEF) draft[k] = UI_DEF[k]; else delete draft[k]; }); if (tab === 'board') Object.assign(draft, { dotAuto: true, dotA: 35 }); draw(); refresh(); return; }
-    if (a && a.dataset.a === 'save') { SV.ui = Object.assign({}, draft); save(); o.remove(); applyUI(); toast('Colors saved'); }
-    else if (a && a.dataset.a === 'reset') { SV.ui = null; save(); o.remove(); applyUI(); toast('Colors reset'); }
-    else if (e.target === o) { SV.ui = saved; save(); o.remove(); applyUI(); } // tap outside = cancel
+    if (a && a.dataset.a === 'tabreset') { COLOR_TABS().find(t => t[0] === tab)[2].forEach(k => { if (k in UI_DEF) draft[k] = UI_DEF[k]; else delete draft[k]; }); if (tab === 'board') Object.assign(draft, { dotAuto: true, dotA: 35 }); if (tab === 'pieces') PIMG_KEYS.forEach(k => delete draft[k]); if (tab === 'screen') { delete draft.img_bg; draft.bgDim = UI_DEF.bgDim; } draw(); refresh(); return; }
+    if (a && a.dataset.a === 'save') { SV.ui = Object.assign({}, draft); save(); close(); applyUI(); toast('Colors saved'); }
+    else if (a && a.dataset.a === 'reset') { SV.ui = null; save(); close(); applyUI(); toast('Colors reset'); }
+    else if (e.target === o) { SV.ui = saved; save(); close(); applyUI(); } // tap outside = cancel
   });
   o.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'suName') { e.preventDefault(); setupAction('ok'); } else if (e.key === 'Escape' && naming) { setupAction('cancel'); } });
 }
