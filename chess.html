@@ -255,6 +255,24 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
 .tiers .cur { color: var(--accent); }
 .howpts { text-align: left; font-size: 13px; color: var(--soft); line-height: 1.6; margin: 0 0 12px; }
 
+/* pass and play */
+.bigbtn.friend { background: linear-gradient(120deg, #7b5cd6, #4a3a9e); margin-top: 12px; }
+.pl.rot { transform: rotate(180deg); }
+.board.faceoff .pc.bk { rotate: 180deg; }
+.clk { margin-left: auto; font-variant-numeric: tabular-nums; font-weight: 900; font-size: 20px; padding: 4px 10px; border-radius: 9px; background: var(--panel2); color: var(--soft); min-width: 74px; text-align: center; }
+.clk.on { background: var(--ink); color: var(--bg); }
+.clk.low.on { background: #d63a2f; color: #fff; }
+.pl .tomove { font-size: 12px; font-weight: 900; color: var(--accent); margin-left: 6px; }
+.pvpset { text-align: left; }
+.pvpset h3 { text-align: center; }
+.pvpset .lbl2 { font-size: 12px; font-weight: 900; color: var(--soft); letter-spacing: .5px; text-transform: uppercase; margin: 12px 0 6px; }
+.pvpset .names { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pvpset .names .field { margin: 0; font-size: 15px; padding: 10px 12px; }
+.pvpset .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.pvpset .chips button { padding: 8px 12px; border-radius: 10px; background: var(--panel2); font-weight: 800; font-size: 14px; }
+.pvpset .chips button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.pvpset .seg { margin: 0; }
+.pvpset small.note { display: block; color: var(--soft); font-size: 12.5px; margin-top: 6px; }
 /* leaderboard */
 .lb { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
 .lb .r { display: grid; grid-template-columns: 38px 1fr auto; gap: 8px; align-items: center; padding: 10px 14px; border-top: 1px solid var(--line); font-weight: 800; }
@@ -299,6 +317,7 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
     <div class="seg modeseg" role="group" aria-label="Mode" id="modeSeg"><button data-m="play">Play bots</button><button data-m="puz">Puzzles</button></div>
     <div id="playMenu">
     <div class="rate" id="rateCard"></div>
+    <button class="bigbtn friend" id="friendBtn"><div><b>Play a friend</b><small>Two players, one phone. Pass it back and forth.</small></div><span class="go">Play</span></button>
     <button class="cont" id="contBtn" hidden><div><b>Continue game</b><small id="contInfo"></small></div><span class="go">Play</span></button>
     <h2>Play as</h2>
     <div class="seg" role="group" aria-label="Your color" id="colorSeg"></div>
@@ -353,6 +372,7 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
       <button class="tool" id="undoBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg>Takeback</button>
       <button class="tool" id="hintBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V16h8v-1.3A7 7 0 0 0 12 2z"/></svg>Hint</button>
       <button class="tool" id="flipBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg>Flip</button>
+      <button class="tool" id="drawBtn" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h14M5 15h14"/></svg>Draw</button>
       <button class="tool" id="resignBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22V3M5 4h12l-2 4 2 4H5"/></svg>Resign</button>
     </div>
     <div id="overBar" hidden>
@@ -951,7 +971,7 @@ const SHAPES = {
 function pieceSVG(p, cls = 'pc') {
   const t = Math.abs(p), w = p > 0, s = SHAPES[t];
   const fill = w ? '#fafaf7' : '#2c2b29', line = w ? '#1c1b19' : '#0c0c0b', det = w ? '#1c1b19' : '#e9e7df';
-  return `<svg class="${cls}" viewBox="0 0 45 45"><g fill="${fill}" stroke="${line}" stroke-width="1.5" stroke-linejoin="round">${s.b}</g>${s.d ? `<g stroke="${det}" stroke-width="1.4" stroke-linecap="round">${s.d.replace('fill="D"', `fill="${det}"`)}</g>` : ''}</svg>`;
+  return `<svg class="${cls}${cls === 'pc' && !w ? ' bk' : ''}" viewBox="0 0 45 45"><g fill="${fill}" stroke="${line}" stroke-width="1.5" stroke-linejoin="round">${s.b}</g>${s.d ? `<g stroke="${det}" stroke-width="1.4" stroke-linecap="round">${s.d.replace('fill="D"', `fill="${det}"`)}</g>` : ''}</svg>`;
 }
 const avatar = (b, cls = 'av') => `<div class="${cls}" style="background:${b.bg}">${pieceSVG(-b.t, '')}</div>`;
 
@@ -1007,9 +1027,11 @@ function newGame(botId) {
 }
 function startGame() {
   replay();
-  sel = -1; targets = []; ptargets = []; hintSq = []; premove = null; flipped = G.me === -1; anim = null; stopAnalysis(); AN = null;
+  sel = -1; targets = []; ptargets = []; hintSq = []; premove = null; anim = null; stopAnalysis(); AN = null;
+  if (G.pvp) { G.me = E.side; flipped = G.layout === 'rotate' && E.side === -1; } else flipped = G.me === -1;
   $('menu').hidden = true; $('game').hidden = false;
-  $('back').textContent = '‹ Bots';
+  $('back').textContent = G.pvp ? '‹ Chess' : '‹ Bots';
+  if (G.pvp) startClock();
   render();
   if (!G.over) { const st = E.status(); if (st) finish(st); else maybeBot(); }
 }
@@ -1031,7 +1053,6 @@ function material(color) {
   return s;
 }
 function render() {
-  const bot = botById(G.bot);
   const shown = G.over ? view : G.moves.length;
   const B = E.board, lastU = G.moves[shown - 1];
   const last = lastU ? [sqOf(lastU.slice(0, 2)), sqOf(lastU.slice(2, 4))] : [];
@@ -1072,10 +1093,22 @@ function render() {
   }
   // players
   const meMat = material(G.me), botMat = material(-G.me);
+  const bot = G.pvp ? BOTS[0] : botById(G.bot);
   const botRow = `${avatar(bot)}<div class="who"><b>${bot.name}</b><span class="elo">${bot.elo}</span><div class="caps">${capsHTML(G.me)}${botMat > meMat ? `<span class="adv">+${botMat - meMat}</span>` : ''}</div></div>${thinking ? '<span class="st think">Thinking</span>' : ''}`;
   const meRow = `<div class="av" style="background:var(--panel2)">${pieceSVG(G.me * 1, '')}</div><div class="who"><b>You</b><span class="elo">${Math.round(SV.rating)}</span><div class="caps">${capsHTML(-G.me)}${meMat > botMat ? `<span class="adv">+${meMat - botMat}</span>` : ''}</div></div>${!thinking && !G.over && E.side === G.me ? '<span class="st turn">Your move</span>' : ''}`;
-  $('topPl').innerHTML = flipped === (G.me === -1) ? botRow : meRow;
-  $('botPl').innerHTML = flipped === (G.me === -1) ? meRow : botRow;
+  if (G.pvp) {
+    const row = c => { const i = c === 1 ? 0 : 1, mine = material(c), theirs = material(-c);
+      return `<div class="av" style="background:var(--panel2)">${pieceSVG(c, '')}</div><div class="who"><b>${esc(G.names[i])}</b>${!G.over && E.side === c ? '<span class="tomove">to move</span>' : ''}<div class="caps">${capsHTML(-c)}${mine > theirs ? `<span class="adv">+${mine - theirs}</span>` : ''}</div></div>${G.clock ? `<span class="clk" id="clk${i}"></span>` : ''}`; };
+    const topC = flipped ? 1 : -1;
+    $('topPl').innerHTML = row(topC); $('botPl').innerHTML = row(-topC);
+    $('topPl').classList.toggle('rot', G.layout === 'face' && !G.over);
+    $('board').classList.toggle('faceoff', G.layout === 'face');
+    drawClocks();
+  } else {
+    $('topPl').classList.remove('rot'); $('board').classList.remove('faceoff');
+    $('topPl').innerHTML = flipped === (G.me === -1) ? botRow : meRow;
+    $('botPl').innerHTML = flipped === (G.me === -1) ? meRow : botRow;
+  }
   // move list
   let mh = '';
   const tag = i => { if (!G.over) return ''; const f = moveInfo(i); return f && ['inaccuracy', 'mistake', 'blunder'].includes(f.k) ? `<span class="tag" style="background:${CLS[f.k].c}">${CLS[f.k].s}</span>` : ''; };
@@ -1089,7 +1122,8 @@ function render() {
   // tools
   $('tools').hidden = !!G.over; $('overBar').hidden = !G.over;
   $('undoBtn').hidden = !tbOn(G);
-  $('undoBtn').disabled = myMoveCount() === 0;
+  $('undoBtn').disabled = G.pvp ? !G.moves.length : myMoveCount() === 0;
+  $('hintBtn').hidden = !!G.pvp; $('drawBtn').hidden = !G.pvp;
   if (G.over) {
     $('rvPos').innerHTML = shown ? `<b>${sans[shown - 1]}</b>Move ${Math.ceil(shown / 2)} of ${Math.ceil(sans.length / 2)}` : `<b>Start</b>${sans.length} moves`;
     $('rvFirst').disabled = $('rvPrev').disabled = shown === 0;
@@ -1204,6 +1238,11 @@ function play(m, animate) {
   if (animate) anim = { from: E.from(m), to: E.to(m) };
   E.make(m);
   G.moves.push(E.uci(m)); sans.push(s);
+  if (G.pvp) {
+    clockMoved(mover);
+    G.me = E.side;
+    if (G.layout === 'rotate') setTimeout(() => { if (G && G.pvp && !G.over && E.side === G.me) { flipped = E.side === -1; render(); } }, 450);
+  }
   const mine = p => p && (p > 0) === (G.me > 0);
   if (mover !== G.me && !premove && keep >= 0 && mine(E.board[keep])) selectSq(keep); else selectSq(-1);
   hintSq = [];
@@ -1239,6 +1278,13 @@ function maybeBot() {
 
 // ---------- tools ----------
 $('undoBtn').onclick = () => {
+  if (G && G.pvp) {
+    if (G.over || !G.moves.length || !tbOn(G)) return;
+    G.moves.pop(); G.takebacks++; replay(); G.me = E.side;
+    if (G.clock) G.clock.last = G.moves.length ? Date.now() : null;
+    if (G.layout === 'rotate') flipped = E.side === -1;
+    save(); selectSq(-1); render(); return;
+  }
   if (!G || G.over || !tbOn(G) || myMoveCount() === 0) return;
   if (thinking) { cancelBrain(); thinking = false; }
   premove = null;
@@ -1262,12 +1308,19 @@ $('hintBtn').onclick = () => {
 $('flipBtn').onclick = () => { flipped = !flipped; render(); };
 $('resignBtn').onclick = () => {
   if (!G || G.over) return;
+  if (G.pvp) {
+    const o = document.createElement('div'); o.className = 'ov';
+    o.innerHTML = `<div class="card"><h3 style="font-size:21px">Who resigns?</h3><div class="row" style="flex-direction:column"><button class="btn alt" data-r="1">${esc(G.names[0])} (White) resigns</button><button class="btn alt" data-r="-1">${esc(G.names[1])} (Black) resigns</button><button class="btn" data-r="0">Keep playing</button></div></div>`;
+    document.body.append(o);
+    o.onclick = e => { const b = e.target.closest('[data-r]'); if (!b && e.target !== o) return; o.remove(); const r = b ? +b.dataset.r : 0; if (r) finish({ result: r === 1 ? '0-1' : '1-0', reason: 'resignation' }); };
+    return;
+  }
   confirmBox('Resign?', `This counts as a loss against ${botById(G.bot).name}.`, 'Resign', () => {
     cancelBrain(); thinking = false;
     finish({ result: G.me === 1 ? '0-1' : '1-0', reason: 'resignation' });
   });
 };
-$('rematchBtn').onclick = () => newGame(G.bot);
+$('rematchBtn').onclick = () => G.pvp ? pvpRematch() : newGame(G.bot);
 // ---------- review a finished game ----------
 function goTo(n) {
   if (!G || !G.over) return;
@@ -1334,16 +1387,16 @@ function moveInfo(i) {
   const acc = Math.max(0, Math.min(100, 103.1668 * Math.exp(-0.04354 * drop) - 3.1669));
   return AN.info[i] = { k, drop, acc, best: a.best, bestSan: a.bs };
 }
-const isMine = i => (i % 2 === 0 ? 1 : -1) === G.me;
+const isMine = i => (i % 2 === 0 ? 1 : -1) === (G.pvp ? 1 : G.me);
 function evalText(n) {
   const s = posScore(n); if (s == null) return '';
   const w = n % 2 === 0 ? s : -s;
   if (Math.abs(w) > 90000) { const m = Math.ceil((100000 - Math.abs(w)) / 2); return m ? (w > 0 ? '' : '-') + 'M' + m : (w > 0 ? '1-0' : '0-1'); }
   return (w >= 0 ? '+' : '') + (w / 100).toFixed(1);
 }
-function nextMistake(from) { for (let i = from; i < G.moves.length; i++) { const f = moveInfo(i); if (isMine(i) && f && ['inaccuracy', 'mistake', 'blunder'].includes(f.k)) return i; } return -1; }
+function nextMistake(from) { for (let i = from; i < G.moves.length; i++) { const f = moveInfo(i); if ((G.pvp || isMine(i)) && f && ['inaccuracy', 'mistake', 'blunder'].includes(f.k)) return i; } return -1; }
 function renderAnalysis(n) {
-  const el = $('anal'), bot = botById(G.bot);
+  const el = $('anal'), bot = G.pvp ? BOTS[0] : botById(G.bot);
   if (!AN || AN.failed) { el.innerHTML = 'Move analysis is not available on this device.'; return; }
   const total = G.moves.length + 1, got = AN.res.filter(Boolean).length;
   if (!AN.done) { el.innerHTML = `<div class="ln">Analyzing your game...<span class="ev">${Math.floor(got / total * 100)}%</span></div><div class="bar"><i style="width:${got / total * 100}%"></i></div>`; return; }
@@ -1353,13 +1406,13 @@ function renderAnalysis(n) {
     const mine = [], theirs = [], cnt = {};
     for (let i = 0; i < G.moves.length; i++) { const f = moveInfo(i); if (!f) continue; (isMine(i) ? mine : theirs).push(f.acc); if (isMine(i)) cnt[f.k] = (cnt[f.k] || 0) + 1; }
     const avg = a => a.length ? (a.reduce((x, y) => x + y, 0) / a.length).toFixed(1) : '-';
-    el.innerHTML = `<div class="acc"><div>Your accuracy<b>${avg(mine)}</b></div><div>${bot.name}<b>${avg(theirs)}</b></div></div>
+    el.innerHTML = `<div class="acc"><div>${G.pvp ? esc(G.names[0]) : 'Your accuracy'}<b>${avg(mine)}</b></div><div>${G.pvp ? esc(G.names[1]) : bot.name}<b>${avg(theirs)}</b></div></div>
       <div class="cnt">${['best', 'excellent', 'good', 'inaccuracy', 'mistake', 'blunder'].map(k => `<span><i style="background:${CLS[k].c}">${CLS[k].s}</i>${cnt[k] || 0}</span>`).join('')}</div>${nxBtn}`;
     return;
   }
   const i = n - 1, f = moveInfo(i);
   if (!f) { el.innerHTML = ''; return; }
-  const who = isMine(i) ? 'You' : bot.name;
+  const who = G.pvp ? esc(G.names[i % 2]) : isMine(i) ? 'You' : bot.name;
   const bad = ['inaccuracy', 'mistake', 'blunder'].includes(f.k);
   el.innerHTML = `<div class="ln"><span class="ic" style="background:${CLS[f.k].c}">${CLS[f.k].s}</span><span>${who}: <b>${sans[i]}</b> is ${CLS[f.k].n}</span><span class="ev">${evalText(n)}</span></div>` +
     (bad && f.bestSan ? `<div class="ln"><span class="ic" style="background:${CLS.best.c}">★</span><span>Better was <b>${f.bestSan}</b> (shown in blue)</span></div>` : '') + nxBtn;
@@ -1368,8 +1421,96 @@ $('anal').addEventListener('click', e => { const b = e.target.closest('[data-go]
 $('botsBtn').onclick = showMenu;
 $('back').onclick = e => { if (!$('game').hidden) { e.preventDefault(); cancelBrain(); stopAnalysis(); premove = null; thinking = false; showMenu(); } else if (pzBack()) e.preventDefault(); };
 
+// ---------- play a friend (pass and play on one phone) ----------
+const CLOCKS = [[0, 0, 'No clock'], [1, 0, '1 min'], [3, 2, '3 | 2'], [5, 0, '5 min'], [10, 0, '10 min'], [15, 10, '15 | 10']];
+function pvpSetup() {
+  const P0 = Object.assign({ names: ['Player 1', 'Player 2'], layout: 'rotate', clock: 0, tb: true }, SV.pvp || {});
+  const o = document.createElement('div'); o.className = 'ov';
+  const draw = () => {
+    o.innerHTML = `<div class="card pvpset"><h3 style="font-size:21px">Play a friend</h3>
+      <div class="lbl2">Names</div>
+      <div class="names"><input class="field" id="pn0" maxlength="14" value="${esc(P0.names[0])}" aria-label="White player name"><input class="field" id="pn1" maxlength="14" value="${esc(P0.names[1])}" aria-label="Black player name"></div>
+      <small class="note">First name plays White.</small>
+      <div class="lbl2">Board</div>
+      <div class="seg"><button data-l="rotate" aria-pressed="${P0.layout === 'rotate'}">Turns each move</button><button data-l="face" aria-pressed="${P0.layout === 'face'}">Face to face</button></div>
+      <small class="note">${P0.layout === 'face' ? 'Lay the phone flat between you. Black\'s pieces face the other way.' : 'The board spins around so the player to move is always at the bottom.'}</small>
+      <div class="lbl2">Clock</div>
+      <div class="chips">${CLOCKS.map(([m, inc, n], i) => `<button data-c="${i}" aria-pressed="${P0.clock === i}">${n}</button>`).join('')}</div>
+      <button class="opt" id="ptb" role="switch" aria-checked="${!!P0.tb}" style="margin-top:12px"><div class="tx"><b>Takebacks</b><small>Undo the last move</small></div><span class="sw"></span></button>
+      <div class="row" style="margin-top:14px"><button class="btn alt" data-a="no">Cancel</button><button class="btn" data-a="go">Start</button></div></div>`;
+  };
+  draw();
+  document.body.append(o);
+  const keepNames = () => { const a = o.querySelector('#pn0'), b = o.querySelector('#pn1'); if (a) P0.names = [a.value, b.value]; };
+  o.onclick = e => {
+    const t = e.target;
+    if (t.closest('[data-l]')) { keepNames(); P0.layout = t.closest('[data-l]').dataset.l; draw(); return; }
+    if (t.closest('[data-c]')) { keepNames(); P0.clock = +t.closest('[data-c]').dataset.c; draw(); return; }
+    if (t.closest('#ptb')) { keepNames(); P0.tb = !P0.tb; draw(); return; }
+    const a = t.closest('[data-a]');
+    if ((a && a.dataset.a === 'no') || t === o) { o.remove(); return; }
+    if (a && a.dataset.a === 'go') {
+      keepNames();
+      P0.names = P0.names.map((n, i) => n.trim().slice(0, 14) || `Player ${i + 1}`);
+      SV.pvp = P0; save(); o.remove(); newPvp(P0);
+    }
+  };
+}
+function newPvp(P0, names) {
+  const [m, inc] = CLOCKS[P0.clock] || CLOCKS[0];
+  G = { pvp: true, bot: null, me: 1, moves: [], takebacks: 0, hints: 0, tb: !!P0.tb, over: null, names: names || P0.names.slice(), layout: P0.layout,
+    clock: m ? { base: m * 60000, inc: inc * 1000, t: [m * 60000, m * 60000], last: null } : null };
+  SV.game = G; save();
+  startGame();
+}
+function pvpRematch() { newPvp(Object.assign({}, SV.pvp || {}, { layout: G.layout, tb: G.tb, clock: G.clock ? CLOCKS.findIndex(c => c[0] * 60000 === G.clock.base && c[1] * 1000 === G.clock.inc) : 0 }), [G.names[1], G.names[0]]); }
+$('friendBtn').onclick = () => {
+  if (SV.game && SV.game.moves.length && !SV.game.pvp) { toast('Finish or resign your bot game first'); return; }
+  pvpSetup();
+};
+// clocks: they start after White's first move
+let clockTimer = null;
+const fmtClock = ms => { ms = Math.max(0, ms); if (ms < 20000) return (ms / 1000).toFixed(1); const s = Math.ceil(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+function liveTime(i) { const c = G.clock; let t = c.t[i]; if (c.last && !G.over && (E.side === 1 ? 0 : 1) === i) t -= Date.now() - c.last; return t; }
+function drawClocks() {
+  if (!G || !G.pvp || !G.clock) return;
+  for (const i of [0, 1]) {
+    const el = $('clk' + i); if (!el) continue;
+    const t = liveTime(i), on = !G.over && G.clock.last && (E.side === 1 ? 0 : 1) === i;
+    el.textContent = fmtClock(t); el.classList.toggle('on', !!on); el.classList.toggle('low', t < 20000);
+    if (t <= 0 && !G.over) { stopClock(); finish({ result: i === 0 ? '0-1' : '1-0', reason: 'time' }); return; }
+  }
+}
+function startClock() { stopClock(); if (G && G.pvp && G.clock && !G.over) { if (G.clock.last) G.clock.last = Date.now(); clockTimer = setInterval(drawClocks, 100); } }
+function stopClock() {
+  if (clockTimer) { clearInterval(clockTimer); clockTimer = null; }
+  if (G && G.pvp && G.clock && G.clock.last && !G.over) { const i = E.side === 1 ? 0 : 1; G.clock.t[i] -= Date.now() - G.clock.last; G.clock.last = Date.now(); save(); }
+}
+function clockMoved(mover) {
+  const c = G.clock; if (!c) return;
+  const i = mover === 1 ? 0 : 1;
+  if (c.last) c.t[i] -= Date.now() - c.last;
+  if (c.last || mover === -1) c.t[i] += c.inc;
+  c.last = Date.now(); // the other player's clock starts now
+}
+document.addEventListener('visibilitychange', () => { if (G && G.pvp && G.clock && !G.over && !$('game').hidden) { if (document.hidden) stopClock(); else startClock(); } });
+$('drawBtn').onclick = () => {
+  if (!G || !G.pvp || G.over) return;
+  const other = E.side === 1 ? G.names[1] : G.names[0], asker = E.side === 1 ? G.names[0] : G.names[1];
+  confirmBox('Draw?', `${esc(asker)} offers a draw. ${esc(other)}, do you accept?`, 'Accept draw', () => finish({ result: '1/2-1/2', reason: 'agreement' }));
+};
+
 // ---------- results + rating ----------
 function finish(st) {
+  if (G.pvp) {
+    stopClock(); G.me = 1;
+    G.over = { ...st, score: st.result === '1/2-1/2' ? .5 : st.result === '1-0' ? 1 : 0, delta: 0, rated: false };
+    SV.game = null; save();
+    thinking = false; view = G.moves.length; startAnalysis(); render();
+    sound('win');
+    setTimeout(() => showResult(), st.reason === 'resignation' || st.reason === 'agreement' ? 0 : 700);
+    return;
+  }
   const bot = botById(G.bot);
   const score = st.result === '1/2-1/2' ? .5 : (st.result === '1-0') === (G.me === 1) ? 1 : 0;
   const rated = G.moves.length >= 2 && !G.hints;
@@ -1393,6 +1534,17 @@ function finish(st) {
   setTimeout(() => showResult(), st.reason === 'resignation' ? 0 : 700);
 }
 function showResult() {
+  if (G.pvp) {
+    const o = G.over, wn = o.score === 1 ? G.names[0] : o.score === 0 ? G.names[1] : null;
+    const why = { checkmate: 'by checkmate', stalemate: 'by stalemate', resignation: 'by resignation', repetition: 'by repetition', '50-move rule': 'by the 50-move rule', 'insufficient material': 'by insufficient material', time: 'on time', agreement: 'by agreement' }[o.reason] || '';
+    const ov = document.createElement('div'); ov.className = 'ov';
+    ov.innerHTML = `<div class="card"><div class="av" style="background:var(--panel2)">${pieceSVG(o.score === 0 ? -6 : 6, '')}</div><h3>${wn ? esc(wn) + ' wins!' : 'Draw'}</h3><p>${why[0].toUpperCase() + why.slice(1)}. ${wn ? `${esc(wn)} played ${o.score === 1 ? 'White' : 'Black'}.` : 'Nobody wins this one.'}</p><p style="font-size:13px">Rematch swaps colors.</p>
+      <div class="row"><button class="btn alt" data-a="view">Review moves</button><button class="btn" data-a="again">Rematch</button></div></div>`;
+    document.body.append(ov);
+    ov.querySelector('[data-a=view]').onclick = () => ov.remove();
+    ov.querySelector('[data-a=again]').onclick = () => { ov.remove(); pvpRematch(); };
+    return;
+  }
   const bot = botById(G.bot), o = G.over;
   const title = o.score === 1 ? 'You win!' : o.score === 0 ? `${bot.name} wins` : 'Draw';
   const why = { checkmate: 'by checkmate', stalemate: 'by stalemate', resignation: 'by resignation', repetition: 'by repetition', '50-move rule': 'by the 50-move rule', 'insufficient material': 'by insufficient material' }[o.reason] || '';
@@ -1408,7 +1560,7 @@ function showResult() {
 
 // ---------- menu ----------
 function showMenu() {
-  stopAnalysis(); premove = null;
+  stopAnalysis(); premove = null; stopClock();
   $('game').hidden = true; $('menu').hidden = false; $('back').textContent = '‹ Arcade';
   ['puzzle', 'anaSec', 'archSec'].forEach(x => { $(x).hidden = true; });
   document.querySelectorAll('.ov').forEach(o => o.remove());
@@ -1421,7 +1573,7 @@ function showMenu() {
   $('rateCard').innerHTML = `<div class="num"><small>YOUR RATING</small>${Math.round(SV.rating)}</div><div class="meta">Peak <b>${Math.round(SV.peak)}</b><br>W <b>${w}</b> · L <b>${l}</b> · D <b>${d}</b></div>`;
   const g = SV.game;
   $('contBtn').hidden = !g;
-  if (g) $('contInfo').textContent = `vs ${botById(g.bot).name} · move ${Math.floor(g.moves.length / 2) + 1}`;
+  if (g) $('contInfo').textContent = `${g.pvp ? `${g.names[0]} vs ${g.names[1]}` : 'vs ' + botById(g.bot).name} · move ${Math.floor(g.moves.length / 2) + 1}`;
   $('colorSeg').innerHTML = [['w', 'White', 6], ['r', 'Random', 0], ['b', 'Black', -6]].map(([k, n, p]) => `<button data-c="${k}" aria-pressed="${SV.color === k}">${p ? pieceSVG(p, '') : ''}${n}</button>`).join('');
   $('tbOpt').setAttribute('aria-checked', !!SV.tb);
   $('tbNote').textContent = SV.tb ? 'On: undo your moves, but wins give half the rating points.' : 'Off: full rating points. Turn on to undo moves.';
@@ -1435,6 +1587,10 @@ $('colorSeg').onclick = e => { const b = e.target.closest('button'); if (!b) ret
 $('bots').onclick = e => {
   const b = e.target.closest('.bot'); if (!b) return;
   sound('move');
+  if (SV.game && SV.game.pvp && SV.game.moves.length) {
+    confirmBox('Start a new game?', 'Your game against your friend is still going. It will be thrown away.', 'New game', () => { SV.game = null; save(); newGame(b.dataset.b); });
+    return;
+  }
   if (SV.game && SV.game.moves.length >= 2) {
     const cur = botById(SV.game.bot);
     confirmBox('Start a new game?', `Your game against ${cur.name} is still going. Starting over counts it as a loss.`, 'New game', () => {
