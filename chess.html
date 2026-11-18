@@ -272,6 +272,12 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
 .pvpset .chips button { padding: 8px 12px; border-radius: 10px; background: var(--panel2); font-weight: 800; font-size: 14px; }
 .pvpset .chips button[aria-pressed="true"] { background: var(--accent); color: #fff; }
 .pvpset .seg { margin: 0; }
+.h2h { margin-top: 10px; padding: 10px 12px; border-radius: 12px; background: var(--panel2); font-weight: 800; font-size: 14px; text-align: center; }
+.h2h b { font-size: 20px; margin: 0 6px; }
+.h2h small { display: block; color: var(--soft); font-size: 12px; font-weight: 700; margin-top: 2px; }
+.recent { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.recent button { padding: 6px 10px; border-radius: 99px; background: var(--panel2); font-weight: 800; font-size: 13px; }
+.swapn { width: 100%; margin-top: 6px; padding: 7px; border-radius: 10px; background: var(--panel2); font-weight: 800; font-size: 13px; color: var(--soft); }
 .pvpset small.note { display: block; color: var(--soft); font-size: 12.5px; margin-top: 6px; }
 /* leaderboard */
 .lb { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
@@ -317,7 +323,7 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
     <div class="seg modeseg" role="group" aria-label="Mode" id="modeSeg"><button data-m="play">Play bots</button><button data-m="puz">Puzzles</button></div>
     <div id="playMenu">
     <div class="rate" id="rateCard"></div>
-    <button class="bigbtn friend" id="friendBtn"><div><b>Play a friend</b><small>Two players, one phone. Pass it back and forth.</small></div><span class="go">Play</span></button>
+    <button class="bigbtn friend" id="friendBtn"><div><b>Play a friend</b><small id="friendSub">Two players, one phone. Pass it back and forth.</small></div><span class="go">Play</span></button>
     <button class="cont" id="contBtn" hidden><div><b>Continue game</b><small id="contInfo"></small></div><span class="go">Play</span></button>
     <h2>Play as</h2>
     <div class="seg" role="group" aria-label="Your color" id="colorSeg"></div>
@@ -1423,6 +1429,25 @@ $('back').onclick = e => { if (!$('game').hidden) { e.preventDefault(); cancelBr
 
 // ---------- play a friend (pass and play on one phone) ----------
 const CLOCKS = [[0, 0, 'No clock'], [1, 0, '1 min'], [3, 2, '3 | 2'], [5, 0, '5 min'], [10, 0, '10 min'], [15, 10, '15 | 10']];
+// head-to-head records, saved by player name (not case sensitive)
+const normName = n => n.trim().toLowerCase();
+const h2hKey = (a, b) => [normName(a), normName(b)].sort().join('|');
+function h2hGet(a, b) { return (SV.h2h || {})[h2hKey(a, b)] || null; }
+function h2hLine(a, b, big) {
+  const r = h2hGet(a, b);
+  if (!a.trim() || !b.trim() || normName(a) === normName(b)) return '';
+  if (!r) return `<div class="h2h">First game between ${esc(a)} and ${esc(b)}</div>`;
+  const wa = r.w[normName(a)] || 0, wb = r.w[normName(b)] || 0, n = wa + wb + r.d;
+  return `<div class="h2h">${esc(a)}<b>${wa} - ${wb}</b>${esc(b)}<small>${n} game${n === 1 ? '' : 's'}${r.d ? ` · ${r.d} draw${r.d === 1 ? '' : 's'}` : ''}${big && wa !== wb ? ` · ${esc(wa > wb ? a : b)} leads` : ''}</small></div>`;
+}
+function h2hAdd(names, score) {
+  SV.h2h = SV.h2h || {};
+  const k = h2hKey(names[0], names[1]);
+  const r = SV.h2h[k] || (SV.h2h[k] = { w: {}, d: 0 });
+  if (score === .5) r.d++; else { const win = normName(names[score === 1 ? 0 : 1]); r.w[win] = (r.w[win] || 0) + 1; }
+  const prev = SV.players || [], spell = n => prev.find(x => normName(x) === normName(n)) || n.trim(); // keep the first spelling of a saved name
+  SV.players = [spell(names[0]), spell(names[1]), ...prev].filter((n, i, a) => a.findIndex(x => normName(x) === normName(n)) === i).slice(0, 10);
+}
 function pvpSetup() {
   const P0 = Object.assign({ names: ['Player 1', 'Player 2'], layout: 'rotate', clock: 0, tb: true }, SV.pvp || {});
   const o = document.createElement('div'); o.className = 'ov';
@@ -1430,7 +1455,9 @@ function pvpSetup() {
     o.innerHTML = `<div class="card pvpset"><h3 style="font-size:21px">Play a friend</h3>
       <div class="lbl2">Names</div>
       <div class="names"><input class="field" id="pn0" maxlength="14" value="${esc(P0.names[0])}" aria-label="White player name"><input class="field" id="pn1" maxlength="14" value="${esc(P0.names[1])}" aria-label="Black player name"></div>
-      <small class="note">First name plays White.</small>
+      <button class="swapn" id="pswap">⇄ Swap colors</button>
+      ${(SV.players || []).length ? `<div class="recent">${SV.players.map(n => `<button data-n="${esc(n)}">${esc(n)}</button>`).join('')}</div><small class="note">Tap a saved name to use it as the opponent. First name plays White.</small>` : '<small class="note">First name plays White. Names are saved with your record against each other.</small>'}
+      <div id="h2hBox">${h2hLine(P0.names[0], P0.names[1], true)}</div>
       <div class="lbl2">Board</div>
       <div class="seg"><button data-l="rotate" aria-pressed="${P0.layout === 'rotate'}">Turns each move</button><button data-l="face" aria-pressed="${P0.layout === 'face'}">Face to face</button></div>
       <small class="note">${P0.layout === 'face' ? 'Lay the phone flat between you. Black\'s pieces face the other way.' : 'The board spins around so the player to move is always at the bottom.'}</small>
@@ -1441,12 +1468,15 @@ function pvpSetup() {
   };
   draw();
   document.body.append(o);
+  o.addEventListener('input', e => { if (e.target.id === 'pn0' || e.target.id === 'pn1') { keepNames(); o.querySelector('#h2hBox').innerHTML = h2hLine(P0.names[0], P0.names[1], true); } });
   const keepNames = () => { const a = o.querySelector('#pn0'), b = o.querySelector('#pn1'); if (a) P0.names = [a.value, b.value]; };
   o.onclick = e => {
     const t = e.target;
     if (t.closest('[data-l]')) { keepNames(); P0.layout = t.closest('[data-l]').dataset.l; draw(); return; }
     if (t.closest('[data-c]')) { keepNames(); P0.clock = +t.closest('[data-c]').dataset.c; draw(); return; }
     if (t.closest('#ptb')) { keepNames(); P0.tb = !P0.tb; draw(); return; }
+    if (t.closest('#pswap')) { keepNames(); P0.names.reverse(); draw(); return; }
+    if (t.closest('[data-n]')) { keepNames(); const n = t.closest('[data-n]').dataset.n; if (normName(n) === normName(P0.names[0])) P0.names.reverse(); else P0.names[1] = n; draw(); return; }
     const a = t.closest('[data-a]');
     if ((a && a.dataset.a === 'no') || t === o) { o.remove(); return; }
     if (a && a.dataset.a === 'go') {
@@ -1505,6 +1535,7 @@ function finish(st) {
   if (G.pvp) {
     stopClock(); G.me = 1;
     G.over = { ...st, score: st.result === '1/2-1/2' ? .5 : st.result === '1-0' ? 1 : 0, delta: 0, rated: false };
+    if (G.moves.length >= 2 && normName(G.names[0]) !== normName(G.names[1])) h2hAdd(G.names, G.over.score);
     SV.game = null; save();
     thinking = false; view = G.moves.length; startAnalysis(); render();
     sound('win');
@@ -1538,7 +1569,7 @@ function showResult() {
     const o = G.over, wn = o.score === 1 ? G.names[0] : o.score === 0 ? G.names[1] : null;
     const why = { checkmate: 'by checkmate', stalemate: 'by stalemate', resignation: 'by resignation', repetition: 'by repetition', '50-move rule': 'by the 50-move rule', 'insufficient material': 'by insufficient material', time: 'on time', agreement: 'by agreement' }[o.reason] || '';
     const ov = document.createElement('div'); ov.className = 'ov';
-    ov.innerHTML = `<div class="card"><div class="av" style="background:var(--panel2)">${pieceSVG(o.score === 0 ? -6 : 6, '')}</div><h3>${wn ? esc(wn) + ' wins!' : 'Draw'}</h3><p>${why[0].toUpperCase() + why.slice(1)}. ${wn ? `${esc(wn)} played ${o.score === 1 ? 'White' : 'Black'}.` : 'Nobody wins this one.'}</p><p style="font-size:13px">Rematch swaps colors.</p>
+    ov.innerHTML = `<div class="card"><div class="av" style="background:var(--panel2)">${pieceSVG(o.score === 0 ? -6 : 6, '')}</div><h3>${wn ? esc(wn) + ' wins!' : 'Draw'}</h3><p>${why[0].toUpperCase() + why.slice(1)}. ${wn ? `${esc(wn)} played ${o.score === 1 ? 'White' : 'Black'}.` : 'Nobody wins this one.'}</p>${h2hLine(G.names[0], G.names[1], true)}<p style="font-size:13px;margin-top:10px">Rematch swaps colors.</p>
       <div class="row"><button class="btn alt" data-a="view">Review moves</button><button class="btn" data-a="again">Rematch</button></div></div>`;
     document.body.append(ov);
     ov.querySelector('[data-a=view]').onclick = () => ov.remove();
@@ -1569,6 +1600,8 @@ function showMenu() {
   $('modeSeg').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.m === (pm ? 'puz' : 'play')));
   if (pm) { renderPuzMenu(); loadPuzzles().catch(() => { }); }
   renderBoards();
+  { const pv = SV.pvp, r = pv && h2hGet(pv.names[0], pv.names[1]);
+    $('friendSub').textContent = r ? `${pv.names[0]} ${r.w[normName(pv.names[0])] || 0} - ${r.w[normName(pv.names[1])] || 0} ${pv.names[1]}${r.d ? ` (${r.d} draw${r.d === 1 ? '' : 's'})` : ''}` : 'Two players, one phone. Pass it back and forth.'; }
   let w = 0, l = 0, d = 0; for (const k in SV.rec) { w += SV.rec[k].w; l += SV.rec[k].l; d += SV.rec[k].d; }
   $('rateCard').innerHTML = `<div class="num"><small>YOUR RATING</small>${Math.round(SV.rating)}</div><div class="meta">Peak <b>${Math.round(SV.peak)}</b><br>W <b>${w}</b> · L <b>${l}</b> · D <b>${d}</b></div>`;
   const g = SV.game;
