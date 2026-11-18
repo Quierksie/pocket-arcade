@@ -722,8 +722,8 @@ const BOTS = [
 const botById = id => BOTS.find(b => b.id === id) || BOTS[0];
 
 // ---------- save ----------
-let SV = { theme: null, color: 'w', rating: 800, peak: 800, games: 0, rec: {}, game: null };
-try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s) SV = Object.assign(SV, s); } catch (e) { }
+let SV = { theme: null, color: 'w', rating: 150, peak: 150, games: 0, rec: {}, game: null, v: 2 };
+try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s) { if (!s.v) { s.rating = Math.max(100, (s.rating || 800) - 650); s.peak = Math.max(s.rating, (s.peak || 800) - 650); s.v = 2; } SV = Object.assign(SV, s); } } catch (e) { }
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(SV)); } catch (e) { } };
 
 // ---------- theme ----------
