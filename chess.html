@@ -255,6 +255,22 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
 .tiers .cur { color: var(--accent); }
 .howpts { text-align: left; font-size: 13px; color: var(--soft); line-height: 1.6; margin: 0 0 12px; }
 
+/* board markings */
+.anno { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 6; border-radius: 6px; }
+.tool .pdot { position: absolute; top: 6px; right: calc(50% - 18px); width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 0 2px var(--panel); }
+.tool { position: relative; }
+.tool.on { color: var(--ink); background: var(--panel2); }
+.tools { gap: 6px; }
+.tool { font-size: 11.5px; padding: 8px 0; }
+.tool svg { width: 22px; height: 22px; }
+/* looking back at an earlier move during a live game */
+.wrap.scrub .board { filter: saturate(.55) brightness(.97); }
+.wrap.scrub::after { content: 'Viewing an earlier move. Tap the board to go back.'; position: absolute; left: 50%; top: 8px; transform: translateX(-50%); background: rgba(0,0,0,.72); color: #fff; font-size: 12px; font-weight: 800; padding: 5px 10px; border-radius: 99px; z-index: 7; white-space: nowrap; pointer-events: none; }
+.moves span b.rv.cur, .moves span b.cur { background: var(--accent); color: #fff; }
+.moves span b[data-ply] { cursor: pointer; }
+/* focus mode (Z) */
+body.focus header, body.focus .modeseg { display: none; }
+body.focus .app { padding-top: 16px; }
 /* pass and play */
 .bigbtn.friend { background: linear-gradient(120deg, #7b5cd6, #4a3a9e); margin-top: 12px; }
 .pl.rot { transform: rotate(180deg); }
@@ -344,6 +360,7 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
       <button class="tool" id="pzRetry"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>Retry</button>
       <button class="tool" id="pzSol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Solution</button>
       <button class="tool" id="pzNext"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Next</button>
+      <button class="tool" id="pzPen" title="Draw arrows and highlights"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20 18 6M18 6h-6M18 6v6"/></svg>Arrows</button>
     </div>
     <div id="pzResult" hidden></div>
   </section>
@@ -359,6 +376,7 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
       <button class="tool" id="anBest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Play best</button>
       <button class="tool" id="anFlip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg>Flip</button>
       <button class="tool" id="anReset"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>Reset</button>
+      <button class="tool" id="anPen" title="Draw arrows and highlights"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20 18 6M18 6h-6M18 6v6"/></svg>Arrows</button>
     </div>
   </section>
 
@@ -379,7 +397,8 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
       <button class="tool" id="hintBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V16h8v-1.3A7 7 0 0 0 12 2z"/></svg>Hint</button>
       <button class="tool" id="flipBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg>Flip</button>
       <button class="tool" id="drawBtn" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h14M5 15h14"/></svg>Draw</button>
-      <button class="tool" id="resignBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22V3M5 4h12l-2 4 2 4H5"/></svg>Resign</button>
+      <button class="tool" id="resignBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22V3M5 4h12l-2 4 2 4H5"/></svg><span id="resignLbl">Resign</span></button>
+      <button class="tool" id="annoBtn" title="Draw arrows and highlights"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20 18 6M18 6h-6M18 6v6"/></svg>Arrows</button>
     </div>
     <div id="overBar" hidden>
       <div class="review">
@@ -751,7 +770,7 @@ function ENGINE() {
   const ttKey = new Int32Array(TTN), ttMove = new Int32Array(TTN), ttScore = new Int32Array(TTN), ttDepth = new Int8Array(TTN), ttFlag = new Int8Array(TTN);
   const killers = new Int32Array(128 * 2);
   const history = new Int32Array(128 * 128);
-  let nodes = 0, deadline = 0, stopped = false, rootBest = 0;
+  let nodes = 0, deadline = 0, stopped = false, rootBest = 0, rootExclude = 0;
   const lists = Array.from({ length: 128 }, () => new Int32Array(256));
   const scores = Array.from({ length: 128 }, () => new Int32Array(256));
 
@@ -848,6 +867,7 @@ function ENGINE() {
     let best = -INF, bestMove = 0, legal = 0;
     for (let i = 0; i < n; i++) {
       const m = pick(list, sc, n, i);
+      if (ply === 0 && m === rootExclude) continue;
       if (!make(m)) continue;
       legal++;
       let s;
@@ -887,9 +907,10 @@ function ENGINE() {
 
   // opts: { time ms, depth max, noise centipawns, random 0..1 }
   function think(opts) {
-    const moves = legalMoves();
+    rootExclude = opts.exclude || 0;
+    const moves = legalMoves().filter(m => m !== rootExclude);
     if (!moves.length) return { move: 0 };
-    if (moves.length === 1) return { move: moves[0], depth: 0 };
+    if (moves.length === 1 && !opts.full) return { move: moves[0], depth: 0 };
     if (opts.random && Math.random() < opts.random) return { move: moves[Math.floor(Math.random() * moves.length)], depth: 0, random: true };
     nodes = 0; stopped = false; deadline = Date.now() + opts.time;
     killers.fill(0); history.fill(0);
@@ -1033,7 +1054,7 @@ function newGame(botId) {
 }
 function startGame() {
   replay();
-  sel = -1; targets = []; ptargets = []; hintSq = []; premove = null; anim = null; stopAnalysis(); AN = null;
+  sel = -1; targets = []; ptargets = []; hintSq = []; premove = null; anim = null; scrub = null; stopAnalysis(); AN = null;
   if (G.pvp) { G.me = E.side; flipped = G.layout === 'rotate' && E.side === -1; } else flipped = G.me === -1;
   $('menu').hidden = true; $('game').hidden = false;
   $('back').textContent = G.pvp ? '‹ Chess' : '‹ Bots';
@@ -1059,13 +1080,13 @@ function material(color) {
   return s;
 }
 function render() {
-  const shown = G.over ? view : G.moves.length;
+  const shown = G.over ? view : scrub != null ? scrub : G.moves.length;
   const B = E.board, lastU = G.moves[shown - 1];
   const last = lastU ? [sqOf(lastU.slice(0, 2)), sqOf(lastU.slice(2, 4))] : [];
   const chk = E.inCheck() ? E.king[E.side === 1 ? 0 : 1] : -1;
   const tset = new Set([...targets.map(m => E.to(m)), ...ptargets]);
   const info = G.over && shown ? moveInfo(shown - 1) : null;
-  const bad = info && ['inaccuracy', 'mistake', 'blunder'].includes(info.k);
+  const bad = info && ['inaccuracy', 'mistake', 'miss', 'blunder'].includes(info.k);
   const bestSq = bad && info.best ? [sqOf(info.best.slice(0, 2)), sqOf(info.best.slice(2, 4))] : [];
   const bdgSq = info ? sqOf(G.moves[shown - 1].slice(2, 4)) : -1;
   let h = '';
@@ -1087,6 +1108,8 @@ function render() {
     h += `<div class="${c}" data-sq="${sq}">${inner}</div>`;
   }
   $('board').innerHTML = h;
+  if (typeof gameAnno !== 'undefined') { gameAnno.sync(G.moves.length + ':' + (scrub == null ? '' : scrub) + ':' + E.fen()); gameAnno.draw(); }
+  $('board').parentElement.classList.toggle('scrub', scrub != null && !G.over);
   if (anim) {
     const el = $('board').querySelector(`[data-sq="${anim.to}"] .pc`), fromEl = $('board').querySelector(`[data-sq="${anim.from}"]`);
     if (el && fromEl) {
@@ -1117,8 +1140,8 @@ function render() {
   }
   // move list
   let mh = '';
-  const tag = i => { if (!G.over) return ''; const f = moveInfo(i); return f && ['inaccuracy', 'mistake', 'blunder'].includes(f.k) ? `<span class="tag" style="background:${CLS[f.k].c}">${CLS[f.k].s}</span>` : ''; };
-  const mc = i => G.over ? ` class="rv${i === shown - 1 ? ' cur' : ''}" data-ply="${i + 1}"` : i === sans.length - 1 ? ' class="last"' : '';
+  const tag = i => { if (!G.over) return ''; const f = moveInfo(i); return f && ['brilliant', 'great', 'inaccuracy', 'mistake', 'miss', 'blunder'].includes(f.k) ? `<span class="tag" style="background:${CLS[f.k].c}">${CLS[f.k].s}</span>` : ''; };
+  const mc = i => G.over ? ` class="rv${i === shown - 1 ? ' cur' : ''}" data-ply="${i + 1}"` : ` data-ply="${i + 1}"` + (scrub != null ? (i === shown - 1 ? ' class="cur"' : '') : i === sans.length - 1 ? ' class="last"' : '');
   for (let i = 0; i < sans.length; i += 2) mh += `<span>${i / 2 + 1}. <b${mc(i)}>${sans[i]}${tag(i)}</b>${sans[i + 1] ? ` <b${mc(i + 1)}>${sans[i + 1]}${tag(i + 1)}</b>` : ''}</span>`;
   $('moves').innerHTML = mh || '<span>Good luck!</span>';
   const cur = $('moves').querySelector('.cur');
@@ -1129,7 +1152,10 @@ function render() {
   $('tools').hidden = !!G.over; $('overBar').hidden = !G.over;
   $('undoBtn').hidden = !tbOn(G);
   $('undoBtn').disabled = G.pvp ? !G.moves.length : myMoveCount() === 0;
-  $('hintBtn').hidden = !!G.pvp; $('drawBtn').hidden = !G.pvp;
+  $('hintBtn').hidden = !!G.pvp; $('drawBtn').hidden = false;
+  $('resignLbl').textContent = !G.over && G.moves.length <= 1 ? 'Abort' : 'Resign';
+  const cool = G.drawAt != null && G.moves.length - G.drawAt < 6;
+  $('drawBtn').disabled = !!G.drawPending || cool || (!G.pvp && (thinking || E.side !== G.me)) || G.moves.length < 2;
   if (G.over) {
     $('rvPos').innerHTML = shown ? `<b>${sans[shown - 1]}</b>Move ${Math.ceil(shown / 2)} of ${Math.ceil(sans.length / 2)}` : `<b>Start</b>${sans.length} moves`;
     $('rvFirst').disabled = $('rvPrev').disabled = shown === 0;
@@ -1182,6 +1208,7 @@ function tryMove(to, animate) {
   return true;
 }
 $('board').addEventListener('pointerdown', e => {
+  if (scrub != null) { liveSnap(); return; } // looking at an old move: go back to the live position
   const pre = canPre();
   if (!myTurn() && !pre) return;
   const sq = sqFromPoint(e.clientX, e.clientY);
@@ -1274,6 +1301,7 @@ function maybeBot() {
   ask(opts, u => {
     setTimeout(() => {
       thinking = false;
+      if (scrub != null) { scrub = null; replay(); }
       if (!u || G.over) { render(); return; }
       const m = E.fromUci(u);
       if (!m) { render(); return; }
@@ -1284,6 +1312,13 @@ function maybeBot() {
 
 // ---------- tools ----------
 $('undoBtn').onclick = () => {
+  liveSnap();
+  if (G && G.pvp && !G._tbOk) {
+    if (G.over || !G.moves.length || !tbOn(G)) return;
+    const asker = G.names[E.side === 1 ? 1 : 0], other = G.names[E.side === 1 ? 0 : 1];
+    confirmBox('Takeback?', `${esc(asker)} wants to take back their last move. ${esc(other)}, do you allow it?`, 'Allow', () => { G._tbOk = true; $('undoBtn').onclick(); G._tbOk = false; });
+    return;
+  }
   if (G && G.pvp) {
     if (G.over || !G.moves.length || !tbOn(G)) return;
     G.moves.pop(); G.takebacks++; replay(); G.me = E.side;
@@ -1302,6 +1337,7 @@ $('undoBtn').onclick = () => {
   if (E.side !== G.me) maybeBot();
 };
 $('hintBtn').onclick = () => {
+  liveSnap();
   if (!myTurn()) return;
   $('hintBtn').disabled = true;
   ask({ time: 900, depth: 30, noise: 0, random: 0 }, u => {
@@ -1314,6 +1350,8 @@ $('hintBtn').onclick = () => {
 $('flipBtn').onclick = () => { flipped = !flipped; render(); };
 $('resignBtn').onclick = () => {
   if (!G || G.over) return;
+  liveSnap();
+  if (G.moves.length <= 1) { confirmBox('Abort game?', 'Nothing is recorded and your rating does not change.', 'Abort', () => abortGame()); return; }
   if (G.pvp) {
     const o = document.createElement('div'); o.className = 'ov';
     o.innerHTML = `<div class="card"><h3 style="font-size:21px">Who resigns?</h3><div class="row" style="flex-direction:column"><button class="btn alt" data-r="1">${esc(G.names[0])} (White) resigns</button><button class="btn alt" data-r="-1">${esc(G.names[1])} (Black) resigns</button><button class="btn" data-r="0">Keep playing</button></div></div>`;
@@ -1343,18 +1381,37 @@ $('rvFirst').onclick = () => goTo(0);
 $('rvPrev').onclick = () => goTo(view - 1);
 $('rvNext').onclick = () => goTo(view + 1);
 $('rvLast').onclick = () => goTo(G.moves.length);
-$('moves').addEventListener('click', e => { const b = e.target.closest('[data-ply]'); if (b) goTo(+b.dataset.ply); });
+$('moves').addEventListener('click', e => { const b = e.target.closest('[data-ply]'); if (!b) return; if (G && G.over) goTo(+b.dataset.ply); else scrubTo(+b.dataset.ply); });
 document.addEventListener('keydown', e => {
-  if (!G || !G.over || $('game').hidden || document.querySelector('.ov')) return;
+  if (e.target.closest && e.target.closest('input, textarea') || document.querySelector('.ov')) return;
+  const k = e.key.toLowerCase();
+  if (k === 'z' && !e.metaKey && !e.ctrlKey) { document.body.classList.toggle('focus'); return; }
+  if (k === 'x' && !e.metaKey && !e.ctrlKey) {
+    if (!$('game').hidden && G) { flipped = !flipped; render(); }
+    else if (!$('anaSec').hidden && AS) { AS.flip = !AS.flip; anBoard.draw(); }
+    return;
+  }
+  if (G && !G.over && !$('game').hidden) {
+    const cur = scrub != null ? scrub : G.moves.length;
+    if (e.key === 'ArrowLeft') { e.preventDefault(); scrubTo(cur - 1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); scrubTo(cur + 1); }
+    else if (e.key === 'End') scrubTo(G.moves.length);
+    return;
+  }
+  if (!G || !G.over || $('game').hidden) return;
   if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(view - 1); }
   else if (e.key === 'ArrowRight') { e.preventDefault(); goTo(view + 1); }
   else if (e.key === 'Home') goTo(0); else if (e.key === 'End') goTo(G.moves.length);
 });
 // ---------- post-game analysis ----------
 const CLS = {
+  brilliant: { s: '!!', c: '#1baaa6', n: 'brilliant' },
+  great: { s: '!', c: '#5c8bb0', n: 'a great move' },
+  book: { s: '≡', c: '#a88865', n: 'a book move' },
   best: { s: '★', c: '#81b64c', n: 'the best move' },
-  excellent: { s: '!', c: '#96bc4b', n: 'excellent' },
-  good: { s: '✓', c: '#86a46a', n: 'good' },
+  excellent: { s: '✓', c: '#96bc4b', n: 'excellent' },
+  good: { s: '•', c: '#86a46a', n: 'good' },
+  miss: { s: '✕', c: '#ff7769', n: 'a miss' },
   inaccuracy: { s: '?!', c: '#e3ae1f', n: 'an inaccuracy' },
   mistake: { s: '?', c: '#e8862a', n: 'a mistake' },
   blunder: { s: '??', c: '#d63a2f', n: 'a blunder' },
@@ -1371,27 +1428,100 @@ function startAnalysis() {
     'if (!n) r = { score: E.inCheck() ? -100000 : 0, best: null, n };\n' +
     'else if (E.status()) r = { score: 0, best: null, n };\n' +
     'else if (n === 1) r = { score: null, best: E.uci(L[0]), bs: E.san(L[0]), n };\n' +
-    'else { const t = E.think(d.opts); r = { score: t.score || 0, best: t.move ? E.uci(t.move) : null, bs: t.move ? E.san(t.move) : "", n }; }\n' +
+    'else { const t = E.think(d.opts); const t2 = E.think({ time: 130, depth: 8, noise: 0, random: 0, exclude: t.move, full: true }); r = { score: t.score || 0, s2: t2.move ? (t2.score || 0) : null, best: t.move ? E.uci(t.move) : null, bs: t.move ? E.san(t.move) : "", n }; }\n' +
     'postMessage({ i, r }); }\npostMessage({ done: true }); };';
   try {
     analyst = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
     const a = AN;
     analyst.onmessage = e => { if (AN !== a) return; const d = e.data; if (d.done) { AN.done = true; stopAnalysis(); } else AN.res[d.i] = d.r; if (G && G.over && !$('game').hidden) render(); };
-    analyst.postMessage({ fen: E.START, moves: AN.moves, opts: { time: 220, depth: 8, noise: 0, random: 0 } });
+    analyst.postMessage({ fen: E.START, moves: AN.moves, opts: { time: 200, depth: 8, noise: 0, random: 0 } });
   } catch (e) { AN.failed = true; }
 }
 // score of position i from the side to move's point of view
 function posScore(i) { const r = AN && AN.res[i]; if (!r) return null; if (r.score != null) return r.score; const nx = posScore(i + 1); return nx == null ? null : -nx; }
+// opening book: common main lines; a move that lands on one of these positions is a Book move
+const BOOK_LINES = ["e4 e5 Nf3 Nc6 Bb5 a6 Ba4 Nf6 O-O Be7 Re1 b5 Bb3 d6 c3 O-O h3", "e4 e5 Nf3 Nc6 Bb5 Nf6 O-O Nxe4 d4 Nd6 Bxc6 dxc6 dxe5 Nf5 Qxd8 Kxd8", "e4 e5 Nf3 Nc6 Bb5 a6 Bxc6 dxc6 O-O f6", "e4 e5 Nf3 Nc6 Bc4 Bc5 c3 Nf6 d3 d6 O-O O-O", "e4 e5 Nf3 Nc6 Bc4 Bc5 d3 Nf6 c3 d6", "e4 e5 Nf3 Nc6 Bc4 Nf6 Ng5 d5 exd5 Na5 Bb5 c6 dxc6 bxc6", "e4 e5 Nf3 Nc6 Bc4 Nf6 d3 Be7 O-O O-O", "e4 e5 Nf3 Nc6 Bc4 Nf6 d3 Bc5 c3 d6 O-O O-O", "e4 e5 Nf3 Nc6 Bc4 Bc5 b4 Bxb4 c3 Ba5 d4", "e4 e5 Nf3 Nc6 d4 exd4 Nxd4 Nf6 Nxc6 bxc6 e5 Qe7 Qe2 Nd5", "e4 e5 Nf3 Nc6 d4 exd4 Nxd4 Bc5 Be3 Qf6 c3 Nge7", "e4 e5 Nf3 Nc6 Nc3 Nf6 Bb5 Bb4 O-O O-O d3 d6", "e4 e5 Nf3 Nf6 Nxe5 d6 Nf3 Nxe4 d4 d5 Bd3", "e4 e5 Nf3 d6 d4 Nf6 Nc3 Nbd7", "e4 e5 f4 exf4 Nf3 g5 h4 g4 Ne5", "e4 e5 Nc3 Nf6 f4 d5 fxe5 Nxe4 Nf3", "e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6 Nc3 a6 Be3 e5 Nb3 Be6 f3", "e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6 Nc3 a6 Bg5 e6 f4", "e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6 Nc3 g6 Be3 Bg7 f3 O-O Qd2 Nc6 Bc4", "e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6 Nc3 Nc6 Bg5 e6 Qd2", "e4 c5 Nf3 Nc6 d4 cxd4 Nxd4 Nf6 Nc3 e5 Ndb5 d6 Bg5 a6 Na3 b5", "e4 c5 Nf3 Nc6 d4 cxd4 Nxd4 g6 c4 Bg7 Be3 Nf6 Nc3", "e4 c5 Nf3 e6 d4 cxd4 Nxd4 Nc6 Nc3 Qc7 Be3 a6", "e4 c5 Nf3 e6 d4 cxd4 Nxd4 a6 Bd3", "e4 c5 c3 Nf6 e5 Nd5 d4 cxd4 Nf3 Nc6", "e4 c5 c3 d5 exd5 Qxd5 d4 Nf6 Nf3", "e4 c5 Nf3 Nc6 Bb5 g6 O-O Bg7 Re1", "e4 c5 Nc3 Nc6 g3 g6 Bg2 Bg7 d3 d6", "e4 c5 d4 cxd4 c3 dxc3 Nxc3 Nc6 Nf3 d6 Bc4", "e4 e6 d4 d5 Nc3 Bb4 e5 c5 a3 Bxc3 bxc3 Ne7", "e4 e6 d4 d5 Nc3 Nf6 Bg5 Be7 e5 Nfd7", "e4 e6 d4 d5 e5 c5 c3 Nc6 Nf3 Qb6", "e4 e6 d4 d5 Nd2 c5 exd5 exd5 Ngf3 Nc6", "e4 e6 d4 d5 exd5 exd5 Nf3 Nf6 Bd3", "e4 c6 d4 d5 Nc3 dxe4 Nxe4 Bf5 Ng3 Bg6 h4 h6 Nf3 Nd7", "e4 c6 d4 d5 e5 Bf5 Nf3 e6 Be2", "e4 c6 d4 d5 exd5 cxd5 Bd3 Nc6 c3", "e4 d6 d4 Nf6 Nc3 g6 f4 Bg7 Nf3 O-O", "e4 g6 d4 Bg7 Nc3 d6", "e4 d5 exd5 Qxd5 Nc3 Qa5 d4 Nf6 Nf3 c6", "e4 d5 exd5 Nf6 d4 Nxd5 c4 Nb6", "e4 Nf6 e5 Nd5 d4 d6 Nf3 Bg4 Be2 e6", "d4 d5 c4 e6 Nc3 Nf6 Bg5 Be7 e3 O-O Nf3 h6", "d4 d5 c4 e6 Nc3 Nf6 cxd5 exd5 Bg5 Be7 e3", "d4 d5 c4 dxc4 Nf3 Nf6 e3 e6 Bxc4 c5 O-O a6", "d4 d5 c4 c6 Nf3 Nf6 Nc3 dxc4 a4 Bf5 e3 e6 Bxc4", "d4 d5 c4 c6 Nf3 Nf6 Nc3 e6 e3 Nbd7 Bd3 dxc4 Bxc4 b5", "d4 Nf6 c4 g6 Nc3 Bg7 e4 d6 Nf3 O-O Be2 e5 O-O Nc6 d5 Ne7", "d4 Nf6 c4 e6 Nc3 Bb4 e3 O-O Bd3 d5 Nf3 c5 O-O", "d4 Nf6 c4 e6 Nc3 Bb4 Qc2 O-O a3 Bxc3 Qxc3", "d4 Nf6 c4 e6 Nf3 b6 g3 Ba6 b3 Bb4 Bd2 Be7", "d4 Nf6 c4 g6 Nc3 d5 cxd5 Nxd5 e4 Nxc3 bxc3 Bg7 Nf3 c5", "d4 Nf6 c4 e6 g3 d5 Bg2 Be7 Nf3 O-O O-O dxc4", "d4 d5 Bf4 Nf6 e3 e6 Nf3 c5 c3 Nc6 Nbd2 Bd6 Bg3", "d4 Nf6 Bf4 g6 e3 Bg7 Nf3 O-O Be2 d6", "c4 e5 Nc3 Nf6 g3 d5 cxd5 Nxd5 Bg2 Nb6", "c4 c5 Nc3 Nc6 g3 g6 Bg2 Bg7 Nf3", "Nf3 d5 c4 e6 g3 Nf6 Bg2 Be7 O-O O-O", "d4 f5 g3 Nf6 Bg2 e6 Nf3 Be7 O-O O-O c4 d6", "d4 Nf6 c4 c5 d5 e6 Nc3 exd5 cxd5 d6 e4 g6 Nf3 Bg7", "d4 Nf6 c4 c5 d5 b5 cxb5 a6 bxa6 Bxa6", "f4 d5 Nf3 Nf6 e3 g6", "d4 d5 Nf3 Nf6 e3 e6 Bd3 c5 c3", "d4 Nf6 Bg5 Ne4 Bf4 c5 f3"];
+let BOOK = null, _mx = null;
+const MX = () => _mx || (_mx = ENGINE()); // shared scratch engine for review checks
+function bookKeys() {
+  if (BOOK) return BOOK;
+  BOOK = new Set(); const X = MX();
+  for (const l of BOOK_LINES) { X.load(X.START); for (const san of l.split(' ')) { const m = X.legalMoves().find(m => X.san(m).replace(/[+#]/g, '') === san); if (!m) break; X.make(m); BOOK.add(X.fen().split(' ').slice(0, 3).join(' ')); } }
+  return BOOK;
+}
+// squares the piece on sq attacks (for spotting sacrifices)
+function attacksFrom(X, sq) {
+  const B = X.board, p = B[sq], t = Math.abs(p), c = p > 0 ? 1 : -1, out = [], ok = x => !(x & 0x88);
+  if (t === 1) { for (const d of [15, 17]) { const x = sq + d * c; if (ok(x)) out.push(x); } }
+  else if (t === 2 || t === 6) for (const d of t === 2 ? [33, 31, 18, 14, -33, -31, -18, -14] : [17, 16, 15, 1, -1, -15, -16, -17]) { const x = sq + d; if (ok(x)) out.push(x); }
+  else for (const d of t === 3 ? [17, 15, -17, -15] : t === 4 ? [16, -16, 1, -1] : [17, 16, 15, 1, -1, -15, -16, -17]) for (let x = sq + d; ok(x); x += d) { out.push(x); if (B[x]) break; }
+  return out;
+}
+const PV = [0, 1, 3, 3, 5, 9, 0];
+// value of the biggest piece of color c left en prise (attacked by something cheaper, or attacked and undefended)
+function hanging(X, c) {
+  const B = X.board, att = [], def = [];
+  for (let s = 0; s < 120; s++) { if (s & 0x88) { s += 7; continue; } if (B[s]) for (const x of attacksFrom(X, s)) ((B[s] > 0) === (c > 0) ? def : att).push([x, PV[Math.abs(B[s])] || 99]); }
+  let worst = 0;
+  for (let s = 0; s < 120; s++) {
+    if (s & 0x88) { s += 7; continue; }
+    const p = B[s]; if (!p || (p > 0) !== (c > 0)) continue;
+    const v = PV[Math.abs(p)]; if (v < 3) continue;
+    const a = att.filter(x => x[0] === s); if (!a.length) continue;
+    const cheapest = Math.min(...a.map(x => x[1])), defended = def.some(x => x[0] === s);
+    if (cheapest < v || !defended) worst = Math.max(worst, v);
+  }
+  return worst;
+}
 function moveInfo(i) {
   if (!AN || AN.moves.length !== G.moves.length) return null;
   if (AN.info[i]) return AN.info[i];
   const a = AN.res[i], sb = posScore(i), sn = posScore(i + 1);
   if (!a || sb == null || sn == null) return null;
-  const played = G.moves[i], sa = -sn;
-  const drop = played === a.best ? 0 : Math.max(0, winPct(sb) - winPct(sa));
-  const k = a.n === 1 ? 'forced' : played === a.best || drop < 1 ? 'best' : drop < 4 ? 'excellent' : drop < 10 ? 'good' : drop < 20 ? 'inaccuracy' : drop < 30 ? 'mistake' : 'blunder';
+  const played = G.moves[i], sa = -sn, wb = winPct(sb), wa = winPct(sa);
+  const isBest = played === a.best;
+  const drop = isBest ? 0 : Math.max(0, wb - wa);
+  let k = a.n === 1 ? 'forced' : isBest || drop < 1 ? 'best' : drop < 5 ? 'excellent' : drop < 10 ? 'good' : drop < 15 ? 'inaccuracy' : drop < 25 ? 'mistake' : 'blunder';
+  // walking into a forced mate, or throwing away your own, is a blunder
+  if (sa < -90000 && sb > -90000) k = 'blunder';
+  if (sb > 90000 && sa < 90000 && k !== 'forced') k = sa < 500 ? 'blunder' : 'miss';
+  // a Miss: the opponent just erred and you didn't punish it
+  if (i > 0 && ['inaccuracy', 'mistake'].includes(k)) { const prev = moveInfo(i - 1); if (prev && ['mistake', 'blunder'].includes(prev.k) && drop >= 10) k = 'miss'; }
+  if ((k === 'best' || k === 'excellent') && a.n > 1) {
+    const X = MX(); X.load(X.START);
+    for (let j = 0; j < i; j++) X.make(X.fromUci(G.moves[j]));
+    const mover = X.side, m = X.fromUci(played), cap = X.board[X.to(m)], before = hanging(X, mover), wasCheck = X.inCheck();
+    X.make(m);
+    const after = hanging(X, mover);
+    // Brilliant: a sound sacrifice (leaves a piece en prise) when you weren't already completely winning
+    if (drop < 2 && after > before && after > (PV[Math.abs(cap)] || 0) && wb < 85 && wa >= 50) k = 'brilliant';
+    // Great: the only good move; the next best throws away a lot
+    // (captures and getting out of check are too obvious to count)
+    else if (isBest && !cap && !wasCheck && a.s2 != null && wb - winPct(a.s2) >= 20 && wb < 90) k = 'great';
+    if (k !== 'brilliant' && k !== 'great' && i < 30 && bookKeys().has(X.fen().split(' ').slice(0, 3).join(' '))) k = 'book';
+  } else if (i < 30 && a.n > 1 && drop < 10) {
+    const X = MX(); X.load(X.START); for (let j = 0; j <= i; j++) X.make(X.fromUci(G.moves[j]));
+    if (bookKeys().has(X.fen().split(' ').slice(0, 3).join(' '))) k = 'book';
+  }
   const acc = Math.max(0, Math.min(100, 103.1668 * Math.exp(-0.04354 * drop) - 3.1669));
   return AN.info[i] = { k, drop, acc, best: a.best, bestSan: a.bs };
+}
+// Game accuracy: average of a volatility-weighted mean and a harmonic mean of move accuracies (per player)
+function gameAccuracy() {
+  const n = G.moves.length, wp = [];
+  for (let i = 0; i <= n; i++) { const s = posScore(i); if (s == null) return null; wp.push(winPct(i % 2 === 0 ? s : -s)); }
+  const ws = Math.max(2, Math.min(8, Math.floor(n / 10)));
+  const wins = []; for (let i = 0; i < ws - 2; i++) wins.push(wp.slice(0, ws));
+  for (let i = 0; i + ws <= wp.length; i++) wins.push(wp.slice(i, i + ws));
+  const sd = a => { const m = a.reduce((x, y) => x + y, 0) / a.length; return Math.sqrt(a.reduce((x, y) => x + (y - m) ** 2, 0) / a.length); };
+  const out = [[], []];
+  for (let i = 0; i < n; i++) { const f = moveInfo(i); if (!f) return null; const w = Math.max(0.5, Math.min(12, sd(wins[Math.min(i, wins.length - 1)] || [50]))); out[i % 2].push([f.acc, w]); }
+  return out.map(L => {
+    if (!L.length) return null;
+    const wm = L.reduce((a, [x, w]) => a + x * w, 0) / L.reduce((a, [, w]) => a + w, 0);
+    const hm = L.length / L.reduce((a, [x]) => a + 1 / Math.max(x, 1), 0);
+    return (wm + hm) / 2;
+  });
 }
 const isMine = i => (i % 2 === 0 ? 1 : -1) === (G.pvp ? 1 : G.me);
 function evalText(n) {
@@ -1400,7 +1530,7 @@ function evalText(n) {
   if (Math.abs(w) > 90000) { const m = Math.ceil((100000 - Math.abs(w)) / 2); return m ? (w > 0 ? '' : '-') + 'M' + m : (w > 0 ? '1-0' : '0-1'); }
   return (w >= 0 ? '+' : '') + (w / 100).toFixed(1);
 }
-function nextMistake(from) { for (let i = from; i < G.moves.length; i++) { const f = moveInfo(i); if ((G.pvp || isMine(i)) && f && ['inaccuracy', 'mistake', 'blunder'].includes(f.k)) return i; } return -1; }
+function nextMistake(from) { for (let i = from; i < G.moves.length; i++) { const f = moveInfo(i); if ((G.pvp || isMine(i)) && f && ['inaccuracy', 'mistake', 'miss', 'blunder'].includes(f.k)) return i; } return -1; }
 function renderAnalysis(n) {
   const el = $('anal'), bot = G.pvp ? BOTS[0] : botById(G.bot);
   if (!AN || AN.failed) { el.innerHTML = 'Move analysis is not available on this device.'; return; }
@@ -1411,21 +1541,133 @@ function renderAnalysis(n) {
   if (!n) {
     const mine = [], theirs = [], cnt = {};
     for (let i = 0; i < G.moves.length; i++) { const f = moveInfo(i); if (!f) continue; (isMine(i) ? mine : theirs).push(f.acc); if (isMine(i)) cnt[f.k] = (cnt[f.k] || 0) + 1; }
-    const avg = a => a.length ? (a.reduce((x, y) => x + y, 0) / a.length).toFixed(1) : '-';
+    const ga = gameAccuracy() || [null, null], meIdx = G.pvp || G.me === 1 ? 0 : 1;
+    const avg = a => { const v = a === mine ? ga[meIdx] : ga[1 - meIdx]; return v == null ? '-' : v.toFixed(1); };
     el.innerHTML = `<div class="acc"><div>${G.pvp ? esc(G.names[0]) : 'Your accuracy'}<b>${avg(mine)}</b></div><div>${G.pvp ? esc(G.names[1]) : bot.name}<b>${avg(theirs)}</b></div></div>
-      <div class="cnt">${['best', 'excellent', 'good', 'inaccuracy', 'mistake', 'blunder'].map(k => `<span><i style="background:${CLS[k].c}">${CLS[k].s}</i>${cnt[k] || 0}</span>`).join('')}</div>${nxBtn}`;
+      <div class="cnt">${['brilliant', 'great', 'best', 'excellent', 'good', 'book', 'inaccuracy', 'mistake', 'miss', 'blunder'].filter(k => cnt[k] || ['best', 'inaccuracy', 'mistake', 'blunder'].includes(k)).map(k => `<span title="${CLS[k].n}"><i style="background:${CLS[k].c}">${CLS[k].s}</i>${cnt[k] || 0}</span>`).join('')}</div>${nxBtn}`;
     return;
   }
   const i = n - 1, f = moveInfo(i);
   if (!f) { el.innerHTML = ''; return; }
   const who = G.pvp ? esc(G.names[i % 2]) : isMine(i) ? 'You' : bot.name;
-  const bad = ['inaccuracy', 'mistake', 'blunder'].includes(f.k);
+  const bad = ['inaccuracy', 'mistake', 'miss', 'blunder'].includes(f.k);
   el.innerHTML = `<div class="ln"><span class="ic" style="background:${CLS[f.k].c}">${CLS[f.k].s}</span><span>${who}: <b>${sans[i]}</b> is ${CLS[f.k].n}</span><span class="ev">${evalText(n)}</span></div>` +
     (bad && f.bestSan ? `<div class="ln"><span class="ic" style="background:${CLS.best.c}">★</span><span>Better was <b>${f.bestSan}</b> (shown in blue)</span></div>` : '') + nxBtn;
 }
 $('anal').addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) goTo(+b.dataset.go); });
 $('botsBtn').onclick = showMenu;
 $('back').onclick = e => { if (!$('game').hidden) { e.preventDefault(); cancelBrain(); stopAnalysis(); premove = null; thinking = false; showMenu(); } else if (pzBack()) e.preventDefault(); };
+
+// ---------- live move scrubber ----------
+let scrub = null; // ply being looked at during a live game (null = live)
+function scrubTo(n) {
+  if (!G || G.over) return;
+  n = Math.max(0, Math.min(G.moves.length, n));
+  if (n >= G.moves.length) { liveSnap(); return; }
+  scrub = n; E.load(E.START);
+  for (let i = 0; i < n; i++) E.make(E.fromUci(G.moves[i]));
+  selectSq(-1); hintSq = []; render();
+}
+function liveSnap() { if (scrub == null) return false; scrub = null; replay(); selectSq(-1); render(); return true; }
+function abortGame(msg) {
+  cancelBrain(); thinking = false; stopClock(); premove = null; scrub = null;
+  SV.game = null; G.over = { result: '*', reason: 'aborted', score: .5, delta: 0, rated: false, aborted: true }; save();
+  showMenu(); toast(msg || 'Game aborted');
+}
+function botDrawOffer() {
+  if (thinking || E.side !== G.me) return;
+  const bot = botById(G.bot);
+  G.drawAt = G.moves.length; G.drawPending = true; save(); render();
+  toast(`Draw offered to ${bot.name}...`);
+  ask({ time: 700, depth: 30, noise: 0, random: 0 }, (u, d) => {
+    G.drawPending = false;
+    if (G.over) return;
+    const botScore = -(d && d.score != null ? d.score : 0); // from the bot's side
+    const weak = bot.elo <= 600;
+    const ok = botScore <= (weak ? -30 : -80) || (Math.abs(botScore) <= 25 && G.moves.length >= 40);
+    setTimeout(() => {
+      if (G.over) return;
+      if (ok) { toast(`${bot.name} accepts the draw`); finish({ result: '1/2-1/2', reason: 'agreement' }); }
+      else { toast(`${bot.name} declines the draw`); render(); }
+    }, 500);
+  });
+}
+
+// ---------- board markings: right-click (or the Arrows button) for arrows and highlights ----------
+const MARK = { d: 'rgba(255,170,0,0.8)', s: 'rgba(21,120,27,0.8)', c: 'rgba(136,32,32,0.8)', a: 'rgba(0,48,136,0.8)' };
+const PEN_ORDER = ['d', 's', 'c', 'a'];
+function makeAnno(el, flippedFn, opts = {}) {
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 800 800'); svg.setAttribute('class', 'anno'); svg.setAttribute('aria-hidden', 'true');
+  el.parentElement.appendChild(svg);
+  const A = { arrows: [], marks: [], start: null, key: null, pen: null };
+  const sqAt = (x, y) => { const r = el.getBoundingClientRect(); const j = Math.floor((x - r.left) / r.width * 8), i = Math.floor((y - r.top) / r.height * 8); if (i < 0 || i > 7 || j < 0 || j > 7) return -1; const f = flippedFn(); return (f ? i : 7 - i) * 16 + (f ? 7 - j : j); };
+  const disp = sq => { const f = flippedFn(), file = sq & 7, rank = sq >> 4; return f ? [7 - file, rank] : [file, 7 - rank]; };
+  const colorOf = e => e.shiftKey ? 's' : (e.ctrlKey || e.metaKey) ? 'c' : e.altKey ? 'a' : 'd';
+  A.clear = () => { if (A.arrows.length || A.marks.length) { A.arrows = []; A.marks = []; A.draw(); } };
+  A.sync = key => { if (key !== A.key) { A.key = key; A.arrows = []; A.marks = []; } };
+  el.addEventListener('contextmenu', e => e.preventDefault());
+  el.addEventListener('pointerdown', e => {
+    const drawing = e.button === 2 || (A.pen && e.button === 0 && e.pointerType !== 'mouse') || (A.pen && e.button === 0 && e.pointerType === 'mouse');
+    if (drawing) {
+      e.preventDefault(); e.stopImmediatePropagation();
+      if (e.button === 2 && opts.onRight && opts.onRight()) { A.clear(); return; } // e.g. cancel a premove
+      const sq = sqAt(e.clientX, e.clientY); if (sq < 0) return;
+      A.start = { sq, col: e.button === 2 ? colorOf(e) : A.pen, id: e.pointerId };
+      try { el.setPointerCapture(e.pointerId); } catch (err) { }
+      return;
+    }
+    if (e.button === 0) A.clear(); // a normal left click clears all markings
+  }, true);
+  el.addEventListener('pointermove', e => { if (A.start && e.pointerId === A.start.id) e.stopImmediatePropagation(); }, true);
+  el.addEventListener('pointerup', e => {
+    if (!A.start || e.pointerId !== A.start.id) return;
+    e.stopImmediatePropagation();
+    const st = A.start; A.start = null;
+    const to = sqAt(e.clientX, e.clientY); if (to < 0) return;
+    if (to === st.sq) {
+      const i = A.marks.findIndex(m => m.sq === to);
+      if (i >= 0 && A.marks[i].col === st.col) A.marks.splice(i, 1); else if (i >= 0) A.marks[i].col = st.col; else A.marks.push({ sq: to, col: st.col });
+    } else {
+      const i = A.arrows.findIndex(a => a.from === st.sq && a.to === to);
+      if (i >= 0 && A.arrows[i].col === st.col) A.arrows.splice(i, 1); else if (i >= 0) A.arrows[i].col = st.col; else A.arrows.push({ from: st.sq, to, col: st.col });
+    }
+    A.draw();
+  }, true);
+  el.addEventListener('pointercancel', () => { A.start = null; }, true);
+  A.draw = () => {
+    let h = '';
+    for (const m of A.marks) { const [c, r] = disp(m.sq); h += `<rect x="${c * 100}" y="${r * 100}" width="100" height="100" fill="${MARK[m.col]}" opacity="0.8"/>`; }
+    for (const a of A.arrows) {
+      const [c1, r1] = disp(a.from), [c2, r2] = disp(a.to), col = MARK[a.col];
+      const P = (c, r) => [c * 100 + 50, r * 100 + 50];
+      const dc = Math.abs(c2 - c1), dr = Math.abs(r2 - r1);
+      let pts;
+      if ((dc === 2 && dr === 1) || (dc === 1 && dr === 2)) pts = [P(c1, r1), dc === 2 ? P(c2, r1) : P(c1, r2), P(c2, r2)]; // knight: L-shape along the long side first
+      else pts = [P(c1, r1), P(c2, r2)];
+      // inset the start so the piece underneath stays visible, stop the shaft where the head begins
+      const n = pts.length, [ax, ay] = pts[0], [bx, by] = pts[1];
+      const l0 = Math.hypot(bx - ax, by - ay); pts[0] = [ax + (bx - ax) / l0 * 30, ay + (by - ay) / l0 * 30];
+      const [px, py] = pts[n - 2], [tx, ty] = pts[n - 1], L = Math.hypot(tx - px, ty - py), ux = (tx - px) / L, uy = (ty - py) / L;
+      const tip = [tx - ux * 6, ty - uy * 6], base = [tip[0] - ux * 38, tip[1] - uy * 38];
+      const shaft = pts.slice(0, n - 1).concat([base]);
+      h += `<path d="M${shaft.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L')}" stroke="${col}" stroke-width="20" fill="none" stroke-linejoin="miter"/>`;
+      const nx = -uy, ny = ux;
+      h += `<polygon points="${tip.join(',')} ${(base[0] + nx * 24).toFixed(1)},${(base[1] + ny * 24).toFixed(1)} ${(base[0] - nx * 24).toFixed(1)},${(base[1] - ny * 24).toFixed(1)}" fill="${col}"/>`;
+    }
+    svg.innerHTML = h;
+  };
+  return A;
+}
+// Arrows button (touch screens): off -> orange -> green -> red -> blue -> off
+function penButton(btn, A) {
+  const show = () => { btn.classList.toggle('on', !!A.pen); const d = btn.querySelector('.pdot'); if (d) d.remove(); if (A.pen) btn.insertAdjacentHTML('beforeend', `<span class="pdot" style="background:${MARK[A.pen]}"></span>`); };
+  btn.onclick = () => { const i = PEN_ORDER.indexOf(A.pen); A.pen = i === PEN_ORDER.length - 1 ? null : PEN_ORDER[i + 1]; if (A.pen === 'd' && i === -1) toast('Drag to draw arrows, tap to highlight. Tap again to change color.'); show(); };
+  show();
+}
+const gameAnno = makeAnno($('board'), () => flipped, { onRight: () => { if (premove) { premove = null; render(); return true; } return false; } });
+penButton($('annoBtn'), gameAnno);
 
 // ---------- play a friend (pass and play on one phone) ----------
 const CLOCKS = [[0, 0, 'No clock'], [1, 0, '1 min'], [3, 2, '3 | 2'], [5, 0, '5 min'], [10, 0, '10 min'], [15, 10, '15 | 10']];
@@ -1509,9 +1751,10 @@ function drawClocks() {
     const t = liveTime(i), on = !G.over && G.clock.last && (E.side === 1 ? 0 : 1) === i;
     el.textContent = fmtClock(t); el.classList.toggle('on', !!on); el.classList.toggle('low', t < 20000);
     if (t <= 0 && !G.over) { stopClock(); finish({ result: i === 0 ? '0-1' : '1-0', reason: 'time' }); return; }
+    if (!G.moves.length && G.startedAt && Date.now() - G.startedAt > 30000) { abortGame('Game aborted: White didn\'t move within 30 seconds'); return; }
   }
 }
-function startClock() { stopClock(); if (G && G.pvp && G.clock && !G.over) { if (G.clock.last) G.clock.last = Date.now(); clockTimer = setInterval(drawClocks, 100); } }
+function startClock() { stopClock(); if (G && G.pvp && G.clock && !G.over) { if (!G.moves.length) G.startedAt = Date.now(); if (G.clock.last) G.clock.last = Date.now(); clockTimer = setInterval(drawClocks, 100); } }
 function stopClock() {
   if (clockTimer) { clearInterval(clockTimer); clockTimer = null; }
   if (G && G.pvp && G.clock && G.clock.last && !G.over) { const i = E.side === 1 ? 0 : 1; G.clock.t[i] -= Date.now() - G.clock.last; G.clock.last = Date.now(); save(); }
@@ -1525,8 +1768,12 @@ function clockMoved(mover) {
 }
 document.addEventListener('visibilitychange', () => { if (G && G.pvp && G.clock && !G.over && !$('game').hidden) { if (document.hidden) stopClock(); else startClock(); } });
 $('drawBtn').onclick = () => {
-  if (!G || !G.pvp || G.over) return;
+  if (!G || G.over) return;
+  liveSnap();
+  if (G.drawAt != null && G.moves.length - G.drawAt < 6) { toast('Wait a few moves before offering again'); return; }
+  if (!G.pvp) { botDrawOffer(); return; }
   const other = E.side === 1 ? G.names[1] : G.names[0], asker = E.side === 1 ? G.names[0] : G.names[1];
+  G.drawAt = G.moves.length; save();
   confirmBox('Draw?', `${esc(asker)} offers a draw. ${esc(other)}, do you accept?`, 'Accept draw', () => finish({ result: '1/2-1/2', reason: 'agreement' }));
 };
 
@@ -1578,7 +1825,7 @@ function showResult() {
   }
   const bot = botById(G.bot), o = G.over;
   const title = o.score === 1 ? 'You win!' : o.score === 0 ? `${bot.name} wins` : 'Draw';
-  const why = { checkmate: 'by checkmate', stalemate: 'by stalemate', resignation: 'by resignation', repetition: 'by repetition', '50-move rule': 'by the 50-move rule', 'insufficient material': 'by insufficient material' }[o.reason] || '';
+  const why = { checkmate: 'by checkmate', stalemate: 'by stalemate', resignation: 'by resignation', repetition: 'by repetition', '50-move rule': 'by the 50-move rule', 'insufficient material': 'by insufficient material', agreement: 'by agreement' }[o.reason] || '';
   const line = o.score === 1 ? ['Nice game! Rematch?', 'You got me. Well played!', 'I need more practice...'][Math.floor(Math.random() * 3)] : o.score === 0 ? ['Good game!', 'Better luck next time!', 'Want to try again?'][Math.floor(Math.random() * 3)] : 'Evenly matched!';
   const ov = document.createElement('div'); ov.className = 'ov';
   ov.innerHTML = `<div class="card">${avatar(bot)}<h3>${title}</h3><p>${why ? why[0].toUpperCase() + why.slice(1) + '. ' : ''}${bot.name}: “${line}”</p>
@@ -1858,6 +2105,7 @@ function makeBoard(el, ctl) {
       h += `<div class="${c}" data-sq="${sq}">${inner}</div>`;
     }
     el.innerHTML = h;
+    if (B.anno) { B.anno.sync(E2.fen()); B.anno.draw(); }
     if (B.anim) {
       const pc = el.querySelector(`[data-sq="${B.anim.to}"] .pc`), fe = el.querySelector(`[data-sq="${B.anim.from}"]`);
       if (pc && fe) {
@@ -2254,6 +2502,8 @@ $('anBest').onclick = () => { if (AS && AS.best && !AS.busy) { const m = A.fromU
 $('anFlip').onclick = () => { AS.flip = !AS.flip; anBoard.draw(); };
 $('anReset').onclick = () => { cancelBrain(); openAnalysis(AS.p); };
 
+pzBoard.anno = makeAnno($('pboard'), () => PS && PS.color === -1); penButton($('pzPen'), pzBoard.anno);
+anBoard.anno = makeAnno($('aboard'), () => AS && AS.flip); penButton($('anPen'), anBoard.anno);
 // ---------- navigation ----------
 function openPuzMenu() { cancelBrain(); PS = null; SV.mode = 'puz'; save(); showMenu(); }
 $('modeSeg').onclick = e => { const b = e.target.closest('[data-m]'); if (!b) return; SV.mode = b.dataset.m; save(); showMenu(); };
