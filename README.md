@@ -14,6 +14,9 @@ Tap to mine, sell ores, upgrade your gear and drill toward the planet core.
 ## Chess
 Play against six bots, from Pip (250) to Titan (2300). Pick your color, drag or tap to move, and use hints when you're stuck (games with hints don't count toward your rating). Takebacks are optional: turn them on before a game and wins give half the rating points. After a game, every move gets rated (best, excellent, good, inaccuracy, mistake, blunder) with your accuracy, and bad moves show the better move. While the bot is thinking you can premove: pick a piece and a square and it plays as soon as it's your turn.
 
+### Leaderboard
+The **Leaderboard** tab (next to Play bots and Puzzles) switches between chess and puzzle ratings, and shows your place and how many points you are behind the player above you.
+
 ### Arrows
 Hold **Alt** (Option on Mac) and drag on the board to draw an arrow, or Alt + click a square to highlight it. Alt alone draws orange, Alt+Shift green, Alt+Ctrl/Cmd red and Alt+Shift+Ctrl/Cmd blue. A normal click clears them. On a phone, use the **Arrows** button instead. Right-click cancels a premove.
 

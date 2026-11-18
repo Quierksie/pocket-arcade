@@ -309,6 +309,9 @@ body.focus .app { padding-top: 16px; }
 .lb .msg { padding: 16px; color: var(--soft); font-size: 14px; line-height: 1.5; text-align: center; }
 .lb .msg a, .lnk { color: var(--accent); font-weight: 900; text-decoration: none; }
 .pcard .lb { margin-top: 8px; border-radius: 12px; }
+.lbseg { margin-bottom: 4px; }
+.lbme { margin-bottom: 4px; }
+.modeseg button { font-size: 13.5px; }
 .field { width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); font: inherit; font-size: 17px; font-weight: 800; margin-bottom: 12px; user-select: text; -webkit-user-select: text; }
 /* color editor */
 .hdr-r { display: flex; gap: 8px; }
@@ -418,7 +421,7 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
   </header>
 
   <section class="menu" id="menu">
-    <div class="seg modeseg" role="group" aria-label="Mode" id="modeSeg"><button data-m="play">Play bots</button><button data-m="puz">Puzzles</button></div>
+    <div class="seg modeseg" role="group" aria-label="Mode" id="modeSeg"><button data-m="play">Play bots</button><button data-m="puz">Puzzles</button><button data-m="lb">Leaderboard</button></div>
     <div id="playMenu">
     <div class="rate" id="rateCard"></div>
     <button class="bigbtn friend" id="friendBtn"><div><b>Play a friend</b><small id="friendSub">Two players, one phone. Pass it back and forth.</small></div><span class="go">Play</span></button>
@@ -428,10 +431,9 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
     <button class="opt" id="tbOpt" role="switch"><div class="tx"><b>Takebacks</b><small id="tbNote"></small></div><span class="sw"></span></button>
     <h2>Choose your opponent</h2>
     <div class="bots" id="bots"></div>
-    <h2>Leaderboard</h2>
-    <div class="lb" id="lbChess"></div>
     </div>
     <div id="puzMenu" hidden></div>
+    <div id="lbMenu" hidden></div>
   </section>
   <section id="puzzle" hidden>
     <div class="pzbar"><span id="pzMode"></span><span id="pzRate"></span></div>
@@ -1960,10 +1962,11 @@ function showMenu(keepOverlays) {
   $('game').hidden = true; $('menu').hidden = false; $('back').textContent = '‹ Arcade';
   ['puzzle', 'anaSec', 'archSec'].forEach(x => { $(x).hidden = true; });
   if (keepOverlays !== true) document.querySelectorAll('.ov').forEach(o => o.remove());
-  const pm = SV.mode === 'puz';
-  $('playMenu').hidden = pm; $('puzMenu').hidden = !pm;
-  $('modeSeg').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.m === (pm ? 'puz' : 'play')));
+  const pm = SV.mode === 'puz', lm = SV.mode === 'lb';
+  $('playMenu').hidden = pm || lm; $('puzMenu').hidden = !pm; $('lbMenu').hidden = !lm;
+  $('modeSeg').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.m === (pm ? 'puz' : lm ? 'lb' : 'play')));
   if (pm) { renderPuzMenu(); loadPuzzles().catch(() => { }); }
+  if (lm) { renderLbMenu(); if (keepOverlays !== true) loadBoards(); }
   renderBoards();
   { const pv = SV.pvp, r = pv && h2hGet(pv.names[0], pv.names[1]);
     $('friendSub').textContent = r ? `${pv.names[0]} ${r.w[normName(pv.names[0])] || 0} - ${r.w[normName(pv.names[1])] || 0} ${pv.names[1]}${r.d ? ` (${r.d} draw${r.d === 1 ? '' : 's'})` : ''}` : 'Two players, one phone. Pass it back and forth.'; }
@@ -2281,8 +2284,6 @@ function renderPuzMenu() {
   $('pzDaily').onclick = () => startDaily(today());
   $('pzArchive').onclick = () => openArchive();
   $('pzJourney').onclick = openJourney;
-  host.insertAdjacentHTML('beforeend', '<div class="pcard"><div class="lbl">Puzzle leaderboard</div><div class="lb" id="lbPuz"></div></div>');
-  renderBoards();
 }
 function openPzSettings() {
   const o = document.createElement('div'); o.className = 'ov';
@@ -2689,8 +2690,31 @@ function boardHTML(k) {
   }).join('');
   return top + (rows || (fb.err ? '<div class="msg">Couldn\'t load the leaderboard right now.</div>' : '<div class="msg">No one is on this board yet. Be the first!</div>')) + (fb.user && lbName() ? `<div class="msg" style="padding:10px"><button class="lnk" data-lbname>Change name</button></div>` : '');
 }
+// ---------- Leaderboard tab: Chess / Puzzles switch, your spot, then the full board ----------
+const lbKind = () => SV.lbTab === 'puz' ? 'puz' : 'chess';
+function renderLbMenu() {
+  const k = lbKind();
+  $('lbMenu').innerHTML = `<div class="seg lbseg" role="group" aria-label="Which leaderboard" id="lbSeg"><button data-lb="chess" aria-pressed="${k === 'chess'}">Chess rating</button><button data-lb="puz" aria-pressed="${k === 'puz'}">Puzzle rating</button></div>
+    <div class="pcard lbme" id="lbMe"></div>
+    <h2>Top players</h2>
+    <div class="lb" id="lbList"></div>`;
+  $('lbSeg').onclick = e => { const b = e.target.closest('[data-lb]'); if (!b || b.dataset.lb === k) return; SV.lbTab = b.dataset.lb; save(); renderLbMenu(); };
+  renderBoards();
+}
+// your rating, your place, and how far behind the next person you are
+function lbMeHTML(k) {
+  const isChess = k === 'chess', mine = Math.round(isChess ? SV.rating : PZ.rating), peak = Math.round(isChess ? SV.peak : PZ.peak);
+  const rows = fb.rows[k], i = fb.user ? rows.findIndex(r => r.id === fb.user.uid) : -1, val = r => isChess ? r.chessRating : r.puzzleRating;
+  let line = '';
+  if (i === 0) line = rows.length > 1 ? `You're <b>#1</b>, ${val(rows[0]) - val(rows[1])} points ahead of ${esc(rows[1].name)}.` : `You're <b>#1</b>.`;
+  else if (i > 0) { const up = rows[i - 1], gap = val(up) - val(rows[i]); line = `You're <b>#${i + 1}</b>. ${gap > 0 ? `${gap} point${gap === 1 ? '' : 's'} behind` : 'Tied with'} ${esc(up.name)} at #${i}.`; }
+  else if (fb.user && lbName()) line = isChess ? (SV.games > 0 ? 'Not in the top 50 yet.' : 'Finish a rated game to get on the board.') : (PZ.solved + PZ.failed > 0 ? 'Not in the top 50 yet.' : 'Finish a rated puzzle to get on the board.');
+  return `<div class="top"><div><div class="lbl">Your ${isChess ? 'chess' : 'puzzle'} rating</div><b class="big">${mine}</b></div><div class="meta" style="margin-left:auto;text-align:right">Peak <b>${peak}</b><br>${isChess ? `<b>${SV.games}</b> games` : `<b>${PZ.solved}</b> solved`}</div></div>${line ? `<div class="meta" style="margin-top:8px">${line}</div>` : ''}`;
+}
 function renderBoards() {
-  for (const [id, k] of [['lbChess', 'chess'], ['lbPuz', 'puz']]) { const el = $(id); if (el) el.innerHTML = boardHTML(k); }
+  const k = lbKind(), list = $('lbList'), me = $('lbMe');
+  if (list) list.innerHTML = boardHTML(k);
+  if (me) me.innerHTML = lbMeHTML(k);
 }
 document.addEventListener('click', e => { if (e.target.closest('[data-lbname]')) askName(); });
 function askName() {

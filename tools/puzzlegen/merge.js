@@ -6,26 +6,9 @@ const ENGINE = require('./engine.js');
 const E = ENGINE();
 
 const PZ = path.join(__dirname, '../../puzzles.json');
-const CAL = JSON.parse(fs.readFileSync(path.join(__dirname, 'calib.json'), 'utf8'));
-// rating by rank: where this score falls among the reference puzzles' scores -> the rating at the same rank
-function ratingFor(sc) {
-  const S = CAL.scores, R = CAL.ratings, n = S.length;
-  let lo = 0; while (lo < n && S[lo] < sc) lo++;
-  let hi = lo; while (hi < n && S[hi] === sc) hi++;
-  if (hi > lo) { let sum = 0; for (let k = lo; k < hi; k++) sum += R[k]; return sum / (hi - lo); } // same score: average of those ratings
-  if (lo === 0) return R[0] - (S[0] - sc) * 150;
-  if (lo === n) return R[n - 1] + (sc - S[n - 1]) * 150;
-  const t = (sc - S[lo - 1]) / (S[lo] - S[lo - 1]);
-  return R[lo - 1] + t * (R[lo] - R[lo - 1]);
-}
+const rate = require('./rate.js'); // rating from the puzzle itself: moves to find, how obvious the first move is, engine depth
 const MAX = 15000;
 
-// difficulty score from the generator's data (same formula used for the first batch)
-function score(r) {
-  const d = r.diffs, n = d.length, th = r.themes || [];
-  const mx = Math.max(...d), mean = d.reduce((a, b) => a + b, 0) / n;
-  return mx + 0.5 * mean + 0.8 * (n - 1) + (r.quietFirst ? 1 : 0) + (th.includes('sacrifice') ? 1.2 : 0) + (th.includes('hangingPiece') ? -1 : 0) + (th.includes('mate') && n === 1 ? -0.4 : 0);
-}
 const key = (fen, moves) => fen.split(' ').slice(0, 4).join(' ') + '|' + moves;
 
 const data = JSON.parse(fs.readFileSync(PZ, 'utf8'));
@@ -40,6 +23,7 @@ for (const f of process.argv.slice(2)) {
 for (let i = recs.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [recs[i], recs[j]] = [recs[j], recs[i]]; }
 
 let added = 0, easy = 0, skipped = 0;
+let easyPool = data.p.filter(a => a[2] > 0 && a[3] && a[3].includes('oneMove') && a[2] < 700).length;
 for (const r of recs) {
   if (data.p.length >= MAX) break;
   const k = key(r.fen, r.moves);
@@ -53,10 +37,14 @@ for (const r of recs) {
   // no "they checked you with a piece you can just take" puzzles
   E.load(r.fen); const b = E.fromUci(mv[0]); E.make(b); const s1 = E.fromUci(mv[1]);
   if (E.inCheck() && E.to(s1) === E.to(b)) { skipped++; continue; }
-  // keep one-move "grab the hanging piece" puzzles to about a quarter of each batch
   const th = r.themes || [];
-  if (th.includes('oneMove') && th.includes('hangingPiece')) { if (easy > added * 0.25 + 2) { skipped++; continue; } easy++; }
-  const rating = Math.max(350, Math.min(2800, Math.round(ratingFor(score(r)) + (Math.random() - 0.5) * 160)));
+  const rt = rate(E, r.fen, r.moves, th);
+  // there are already plenty of easy one-movers (free piece, cheap piece takes a big one), so only add more while there are few
+  if (rt.f.n === 1 && rt.f.obvious && easyPool >= 150) { skipped++; continue; }
+  // keep one-move puzzles to about a fifth of each batch so the pool keeps getting harder ones
+  if (rt.f.n === 1) { if (easy > added * 0.2 + 2) { skipped++; continue; } easy++; }
+  if (rt.f.n === 1 && rt.f.obvious) easyPool++;
+  const rating = rt.rating;
   data.p.push([r.fen, r.moves, rating, th.join(' '), today]);
   have.add(k);
   added++;
