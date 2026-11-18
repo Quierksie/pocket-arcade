@@ -57,6 +57,29 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
 .stat b { display: block; font-size: 16px; }
 .stat small { color: var(--soft); font-size: 11.5px; }
 
+.rate { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; align-items: center; padding: 14px 16px; border-radius: 18px; background: var(--panel); border: 1px solid var(--line); margin-top: 6px; }
+.rate .num { font-size: 40px; font-weight: 900; line-height: 1; grid-row: span 2; }
+.rate .num small { display: block; font-size: 12px; color: var(--soft); font-weight: 800; letter-spacing: .5px; margin-bottom: 4px; }
+.rate .meta { color: var(--soft); font-size: 13px; font-weight: 700; line-height: 1.5; }
+.rate .meta b { color: var(--ink); }
+.rate svg { width: 100%; height: 34px; display: block; }
+.up { color: #3fd27a !important; } .down { color: var(--bad) !important; }
+.seg { display: flex; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 3px; margin-top: 12px; }
+.seg button { flex: 1; padding: 8px; border-radius: 9px; font-weight: 800; font-size: 14px; color: var(--soft); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.seg + p { color: var(--soft); font-size: 12.5px; margin: 6px 4px 0; }
+.diff .pr { font-size: 12px; font-weight: 800; color: var(--accent); }
+.lb { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.lb .r { display: grid; grid-template-columns: 34px 1fr auto; gap: 8px; align-items: center; padding: 10px 14px; border-top: 1px solid var(--line); font-weight: 800; }
+.lb .r:first-child { border-top: 0; }
+.lb .r.me { background: var(--samehl); }
+.lb .rk { color: var(--soft); font-size: 14px; }
+.lb .r:nth-child(1) .rk { color: #ffcf4d; } .lb .r:nth-child(2) .rk { color: #c9d1e8; } .lb .r:nth-child(3) .rk { color: #e0a070; }
+.lb .nm small { display: block; color: var(--soft); font-size: 11.5px; font-weight: 700; }
+.lb .msg { padding: 16px; color: var(--soft); font-size: 14px; line-height: 1.5; text-align: center; }
+.lb .msg a, .lb .msg button.lnk { color: var(--accent); font-weight: 900; text-decoration: none; }
+.delta { font-size: 22px; font-weight: 900; margin: 2px 0 10px; }
+.field { width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel2); color: var(--ink); font: inherit; font-size: 17px; font-weight: 800; margin-bottom: 12px; user-select: text; -webkit-user-select: text; }
 /* game */
 .bar { display: flex; align-items: center; justify-content: space-between; padding: 0 4px 8px; font-weight: 800; font-size: 14px; color: var(--soft); }
 .bar b { color: var(--ink); }
@@ -126,15 +149,21 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
   </header>
 
   <section class="menu" id="menu">
+    <div class="rate" id="rateCard"></div>
+    <div class="seg" role="group" aria-label="Game mode"><button id="mRated">Rated</button><button id="mCasual">Casual</button></div>
+    <p id="modeNote"></p>
+    <h2 style="margin-top:14px"></h2>
     <button class="cont" id="contBtn" hidden><div><b>Continue</b><small id="contInfo"></small></div><span class="go">Play</span></button>
     <h2>New game</h2>
     <div class="diffs" id="diffs"></div>
     <h2>Best times</h2>
     <div class="stats" id="stats"></div>
+    <h2>Leaderboard</h2>
+    <div class="lb" id="lb"><div class="msg">Loading…</div></div>
   </section>
 
   <section id="game" hidden>
-    <div class="bar"><span id="dName"></span><span>Mistakes <b id="mist">0</b></span><button id="timeBtn" style="font-weight:800;color:var(--soft);display:flex;align-items:center;gap:6px" aria-label="Pause"><b id="clock">0:00</b><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></button></div>
+    <div class="bar"><span id="dName"></span><span id="pRate"></span><span>Mistakes <b id="mist">0</b></span><button id="timeBtn" style="font-weight:800;color:var(--soft);display:flex;align-items:center;gap:6px" aria-label="Pause"><b id="clock">0:00</b><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></button></div>
     <div style="position:relative">
       <div class="board" id="board" role="grid" aria-label="Sudoku board"></div>
       <div class="pause" id="pause" hidden><span>Paused</span><button class="btn" id="resume">Resume</button></div>
@@ -222,6 +251,83 @@ function generate(clues) {
   return { puz, sol };
 }
 
+// ---------- puzzle rating (Elo-style, like chess puzzle ratings) ----------
+const BASE = { easy: 800, medium: 1200, hard: 1600, expert: 2000 }, PAR = { easy: 300, medium: 600, hard: 900, expert: 1500 }, MAXMIST = 3;
+if (SV.rating == null) Object.assign(SV, { rating: 1000, peak: 1000, rated: 0, rhist: [1000], mode: 'rated', lastDelta: 0 });
+const puzzleRating = (d, clues) => Math.round(BASE[d.id] + (d.clues - clues) * 25 + (Math.random() * 120 - 60));
+const kFactor = () => SV.rated < 15 ? 40 : 24;
+const expected = p => 1 / (1 + Math.pow(10, (p - SV.rating) / 400));
+// how well the puzzle went: 1 = clean and quick; hints, mistakes and going over par time cost a little
+function solveScore() {
+  const par = PAR[G.diff], over = Math.max(0, G.time - par) / par;
+  return Math.max(.35, 1 - G.mistakes * .1 - (G.hintsUsed || 0) * .2 - Math.min(.3, over * .3));
+}
+function applyRating(score) {
+  const E = expected(G.prating), before = SV.rating;
+  let d = Math.round(kFactor() * (score - E));
+  if (score > 0) d = Math.max(1, d); else d = Math.min(-1, d);
+  SV.rating = Math.max(100, before + d); SV.peak = Math.max(SV.peak, SV.rating); SV.rated++; SV.lastDelta = d;
+  SV.rhist.push(SV.rating); if (SV.rhist.length > 40) SV.rhist.shift();
+  save(); pushBoard();
+  return { before, after: SV.rating, d };
+}
+const lossIfAbandoned = g => g && g.rated && !g.done ? Math.min(-1, Math.round(kFactor() * (0 - expected(g.prating)))) : 0;
+
+// ---------- leaderboard (Firebase, same accounts as the rest of the arcade) ----------
+const FB_CONFIG = {"apiKey": "AIzaSyDKdZ2RGPp45SrXGtpse9-kBpcJOQ9gVoQ", "authDomain": "pocket-arcade-9bcbf.firebaseapp.com", "projectId": "pocket-arcade-9bcbf", "storageBucket": "pocket-arcade-9bcbf.firebasestorage.app", "messagingSenderId": "187036226775", "appId": "1:187036226775:web:6628259ce35cfabd668c92"};
+let fb = { state: 'loading', user: null, db: null, rows: [], err: '' };
+const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function loadScript(src) { return new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = rej; document.head.appendChild(el); }); }
+async function initBoard() {
+  try {
+    const base = 'https://www.gstatic.com/firebasejs/10.12.2/';
+    await loadScript(base + 'firebase-app-compat.js');
+    await Promise.all([loadScript(base + 'firebase-auth-compat.js'), loadScript(base + 'firebase-firestore-compat.js')]);
+    if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+    fb.db = firebase.firestore();
+    firebase.auth().onAuthStateChanged(u => { fb.user = u; fb.state = 'ready'; pushBoard(); loadBoard(); });
+  } catch (e) { fb.state = 'offline'; renderBoard(); }
+}
+async function loadBoard() {
+  if (!fb.db) return;
+  try {
+    const q = await fb.db.collection('leaderboard').orderBy('rating', 'desc').limit(50).get();
+    fb.rows = q.docs.map(d => Object.assign({ id: d.id }, d.data())); fb.err = '';
+  } catch (e) { fb.err = (e && e.code) || 'error'; }
+  renderBoard();
+}
+async function pushBoard() {
+  if (!fb.db || !fb.user || !SV.lbName || !SV.rated) return;
+  try {
+    await fb.db.collection('leaderboard').doc(fb.user.uid).set({ name: SV.lbName, rating: Math.round(SV.rating), peak: Math.round(SV.peak), solved: Object.values(SV.wins || {}).reduce((a, b) => a + b, 0), updated: firebase.firestore.FieldValue.serverTimestamp() });
+    fb.err = ''; loadBoard();
+  } catch (e) { fb.err = (e && e.code) || 'error'; renderBoard(); }
+}
+function renderBoard() {
+  const el = $('lb'); if (!el) return;
+  if (fb.state === 'loading') { el.innerHTML = '<div class="msg">Loading…</div>'; return; }
+  if (fb.state === 'offline') { el.innerHTML = '<div class="msg">The leaderboard needs an internet connection.</div>'; return; }
+  if (fb.err === 'permission-denied') { el.innerHTML = '<div class="msg">The leaderboard isn\'t switched on yet. Your rating is saved and will show up here once it is.</div>'; return; }
+  let top = '';
+  if (!fb.user) top = `<div class="msg"><a href="./">Sign in on the Arcade page</a> to put your rating on the leaderboard.</div>`;
+  else if (!SV.lbName) top = `<div class="msg">Pick a name to join the leaderboard. <button class="lnk" id="nameBtn">Choose name</button></div>`;
+  else if (!SV.rated) top = `<div class="msg">Finish a rated puzzle to get on the board, ${esc(SV.lbName)}.</div>`;
+  const rows = fb.rows.map((r, i) => `<div class="r ${fb.user && r.id === fb.user.uid ? 'me' : ''}"><span class="rk">#${i + 1}</span><span class="nm">${esc(r.name)}<small>${r.solved || 0} solved · peak ${r.peak || r.rating}</small></span><span>${r.rating}</span></div>`).join('');
+  el.innerHTML = top + (rows || (fb.err ? '<div class="msg">Couldn\'t load the leaderboard right now.</div>' : '<div class="msg">No one is on the board yet. Be the first!</div>'));
+  if ($('nameBtn')) $('nameBtn').onclick = askName;
+}
+function askName() {
+  const o = document.createElement('div'); o.className = 'ov';
+  o.innerHTML = `<div class="card"><h3 style="font-size:21px">Leaderboard name</h3><p>Everyone can see this. 2 to 16 letters or numbers.</p><input class="field" id="nm" maxlength="16" autocomplete="off" value="${esc(SV.lbName || '')}"><div class="row"><button class="btn alt" data-a="no">Cancel</button><button class="btn" data-a="yes">Save</button></div></div>`;
+  document.body.append(o); const inp = o.querySelector('#nm'); inp.focus();
+  o.querySelector('[data-a=no]').onclick = () => o.remove();
+  o.querySelector('[data-a=yes]').onclick = () => {
+    const v = inp.value.trim().replace(/\s+/g, ' ');
+    if (!/^[A-Za-z0-9 _.-]{2,16}$/.test(v)) { toast('Use 2–16 letters, numbers, spaces, _ . or -'); return; }
+    SV.lbName = v; save(); o.remove(); pushBoard(); renderBoard();
+  };
+}
+
 // ---------- state ----------
 let G = null;          // current game
 let sel = -1, notesMode = false, timer = null, paused = false;
@@ -231,23 +337,39 @@ const fmt = s => { s = Math.floor(s); const h = Math.floor(s / 3600), m = Math.f
 function showMenu() {
   stopClock(); $('game').hidden = true; $('menu').hidden = false; $('back').textContent = '‹ Arcade'; $('back').href = './';
   const g = SV.game;
+  renderRating(); renderMode(); renderBoard(); if (fb.db) loadBoard();
   $('contBtn').hidden = !g;
   if (g) { const d = DIFFS.find(x => x.id === g.diff); $('contInfo').textContent = `${d.name} · ${fmt(g.time)} · ${g.cells.filter((v, i) => v && !g.given[i]).length + g.given.filter(Boolean).length}/81 filled`; }
-  $('diffs').innerHTML = DIFFS.map(d => `<button class="diff" data-d="${d.id}"><b>${d.name}</b><small>${d.note}</small><span class="dots">${[1, 2, 3, 4].map(n => `<i class="${n <= d.lvl ? 'on' : ''}"></i>`).join('')}</span></button>`).join('');
+  $('diffs').innerHTML = DIFFS.map(d => `<button class="diff" data-d="${d.id}"><b>${d.name}</b><small>${d.note}</small><span class="pr">${SV.mode === 'rated' ? 'Puzzles ~' + BASE[d.id] : 'Unrated'}</span><span class="dots">${[1, 2, 3, 4].map(n => `<i class="${n <= d.lvl ? 'on' : ''}"></i>`).join('')}</span></button>`).join('');
   $('stats').innerHTML = DIFFS.map(d => `<div class="stat"><b>${SV.best[d.id] ? fmt(SV.best[d.id]) : '–'}</b><small>${d.name} · ${SV.wins[d.id] || 0} won</small></div>`).join('');
   $('diffs').querySelectorAll('.diff').forEach(b => b.onclick = () => {
-    if (SV.game) confirmBox('Start a new game?', 'Your current puzzle will be lost.', 'New game', () => newGame(b.dataset.d));
+    const loss = lossIfAbandoned(SV.game);
+    if (SV.game) confirmBox('Start a new game?', loss ? `Your rated puzzle in progress will count as failed (${loss} rating).` : 'Your current puzzle will be lost.', 'New game', () => { if (loss) { G = SV.game; applyRating(0); } newGame(b.dataset.d); });
     else newGame(b.dataset.d);
   });
 }
 $('contBtn').onclick = () => { G = SV.game; startGame(); };
+
+function renderRating() {
+  const h = SV.rhist, lo = Math.min(...h) - 10, hi = Math.max(...h) + 10;
+  const pts = h.map((v, i) => `${(i / Math.max(1, h.length - 1) * 100).toFixed(1)},${(32 - (v - lo) / (hi - lo) * 30).toFixed(1)}`).join(' ');
+  const ld = SV.lastDelta;
+  $('rateCard').innerHTML = `<div class="num"><small>PUZZLE RATING</small>${Math.round(SV.rating)}</div><div class="meta">${ld ? `<b class="${ld > 0 ? 'up' : 'down'}">${ld > 0 ? '+' : ''}${ld}</b> last puzzle · ` : ''}Peak <b>${Math.round(SV.peak)}</b> · <b>${SV.rated}</b> rated</div><svg viewBox="0 0 100 34" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>`;
+}
+function renderMode() {
+  $('mRated').setAttribute('aria-pressed', String(SV.mode === 'rated')); $('mCasual').setAttribute('aria-pressed', String(SV.mode !== 'rated'));
+  $('modeNote').textContent = SV.mode === 'rated' ? `Solve to gain rating, fail to lose it. ${MAXMIST} mistakes fails the puzzle. Hints and slow times earn less.` : 'No rating, no mistake limit. Just relax and solve.';
+}
+$('mRated').onclick = () => { SV.mode = 'rated'; save(); showMenu(); };
+$('mCasual').onclick = () => { SV.mode = 'casual'; save(); showMenu(); };
 
 function newGame(diffId) {
   const d = DIFFS.find(x => x.id === diffId);
   $('diffs').innerHTML = '<div class="busy" style="grid-column:1/-1"><div class="spin"></div>Making your puzzle…</div>';
   setTimeout(() => {
     const { puz, sol } = generate(d.clues);
-    G = { diff: d.id, given: puz.map(Boolean), cells: puz.slice(), sol, notes: Array(81).fill(0), time: 0, mistakes: 0, hints: d.hints, hist: [] };
+    const clues = puz.filter(Boolean).length;
+    G = { diff: d.id, given: puz.map(Boolean), cells: puz.slice(), sol, notes: Array(81).fill(0), time: 0, mistakes: 0, hints: d.hints, hintsUsed: 0, hist: [], rated: SV.mode === 'rated', prating: puzzleRating(d, clues) };
     SV.game = G; save(); startGame();
   }, 30);
 }
@@ -256,6 +378,7 @@ function newGame(diffId) {
 function startGame() {
   $('menu').hidden = true; $('game').hidden = false; $('back').textContent = '‹ Menu'; $('back').href = '#';
   $('dName').textContent = DIFFS.find(x => x.id === G.diff).name;
+  $('pRate').innerHTML = G.rated ? `★ <b>${G.prating}</b>` : '<b>Casual</b>';
   sel = G.cells.findIndex(v => !v); notesMode = false; paused = false; $('pause').hidden = true;
   buildBoard(); draw(); startClock();
 }
@@ -288,7 +411,7 @@ function draw(popAt = -1) {
   }
   const counts = Array(10).fill(0); G.cells.forEach((x, i) => { if (x && x === G.sol[i]) counts[x]++; });
   $('pad').querySelectorAll('.key').forEach(k => { const n = +k.dataset.n, left = 9 - counts[n]; k.classList.toggle('done', left <= 0); k.querySelector('small').textContent = left; });
-  $('mist').textContent = G.mistakes;
+  $('mist').textContent = G.rated ? `${G.mistakes}/${MAXMIST}` : G.mistakes;
   $('notesBtn').classList.toggle('on', notesMode); $('notesPill').textContent = notesMode ? 'ON' : 'OFF'; $('notesPill').classList.toggle('off', !notesMode);
   $('hintPill').textContent = G.hints; $('hintPill').classList.toggle('off', !G.hints);
 }
@@ -304,7 +427,7 @@ function input(n) {
   }
   if (G.cells[sel] === n) { G.cells[sel] = 0; draw(); save(); return; }
   G.cells[sel] = n; G.notes[sel] = 0;
-  if (n !== G.sol[sel]) { G.mistakes++; buzz(); if (navigator.vibrate) navigator.vibrate(60); }
+  if (n !== G.sol[sel]) { G.mistakes++; buzz(); if (navigator.vibrate) navigator.vibrate(60); if (G.rated && G.mistakes >= MAXMIST) { draw(sel); save(); failPuzzle(); return; } }
   else {
     for (const p of PEERS[sel]) G.notes[p] &= ~(1 << n); // tidy notes automatically
     tick(520 + n * 40);
@@ -328,7 +451,7 @@ function hint() {
   let t = sel >= 0 && G.cells[sel] !== G.sol[sel] ? sel : -1;
   if (t < 0) { const open = []; for (let i = 0; i < 81; i++) if (G.cells[i] !== G.sol[i]) open.push(i); open.sort((a, b) => cands(a) - cands(b)); t = open[0]; }
   if (t == null || t < 0) return;
-  push(); G.cells[t] = G.sol[t]; G.notes[t] = 0; G.hints--; sel = t;
+  push(); G.cells[t] = G.sol[t]; G.notes[t] = 0; G.hints--; G.hintsUsed = (G.hintsUsed || 0) + 1; sel = t;
   for (const p of PEERS[t]) G.notes[p] &= ~(1 << G.sol[t]);
   tick(880); draw(t); save(); checkWin();
 }
@@ -339,17 +462,29 @@ function celebrate(i) {
   const cells = $('board').children;
   groups.forEach(g => { if (g.every(j => G.cells[j] === G.sol[j])) g.forEach((j, k) => { cells[j].classList.remove('wave'); void cells[j].offsetWidth; cells[j].style.animationDelay = (k * 35) + 'ms'; cells[j].classList.add('wave'); setTimeout(() => cells[j].classList.remove('wave'), 900); }); });
 }
+function failPuzzle() {
+  stopClock();
+  const r = applyRating(0); G.rated = false; G.done = true; SV.game = G; save();
+  const o = document.createElement('div'); o.className = 'ov';
+  o.innerHTML = `<div class="card"><h3>Puzzle failed</h3><p>${MAXMIST} mistakes on a ★${G.prating} puzzle.</p><div class="delta down">${r.d} · ${r.after}</div><div class="row"><button class="btn alt" data-a="menu">Menu</button><button class="btn alt" data-a="keep">Keep solving</button><button class="btn" data-a="new">New puzzle</button></div></div>`;
+  document.body.append(o);
+  o.querySelector('[data-a=menu]').onclick = () => { o.remove(); showMenu(); };
+  o.querySelector('[data-a=keep]').onclick = () => { o.remove(); $('pRate').innerHTML = '<b>Unrated</b>'; startClock(); draw(); };
+  o.querySelector('[data-a=new]').onclick = () => { o.remove(); SV.game = null; save(); $('game').hidden = true; $('menu').hidden = false; newGame(G.diff); };
+}
 function checkWin() {
   if (!G.cells.every((v, i) => v === G.sol[i])) return;
   stopClock();
   const d = DIFFS.find(x => x.id === G.diff), t = G.time, prev = SV.best[d.id], isBest = !prev || t < prev;
   if (isBest) SV.best[d.id] = Math.floor(t);
   SV.wins[d.id] = (SV.wins[d.id] || 0) + 1;
-  const mist = G.mistakes; SV.game = null; save();
+  const mist = G.mistakes, wasRated = G.rated, pr = G.prating;
+  const rr = wasRated ? applyRating(solveScore()) : null;
+  SV.game = null; save();
   [0, .1, .2, .32].forEach((at, k) => tick([523, 659, 784, 1047][k], at, .18));
   setTimeout(() => {
     const o = document.createElement('div'); o.className = 'ov';
-    o.innerHTML = `<div class="card">${isBest ? '<span class="nb">NEW BEST TIME</span>' : ''}<h3>Solved!</h3><div class="big">${fmt(t)}</div><p>${d.name} · ${mist ? mist + ' mistake' + (mist === 1 ? '' : 's') : 'no mistakes'}${prev && !isBest ? ' · best ' + fmt(prev) : ''}</p><div class="row"><button class="btn alt" data-a="menu">Menu</button><button class="btn" data-a="again">Next ${d.name}</button></div></div>`;
+    o.innerHTML = `<div class="card">${isBest ? '<span class="nb">NEW BEST TIME</span>' : ''}<h3>Solved!</h3><div class="big">${fmt(t)}</div>${rr ? `<div class="delta up">+${rr.d} · ${rr.after}</div>` : ''}<p>${d.name}${wasRated ? ' ★' + pr : ''} · ${mist ? mist + ' mistake' + (mist === 1 ? '' : 's') : 'no mistakes'}${prev && !isBest ? ' · best ' + fmt(prev) : ''}</p><div class="row"><button class="btn alt" data-a="menu">Menu</button><button class="btn" data-a="again">Next ${d.name}</button></div></div>`;
     document.body.append(o);
     o.querySelector('[data-a=menu]').onclick = () => { o.remove(); showMenu(); };
     o.querySelector('[data-a=again]').onclick = () => { o.remove(); $('game').hidden = true; $('menu').hidden = false; newGame(d.id); };
@@ -392,8 +527,9 @@ function confirmBox(title, text, ok, fn) {
   o.querySelector('[data-a=yes]').onclick = () => { o.remove(); fn(); };
 }
 
-window.__sudoku = { get G() { return G; }, solve, generate, newGame, input, select: i => { sel = i; draw(); } };
+window.__sudoku = { get G() { return G; }, SV: () => SV, fb: () => fb, applyRating, expected, solve, generate, newGame, input, select: i => { sel = i; draw(); } };
 showMenu();
+initBoard();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('./sw.js').catch(() => { });
 })();
 </script>
