@@ -1471,7 +1471,7 @@ const ARCHIVE_START = '2016-01-01';
 let PUZ = null, pzLoading = null;
 function loadPuzzles() {
   if (PUZ) return Promise.resolve(PUZ);
-  if (!pzLoading) pzLoading = fetch('puzzles.json').then(r => r.json()).then(d => { PUZ = d.p.map((a, i) => ({ id: i, fen: a[0], moves: a[1].split(' '), rating: a[2], themes: a[3] ? a[3].split(' ') : [], off: !(a[2] > 0) })); return PUZ; }).catch(e => { pzLoading = null; throw e; });
+  if (!pzLoading) pzLoading = fetch('puzzles.json').then(r => r.json()).then(d => { PUZ = d.p.map((a, i) => ({ id: i, fen: a[0], moves: a[1].split(' '), rating: a[2], themes: a[3] ? a[3].split(' ') : [], off: !(a[2] > 0), added: a[4] || 0 })); return PUZ; }).catch(e => { pzLoading = null; throw e; });
   return pzLoading;
 }
 const solverMoves = p => Math.floor(p.moves.length / 2);
@@ -1523,15 +1523,20 @@ function questToday() { if (PZ.quest.day !== today()) PZ.quest = { day: today(),
 const DAY_T = [1950, 700, 900, 1100, 1300, 1500, 1700]; // Sunday..Saturday
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const DAY_DIFF = ['Hardest', 'Easy', 'Easy+', 'Medium', 'Medium+', 'Hard', 'Harder'];
-let dailyPools = null;
+const dailyPools = {};
 function dailyPuzzle(ds) {
-  if (!dailyPools) dailyPools = DAY_T.map(t => {
-    let w = 160, pool;
-    do { pool = PUZ.filter(p => !p.off && Math.abs(p.rating - t) <= w && solverMoves(p) >= 2); w += 80; } while (pool.length < 40 && w < 1200);
-    if (pool.length < 10) pool = PUZ.filter(p => !p.off && Math.abs(p.rating - t) <= 400);
-    return pool.map(p => p.id);
-  });
-  const d = parseYmd(ds), pool = dailyPools[d.getDay()];
+  // only puzzles added before this date, so a day's puzzle never changes when new ones arrive
+  const d = parseYmd(ds), wd = d.getDay(), cut = +ds.replace(/-/g, ''), t = DAY_T[wd];
+  const avail = PUZ.filter(p => !p.off && p.added < cut);
+  const ck = wd + ':' + avail.length;
+  let pool = dailyPools[ck];
+  if (!pool) {
+    let w = 160;
+    do { pool = avail.filter(p => Math.abs(p.rating - t) <= w && solverMoves(p) >= 2); w += 80; } while (pool.length < 40 && w < 1200);
+    if (pool.length < 10) pool = avail.filter(p => Math.abs(p.rating - t) <= 400);
+    if (!pool.length) pool = avail;
+    pool = dailyPools[ck] = pool.map(p => p.id);
+  }
   const week = Math.floor((d - parseYmd('2000-01-02')) / 864e5 / 7);
   let k = 97; while (pool.length % k === 0) k += 2;
   return PUZ[pool[((week * k) % pool.length + pool.length) % pool.length]];

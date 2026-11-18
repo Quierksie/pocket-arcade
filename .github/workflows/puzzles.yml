@@ -1,0 +1,48 @@
+name: Generate chess puzzles
+
+on:
+  schedule:
+    - cron: '23 5,17 * * *'   # twice a day
+  workflow_dispatch:          # or run it by hand from the Actions tab
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency: puzzles
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Stockfish (used only to check puzzles)
+        working-directory: tools/puzzlegen
+        run: npm install --no-audit --no-fund
+      - name: Generate puzzles
+        working-directory: tools/puzzlegen
+        run: |
+          COUNT=$(node -e "console.log(require('../../puzzles.json').p.length)")
+          echo "Puzzles now: $COUNT"
+          if [ "$COUNT" -ge 15000 ]; then echo "Reached the 15,000 puzzle cap"; exit 0; fi
+          for i in 1 2 3; do node gen.js out$i.jsonl 40 > log$i.txt 2>&1 & done
+          wait
+          tail -n 1 log*.txt
+          node merge.js out*.jsonl
+      - name: Save new puzzles
+        run: |
+          git config user.name "puzzle-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add puzzles.json
+          if git diff --cached --quiet; then echo "Nothing new"; exit 0; fi
+          git commit -m "Add new chess puzzles"
+          git pull --rebase origin main
+          git push
+      - name: Publish the site
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST repos/${{ github.repository }}/pages/builds || true

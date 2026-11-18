@@ -1,0 +1,6 @@
+{
+  "name": "pocket-arcade-puzzlegen",
+  "private": true,
+  "description": "Generates chess puzzles for Pocket Arcade. Runs in GitHub Actions; Stockfish is only used here to check puzzles and is not part of the website.",
+  "dependencies": { "stockfish": "19.0.1" }
+}
