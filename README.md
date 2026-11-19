@@ -14,6 +14,22 @@ Tap to mine, sell ores, upgrade your gear and drill toward the planet core.
 ## Chess
 Play against six bots, from Pip (250) to Titan (2300). Pick your color, drag or tap to move, and use hints when you're stuck (games with hints don't count toward your rating). Takebacks are optional: turn them on before a game and wins give half the rating points. After a game, every move gets rated (best, excellent, good, inaccuracy, mistake, blunder) with your accuracy, and bad moves show the better move. While the bot is thinking you can premove: pick a piece and a square and it plays as soon as it's your turn.
 
+### Play a friend online
+**Play a friend online** (under Play a friend) lets you play someone on another device. One player taps **Create game**, picks a color and clock, and sends the 6-letter code or link. The other taps **Join** (or just opens the link). Moves, clocks, draw offers, resigning and rematches (colors swapped) all sync live through the arcade's Firebase database, and leaving or refreshing keeps the game so you can tap **Continue game**. Both players need to be signed in to an arcade account. Results count toward your head-to-head record against that friend. Online games aren't rated and have no takebacks.
+
+Firestore rules need this part for online games (Firebase console → Firestore → Rules):
+```
+match /chessOnline/{code} {
+  allow read: if request.auth != null;
+  allow create: if request.auth != null && request.resource.data.host == request.auth.uid
+                && request.resource.data.players == [request.auth.uid];
+  allow update: if request.auth != null && (request.auth.uid in resource.data.players
+                || (resource.data.status == 'waiting' && request.resource.data.players.hasAll(resource.data.players)
+                    && request.resource.data.players.size() == 2 && request.auth.uid in request.resource.data.players));
+  allow delete: if request.auth != null && request.auth.uid == resource.data.host;
+}
+```
+
 ### Leaderboard
 The **Leaderboard** tab (next to Play bots and Puzzles) switches between chess and puzzle ratings, and shows your place and how many points you are behind the player above you.
 

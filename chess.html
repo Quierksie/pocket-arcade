@@ -275,6 +275,16 @@ body.altdraw .board { cursor: crosshair; }
 body.focus header, body.focus .modeseg { display: none; }
 body.focus .app { padding-top: 16px; }
 /* pass and play */
+.bigbtn.online { background: linear-gradient(120deg, var(--online, #2a8fd6), color-mix(in srgb, var(--online, #2a8fd6) 60%, #000)); margin-top: 10px; }
+.onl .gcode { display: flex; justify-content: center; gap: 6px; margin: 10px 0 14px; }
+.onl .gcode span { width: 42px; height: 54px; border-radius: 10px; background: var(--panel2); display: grid; place-items: center; font-size: 30px; font-weight: 900; font-family: ui-monospace, Menlo, Consolas, monospace; color: var(--ink); }
+.onl .joinrow { display: flex; gap: 8px; }
+.onl .joinrow .field { margin: 0; flex: 1; min-width: 0; font-size: 20px; font-weight: 900; letter-spacing: 4px; text-transform: uppercase; font-family: ui-monospace, Menlo, Consolas, monospace; }
+.onl .joinrow .btn { padding: 0 20px; }
+.onl .waitln { text-align: center; margin: 14px 0 4px; }
+.onl .onerr { background: color-mix(in srgb, var(--bad) 15%, transparent); color: var(--bad); border-radius: 10px; padding: 8px 10px; font-size: 13.5px; font-weight: 700; text-align: left; }
+.onl .row .btn { flex: 1; }
+.pl .st.opp { margin-left: 6px; }
 .bigbtn.friend { background: linear-gradient(120deg, var(--friend, #7b5cd6), color-mix(in srgb, var(--friend, #7b5cd6) 60%, #000)); margin-top: 12px; }
 .pl.rot { transform: rotate(180deg); }
 .board.faceoff .pc.bk { rotate: 180deg; }
@@ -425,6 +435,7 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
     <div id="playMenu">
     <div class="rate" id="rateCard"></div>
     <button class="bigbtn friend" id="friendBtn"><div><b>Play a friend</b><small id="friendSub">Two players, one phone. Pass it back and forth.</small></div><span class="go">Play</span></button>
+    <button class="bigbtn online" id="onlineBtn"><div><b>Play a friend online</b><small id="onlineSub">Different houses? Send them a code and play live.</small></div><span class="go">Play</span></button>
     <button class="cont" id="contBtn" hidden><div><b>Continue game</b><small id="contInfo"></small></div><span class="go">Play</span></button>
     <h2>Play as</h2>
     <div class="seg" role="group" aria-label="Your color" id="colorSeg"></div>
@@ -1138,7 +1149,10 @@ function cancelBrain() {
 }
 
 // ---------- game state ----------
-let G = null;          // { bot, me: 1 | -1, moves: [uci], takebacks, hints, over }
+let G = null;          // { bot, me: 1 | -1, moves: [uci], takebacks, hints, over }  (online games add: online, code, names, clock)
+// online game connection state (the online code itself is further down, after the leaderboard)
+const ONL = { unsub: null, d: null, applying: false, fromServer: false, first: false, seenDraw: null, myOffer: null, rematchShown: null, q: Promise.resolve() };
+
 let sans = [];
 let sel = -1, targets = [], hintSq = [], flipped = false, thinking = false, anim = null;
 let view = 0; // ply shown while reviewing a finished game
@@ -1162,10 +1176,11 @@ function startGame() {
   sel = -1; targets = []; ptargets = []; hintSq = []; premove = null; anim = null; scrub = null; stopAnalysis(); AN = null;
   if (G.pvp) { G.me = E.side; flipped = G.layout === 'rotate' && E.side === -1; } else flipped = G.me === -1;
   $('menu').hidden = true; $('game').hidden = false;
-  $('back').textContent = G.pvp ? '‹ Chess' : '‹ Bots';
-  if (G.pvp) startClock();
+  $('back').textContent = G.pvp || G.online ? '‹ Chess' : '‹ Bots';
+  if (G.pvp || G.online) startClock();
   render();
   if (!G.over) { const st = E.status(); if (st) finish(st); else maybeBot(); }
+  if (G.online && !G.over) onlineAttach();
 }
 
 // ---------- rendering ----------
@@ -1230,9 +1245,10 @@ function render() {
   const bot = G.pvp ? BOTS[0] : botById(G.bot);
   const botRow = `${avatar(bot)}<div class="who"><b>${bot.name}</b><span class="elo">${bot.elo}</span><div class="caps">${capsHTML(G.me)}${botMat > meMat ? `<span class="adv">+${botMat - meMat}</span>` : ''}</div></div>${thinking ? '<span class="st think">Thinking</span>' : ''}`;
   const meRow = `<div class="av" style="background:var(--panel2)">${pieceSVG(G.me * 1, '')}</div><div class="who"><b>You</b><span class="elo">${Math.round(SV.rating)}</span><div class="caps">${capsHTML(-G.me)}${meMat > botMat ? `<span class="adv">+${meMat - botMat}</span>` : ''}</div></div>${!thinking && !G.over && E.side === G.me ? '<span class="st turn">Your move</span>' : ''}`;
-  if (G.pvp) {
+  if (G.pvp || G.online) {
     const row = c => { const i = c === 1 ? 0 : 1, mine = material(c), theirs = material(-c);
-      return `<div class="av" style="background:var(--panel2)">${pieceSVG(c, '')}</div><div class="who"><b>${esc(G.names[i])}</b>${!G.over && E.side === c ? '<span class="tomove">to move</span>' : ''}<div class="caps">${capsHTML(-c)}${mine > theirs ? `<span class="adv">+${mine - theirs}</span>` : ''}</div></div>${G.clock ? `<span class="clk" id="clk${i}"></span>` : ''}`; };
+      const tm = G.online ? (c === G.me ? 'your move' : 'thinking') : 'to move';
+      return `<div class="av" style="background:var(--panel2)">${pieceSVG(c, '')}</div><div class="who"><b>${esc(G.names[i])}${G.online && c === G.me ? ' (you)' : ''}</b>${!G.over && E.side === c ? `<span class="tomove">${tm}</span>` : ''}<div class="caps">${capsHTML(-c)}${mine > theirs ? `<span class="adv">+${mine - theirs}</span>` : ''}</div></div>${G.clock ? `<span class="clk" id="clk${i}"></span>` : ''}`; };
     const topC = flipped ? 1 : -1;
     $('topPl').innerHTML = row(topC); $('botPl').innerHTML = row(-topC);
     $('topPl').classList.toggle('rot', G.layout === 'face' && !G.over);
@@ -1255,12 +1271,13 @@ function render() {
   else $('moves').scrollLeft = 1e6;
   // tools
   $('tools').hidden = !!G.over; $('overBar').hidden = !G.over;
+  $('botsBtn').textContent = G.pvp || G.online ? 'Menu' : 'Change bot';
   $('undoBtn').hidden = !tbOn(G);
   $('undoBtn').disabled = G.pvp ? !G.moves.length : myMoveCount() === 0;
-  $('hintBtn').hidden = !!G.pvp; $('drawBtn').hidden = false;
+  $('hintBtn').hidden = !!(G.pvp || G.online); $('drawBtn').hidden = false;
   $('resignLbl').textContent = !G.over && G.moves.length <= 1 ? 'Abort' : 'Resign';
   const cool = G.drawAt != null && G.moves.length - G.drawAt < 6;
-  $('drawBtn').disabled = !!G.drawPending || cool || (!G.pvp && (thinking || E.side !== G.me)) || G.moves.length < 2;
+  $('drawBtn').disabled = !!G.drawPending || cool || (!G.pvp && !G.online && (thinking || E.side !== G.me)) || G.moves.length < 2;
   if (G.over) {
     $('rvPos').innerHTML = shown ? `<b>${sans[shown - 1]}</b>Move ${Math.ceil(shown / 2)} of ${Math.ceil(sans.length / 2)}` : `<b>Start</b>${sans.length} moves`;
     $('rvFirst').disabled = $('rvPrev').disabled = shown === 0;
@@ -1376,6 +1393,7 @@ function play(m, animate) {
   if (animate) anim = { from: E.from(m), to: E.to(m) };
   E.make(m);
   G.moves.push(E.uci(m)); sans.push(s);
+  if (G.online) { clockMoved(mover); if (mover === G.me && !ONL.applying) onlineSend(); }
   if (G.pvp) {
     clockMoved(mover);
     G.me = E.side;
@@ -1397,6 +1415,7 @@ function play(m, animate) {
   maybeBot();
 }
 function maybeBot() {
+  if (G.online) { thinking = !G.over && E.side !== G.me; render(); return; } // their move comes over the internet
   if (G.over || E.side === G.me) { thinking = false; render(); return; }
   thinking = true; render();
   const bot = botById(G.bot);
@@ -1417,6 +1436,7 @@ function maybeBot() {
 
 // ---------- tools ----------
 $('undoBtn').onclick = () => {
+  if (G && G.online) return; // no takebacks online
   liveSnap();
   if (G && G.pvp && !G._tbOk) {
     if (G.over || !G.moves.length || !tbOn(G)) return;
@@ -1456,6 +1476,11 @@ $('flipBtn').onclick = () => { flipped = !flipped; render(); };
 $('resignBtn').onclick = () => {
   if (!G || G.over) return;
   liveSnap();
+  if (G.online) {
+    if (G.moves.length <= 1) confirmBox('Abort game?', `The game ends for ${esc(oppName())} too. Nothing is recorded.`, 'Abort', () => onlineAbort());
+    else confirmBox('Resign?', `${esc(oppName())} wins the game.`, 'Resign', () => { if (G && G.online && !G.over) finish({ result: G.me === 1 ? '0-1' : '1-0', reason: 'resignation' }); });
+    return;
+  }
   if (G.moves.length <= 1) { confirmBox('Abort game?', 'Nothing is recorded and your rating does not change.', 'Abort', () => abortGame()); return; }
   if (G.pvp) {
     const o = document.createElement('div'); o.className = 'ov';
@@ -1469,7 +1494,7 @@ $('resignBtn').onclick = () => {
     finish({ result: G.me === 1 ? '0-1' : '1-0', reason: 'resignation' });
   });
 };
-$('rematchBtn').onclick = () => G.pvp ? pvpRematch() : newGame(G.bot);
+$('rematchBtn').onclick = () => G.online ? onlineRematch() : G.pvp ? pvpRematch() : newGame(G.bot);
 // ---------- review a finished game ----------
 function goTo(n) {
   if (!G || !G.over) return;
@@ -1857,27 +1882,34 @@ function newPvp(P0, names) {
 }
 function pvpRematch() { newPvp(Object.assign({}, SV.pvp || {}, { layout: G.layout, tb: G.tb, clock: G.clock ? CLOCKS.findIndex(c => c[0] * 60000 === G.clock.base && c[1] * 1000 === G.clock.inc) : 0 }), [G.names[1], G.names[0]]); }
 $('friendBtn').onclick = () => {
+  if (SV.game && SV.game.online) { toast('Finish or resign your online game first'); return; }
   if (SV.game && SV.game.moves.length && !SV.game.pvp) { toast('Finish or resign your bot game first'); return; }
   pvpSetup();
 };
 // clocks: they start after White's first move
 let clockTimer = null;
 const fmtClock = ms => { ms = Math.max(0, ms); if (ms < 20000) return (ms / 1000).toFixed(1); const s = Math.ceil(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+const clocked = () => G && (G.pvp || G.online) && G.clock;
 function liveTime(i) { const c = G.clock; let t = c.t[i]; if (c.last && !G.over && (E.side === 1 ? 0 : 1) === i) t -= Date.now() - c.last; return t; }
 function drawClocks() {
-  if (!G || !G.pvp || !G.clock) return;
+  if (!clocked()) return;
   for (const i of [0, 1]) {
     const el = $('clk' + i); if (!el) continue;
     const t = liveTime(i), on = !G.over && G.clock.last && (E.side === 1 ? 0 : 1) === i;
     el.textContent = fmtClock(t); el.classList.toggle('on', !!on); el.classList.toggle('low', t < 20000);
+    if (G.online) { // your own clock ran out = you lose; theirs a few seconds past zero (gone quiet) = you win
+      const mine = (G.me === 1 ? 0 : 1) === i;
+      if (!G.over && ((mine && t <= 0) || (!mine && t <= -3000))) { stopClock(); finish({ result: (i === 0) ? '0-1' : '1-0', reason: 'time' }); return; }
+      continue;
+    }
     if (t <= 0 && !G.over) { stopClock(); finish({ result: i === 0 ? '0-1' : '1-0', reason: 'time' }); return; }
     if (!G.moves.length && G.startedAt && Date.now() - G.startedAt > 30000) { abortGame('Game aborted: White didn\'t move within 30 seconds'); return; }
   }
 }
-function startClock() { stopClock(); if (G && G.pvp && G.clock && !G.over) { if (!G.moves.length) G.startedAt = Date.now(); if (G.clock.last) G.clock.last = Date.now(); clockTimer = setInterval(drawClocks, 100); } }
+function startClock() { stopClock(); if (clocked() && !G.over) { if (!G.moves.length) G.startedAt = Date.now(); if (G.clock.last) G.clock.last = Date.now(); clockTimer = setInterval(drawClocks, 100); } }
 function stopClock() {
   if (clockTimer) { clearInterval(clockTimer); clockTimer = null; }
-  if (G && G.pvp && G.clock && G.clock.last && !G.over) { const i = E.side === 1 ? 0 : 1; G.clock.t[i] -= Date.now() - G.clock.last; G.clock.last = Date.now(); save(); }
+  if (clocked() && G.clock.last && !G.over) { const i = E.side === 1 ? 0 : 1; G.clock.t[i] -= Date.now() - G.clock.last; G.clock.last = Date.now(); save(); }
 }
 function clockMoved(mover) {
   const c = G.clock; if (!c) return;
@@ -1886,11 +1918,12 @@ function clockMoved(mover) {
   if (c.last || mover === -1) c.t[i] += c.inc;
   c.last = Date.now(); // the other player's clock starts now
 }
-document.addEventListener('visibilitychange', () => { if (G && G.pvp && G.clock && !G.over && !$('game').hidden) { if (document.hidden) stopClock(); else startClock(); } });
+document.addEventListener('visibilitychange', () => { if (clocked() && !G.over && !$('game').hidden) { if (document.hidden) stopClock(); else startClock(); } });
 $('drawBtn').onclick = () => {
   if (!G || G.over) return;
   liveSnap();
   if (G.drawAt != null && G.moves.length - G.drawAt < 6) { toast('Wait a few moves before offering again'); return; }
+  if (G.online) { onlineOfferDraw(); return; }
   if (!G.pvp) { botDrawOffer(); return; }
   const other = E.side === 1 ? G.names[1] : G.names[0], asker = E.side === 1 ? G.names[0] : G.names[1];
   G.drawAt = G.moves.length; save();
@@ -1899,6 +1932,19 @@ $('drawBtn').onclick = () => {
 
 // ---------- results + rating ----------
 function finish(st) {
+  if (G.online) {
+    stopClock(); thinking = false; premove = null;
+    const white = st.result === '1/2-1/2' ? .5 : st.result === '1-0' ? 1 : 0;
+    G.over = { ...st, score: G.me === 1 ? white : 1 - white, delta: 0, rated: false };
+    if (!ONL.fromServer) onlineWriteResult(st, G.code, G.me);
+    if (G.moves.length >= 2 && normName(G.names[0]) !== normName(G.names[1])) h2hAdd(G.names, white);
+    document.querySelectorAll('.ov[data-draw]').forEach(x => x.remove());
+    SV.game = null; save();
+    view = G.moves.length; startAnalysis(); render();
+    sound(G.over.score === 1 ? 'win' : G.over.score === 0 ? 'lose' : 'move');
+    setTimeout(() => showResult(), st.reason === 'resignation' || st.reason === 'agreement' ? 0 : 700);
+    return;
+  }
   if (G.pvp) {
     stopClock(); G.me = 1;
     G.over = { ...st, score: st.result === '1/2-1/2' ? .5 : st.result === '1-0' ? 1 : 0, delta: 0, rated: false };
@@ -1932,6 +1978,18 @@ function finish(st) {
   setTimeout(() => showResult(), st.reason === 'resignation' ? 0 : 700);
 }
 function showResult() {
+  if (G.online) {
+    const o = G.over, opp = oppName();
+    const why = { checkmate: 'by checkmate', stalemate: 'by stalemate', resignation: 'by resignation', repetition: 'by repetition', '50-move rule': 'by the 50-move rule', 'insufficient material': 'by insufficient material', time: 'on time', agreement: 'by agreement' }[o.reason] || '';
+    const asked = ONL.d && ONL.d.rematch && ONL.d.rematch.by !== G.me;
+    const ov = document.createElement('div'); ov.className = 'ov';
+    ov.innerHTML = `<div class="card"><div class="av" style="background:var(--panel2)">${pieceSVG(o.score === 0 ? -6 * G.me : 6 * G.me, '')}</div><h3>${o.score === 1 ? 'You win!' : o.score === 0 ? esc(opp) + ' wins' : 'Draw'}</h3><p>${why ? why[0].toUpperCase() + why.slice(1) + '. ' : ''}${o.score === 1 ? `You beat ${esc(opp)}.` : o.score === 0 ? 'Good game!' : 'Nobody wins this one.'}</p>${h2hLine(G.names[0], G.names[1], true)}<p class="rmnote" style="font-size:13px;margin-top:10px">${asked ? `${esc(opp)} wants a rematch!` : 'Rematch swaps colors.'}</p>
+      <div class="row"><button class="btn alt" data-a="view">Review moves</button><button class="btn" data-a="again">${asked ? 'Accept rematch' : 'Rematch'}</button></div></div>`;
+    document.body.append(ov);
+    ov.querySelector('[data-a=view]').onclick = () => ov.remove();
+    ov.querySelector('[data-a=again]').onclick = () => { ov.remove(); onlineRematch(); };
+    return;
+  }
   if (G.pvp) {
     const o = G.over, wn = o.score === 1 ? G.names[0] : o.score === 0 ? G.names[1] : null;
     const why = { checkmate: 'by checkmate', stalemate: 'by stalemate', resignation: 'by resignation', repetition: 'by repetition', '50-move rule': 'by the 50-move rule', 'insufficient material': 'by insufficient material', time: 'on time', agreement: 'by agreement' }[o.reason] || '';
@@ -1958,7 +2016,7 @@ function showResult() {
 
 // ---------- menu ----------
 function showMenu(keepOverlays) {
-  stopAnalysis(); premove = null; stopClock();
+  stopAnalysis(); premove = null; stopClock(); if (keepOverlays !== true) onlineDetach();
   $('game').hidden = true; $('menu').hidden = false; $('back').textContent = '‹ Arcade';
   ['puzzle', 'anaSec', 'archSec'].forEach(x => { $(x).hidden = true; });
   if (keepOverlays !== true) document.querySelectorAll('.ov').forEach(o => o.remove());
@@ -1974,7 +2032,7 @@ function showMenu(keepOverlays) {
   $('rateCard').innerHTML = `<div class="num"><small>YOUR RATING</small>${Math.round(SV.rating)}</div><div class="meta">Peak <b>${Math.round(SV.peak)}</b><br>W <b>${w}</b> · L <b>${l}</b> · D <b>${d}</b></div>`;
   const g = SV.game;
   $('contBtn').hidden = !g;
-  if (g) $('contInfo').textContent = `${g.pvp ? `${g.names[0]} vs ${g.names[1]}` : 'vs ' + botById(g.bot).name} · move ${Math.floor(g.moves.length / 2) + 1}`;
+  if (g) $('contInfo').textContent = `${g.online ? `vs ${g.names[g.me === 1 ? 1 : 0]} (online)` : g.pvp ? `${g.names[0]} vs ${g.names[1]}` : 'vs ' + botById(g.bot).name} · move ${Math.floor(g.moves.length / 2) + 1}`;
   $('colorSeg').innerHTML = [['w', 'White', 6], ['r', 'Random', 0], ['b', 'Black', -6]].map(([k, n, p]) => `<button data-c="${k}" aria-pressed="${SV.color === k}">${p ? pieceSVG(p, '') : ''}${n}</button>`).join('');
   $('tbOpt').setAttribute('aria-checked', !!SV.tb);
   $('tbNote').textContent = SV.tb ? 'On: undo your moves, but wins give half the rating points.' : 'Off: full rating points. Turn on to undo moves.';
@@ -1988,6 +2046,7 @@ $('colorSeg').onclick = e => { const b = e.target.closest('button'); if (!b) ret
 $('bots').onclick = e => {
   const b = e.target.closest('.bot'); if (!b) return;
   sound('move');
+  if (SV.game && SV.game.online) { toast('Finish or resign your online game first'); return; }
   if (SV.game && SV.game.pvp && SV.game.moves.length) {
     confirmBox('Start a new game?', 'Your game against your friend is still going. It will be thrown away.', 'New game', () => { SV.game = null; save(); newGame(b.dataset.b); });
     return;
@@ -2730,6 +2789,276 @@ function askName() {
 }
 
 // =====================================================================
+// ONLINE: play a friend on another device. One player creates a game and gets a 6-letter code
+// (or a link), the other joins with it. Moves sync through Firestore: chessOnline/{CODE}.
+// Both players need an arcade account (the same Firebase sign-in the leaderboard uses).
+// =====================================================================
+const CODE_CH = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no 0/O or 1/I/L mix-ups
+const newCode = () => Array.from({ length: 6 }, () => CODE_CH[Math.floor(Math.random() * CODE_CH.length)]).join('');
+const onlineRef = code => fb.db.collection('chessOnline').doc(code);
+const fbTs = () => firebase.firestore.FieldValue.serverTimestamp();
+const myName = () => (SV.onlineName || lbName() || (fb.user && (fb.user.displayName || (fb.user.email || '').split('@')[0])) || 'Player').slice(0, 16);
+const seatOf = (d, uid) => d.white && d.white.uid === uid ? 1 : d.black && d.black.uid === uid ? -1 : 0;
+const oppName = () => G && G.names ? G.names[G.me === 1 ? 1 : 0] : 'Your friend';
+const joinLink = code => location.origin + location.pathname + '?join=' + code;
+const cleanCode = s => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6); // codes never use 0/O/1/I/L, so nothing to mix up
+function onlineErr(e) {
+  const c = e && e.code;
+  if (c === 'permission-denied') return "The arcade's database isn't set up for online games yet (its Firestore rules need the chessOnline part).";
+  if (c === 'unavailable') return 'No internet connection right now.';
+  if (c === 'nogame') return 'No game with that code. Check it and try again.';
+  if (c === 'full') return 'That game already has two players.';
+  if (c === 'own') return "That's your own game. Send the code to your friend.";
+  return (e && e.message) || 'Something went wrong.';
+}
+// every write goes through one queue so a move always lands before a result
+const onlineQueue = fn => (ONL.q = ONL.q.then(fn, fn));
+
+async function createOnline(P, mine) {
+  const me = { uid: fb.user.uid, name: myName() };
+  const col = mine || (P.color === 'w' ? 1 : P.color === 'b' ? -1 : (Math.random() < .5 ? 1 : -1));
+  const [m, inc] = CLOCKS[P.clock] || CLOCKS[0];
+  for (let tries = 0; tries < 6; tries++) {
+    const code = newCode(), ref = onlineRef(code);
+    try {
+      await fb.db.runTransaction(async tx => {
+        const s = await tx.get(ref); if (s.exists) throw { code: 'exists' };
+        tx.set(ref, { v: 1, code, status: 'waiting', host: me.uid, players: [me.uid], white: col === 1 ? me : null, black: col === -1 ? me : null,
+          clock: m ? { base: m * 60000, inc: inc * 1000 } : null, moves: [], times: [], result: null, drawOffer: null, rematch: null, created: fbTs(), updated: fbTs() });
+      });
+      return code;
+    } catch (e) { if (e.code !== 'exists') throw e; }
+  }
+  throw new Error('Could not make a game code. Try again.');
+}
+async function joinOnline(code) {
+  const ref = onlineRef(code), uid = fb.user.uid;
+  return fb.db.runTransaction(async tx => {
+    const s = await tx.get(ref); if (!s.exists) throw { code: 'nogame' };
+    const d = s.data();
+    if (seatOf(d, uid)) { if (d.status === 'waiting') throw { code: 'own' }; return d; } // already in it: rejoin
+    if (d.status !== 'waiting') throw { code: 'full' };
+    const seat = d.white ? 'black' : 'white', upd = { [seat]: { uid, name: myName() }, status: 'playing', players: d.players.concat(uid), updated: fbTs() };
+    tx.update(ref, upd);
+    return Object.assign({}, d, upd);
+  });
+}
+function startOnline(code, d) {
+  if (G && G.online && G.code !== code) onlineDetach();
+  const me = seatOf(d, fb.user.uid), c = d.clock;
+  G = { online: true, code, bot: null, me, moves: [], takebacks: 0, hints: 0, tb: false, over: null, names: [d.white.name, d.black.name],
+    clock: c ? { base: c.base, inc: c.inc, t: [c.base, c.base], last: null } : null };
+  ONL.seenDraw = ONL.myOffer = ONL.rematchShown = null;
+  SV.game = G; save();
+  document.querySelectorAll('.ov').forEach(o => o.remove());
+  startGame();
+  sound('move'); toast(`You're ${me === 1 ? 'White' : 'Black'} vs ${oppName()}`);
+}
+function onlineAttach() {
+  onlineDetach();
+  if (!G || !G.online) return;
+  if (!fb.db || !fb.user) { if (fb.state !== 'offline') setTimeout(() => { if (G && G.online && !ONL.unsub && !$('game').hidden) onlineAttach(); }, 600); return; }
+  ONL.first = true;
+  const code = G.code;
+  ONL.unsub = onlineRef(code).onSnapshot(s => onlineSnap(s, code), e => toast(onlineErr(e)));
+}
+function onlineDetach() { if (ONL.unsub) { ONL.unsub(); ONL.unsub = null; } }
+// copy each player's last reported clock from the server
+function syncClock(d, rejoin) {
+  const c = G.clock; if (!c) return;
+  const T = d.times || []; let w = null, b = null;
+  for (let i = T.length - 1; i >= 0 && (w == null || b == null); i--) { if (T[i] == null) continue; if (i % 2 === 0 && w == null) w = T[i]; if (i % 2 === 1 && b == null) b = T[i]; }
+  if (w != null) c.t[0] = w; if (b != null) c.t[1] = b;
+  if (rejoin && G.moves.length) c.last = d.lastAt && d.lastAt.toMillis ? Math.min(Date.now(), d.lastAt.toMillis()) : Date.now();
+  if (!G.moves.length) c.last = null;
+}
+function onlineSnap(s, code) {
+  if (!G || !G.online || G.code !== code) return;
+  if (!s.exists) { if (!G.over) abortGame('The online game was cancelled'); return; }
+  const d = s.data(); ONL.d = d;
+  const rejoin = ONL.first; ONL.first = false;
+  if (G.over) { onlineRematchCheck(d); return; }
+  if (d.white && d.black) G.names = [d.white.name, d.black.name];
+  const sm = d.moves || [];
+  const sameStart = G.moves.every((u, i) => i >= sm.length || sm[i] === u);
+  if (!sameStart || (sm.length < G.moves.length && !ONL.sending)) {
+    // out of step (e.g. a move didn't go through): the server's game is the real one
+    G.moves = sm.slice(); premove = null; replay(); syncClock(d, true); selectSq(-1); thinking = false; render(); maybeBot();
+  } else if (sm.length > G.moves.length) {
+    if (scrub != null) { scrub = null; replay(); }
+    ONL.applying = true; thinking = false;
+    try {
+      if (sm.length - G.moves.length > 1) { G.moves = sm.slice(0, -1); replay(); }
+      const m = E.fromUci(sm[sm.length - 1]);
+      if (m) play(m, !rejoin);
+    } finally { ONL.applying = false; }
+    syncClock(d, rejoin);
+    if (G && !G.over) render();
+  } else if (rejoin) { syncClock(d, true); render(); }
+  if (d.result && !G.over) {
+    if (d.result.result === '*') { abortGame(d.result.by === G.me ? 'Game aborted' : `${oppName()} aborted the game`); return; }
+    ONL.fromServer = true; try { finish({ result: d.result.result, reason: d.result.reason }); } finally { ONL.fromServer = false; }
+    return;
+  }
+  // draw offers
+  const off = d.drawOffer;
+  if (ONL.myOffer != null && !off) { ONL.myOffer = null; G.drawPending = false; toast(`${oppName()} declined the draw`); render(); }
+  if (off && off.by !== G.me && ONL.seenDraw !== off.at) { ONL.seenDraw = off.at; onlineDrawAsk(off.at); }
+  if (!off) { const x = document.querySelector('.ov[data-draw]'); if (x) x.remove(); }
+}
+function onlineSend() {
+  const n = G.moves.length, u = G.moves[n - 1], code = G.code, me = G.me, t = G.clock ? G.clock.t[(n - 1) % 2] : null;
+  ONL.sending = (ONL.sending || 0) + 1;
+  onlineQueue(() => fb.db.runTransaction(async tx => {
+    const ref = onlineRef(code), s = await tx.get(ref), d = s.data();
+    if (!d || d.result) throw { code: 'over' };
+    const sm = d.moves || [];
+    if (sm.length !== n - 1) throw { code: 'sync' };
+    const times = (d.times || []).slice(0, n - 1); while (times.length < n - 1) times.push(null); times.push(t);
+    const upd = { moves: sm.concat(u), times, lastAt: fbTs(), updated: fbTs() };
+    if (d.drawOffer && d.drawOffer.by !== me) upd.drawOffer = null; // moving instead of answering = no thanks
+    tx.update(ref, upd);
+  }).catch(e => {
+    if (!(e && (e.code === 'sync' || e.code === 'over'))) toast("Your move didn't send. " + onlineErr(e));
+    if (G && G.online && G.code === code) onlineAttach(); // re-read the real game
+  }).finally(() => { ONL.sending--; }));
+}
+function onlineWriteResult(st, code, me) {
+  onlineQueue(() => fb.db.runTransaction(async tx => {
+    const ref = onlineRef(code), s = await tx.get(ref), d = s.data();
+    if (!d || d.result) return;
+    tx.update(ref, { result: { result: st.result, reason: st.reason, by: me }, status: 'over', drawOffer: null, updated: fbTs() });
+  }).catch(e => toast(onlineErr(e))));
+}
+function onlineAbort(msg) { const code = G.code, me = G.me; onlineWriteResult({ result: '*', reason: 'aborted' }, code, me); abortGame(msg); }
+function onlineOfferDraw() {
+  if (G.drawAt != null && G.moves.length - G.drawAt < 6) { toast('Wait a few moves before offering again'); return; }
+  const code = G.code, me = G.me, at = G.moves.length;
+  G.drawAt = at; G.drawPending = true; ONL.myOffer = at; save(); render();
+  onlineQueue(() => onlineRef(code).update({ drawOffer: { by: me, at }, updated: fbTs() }).then(() => toast(`Draw offered to ${oppName()}`)).catch(e => { G.drawPending = false; ONL.myOffer = null; render(); toast(onlineErr(e)); }));
+}
+function onlineDrawAsk(at) {
+  const o = document.createElement('div'); o.className = 'ov'; o.dataset.draw = '1';
+  o.innerHTML = `<div class="card"><h3 style="font-size:21px">Draw?</h3><p>${esc(oppName())} offers a draw.</p><div class="row"><button class="btn alt" data-a="no">Decline</button><button class="btn" data-a="yes">Accept draw</button></div></div>`;
+  document.body.append(o);
+  const code = G.code;
+  o.querySelector('[data-a=no]').onclick = () => { o.remove(); onlineQueue(() => onlineRef(code).update({ drawOffer: null, updated: fbTs() }).catch(() => { })); };
+  o.querySelector('[data-a=yes]').onclick = () => { o.remove(); if (G && G.online && !G.over) finish({ result: '1/2-1/2', reason: 'agreement' }); };
+}
+// rematch: whoever asks first makes a new game with colors swapped; the other gets an Accept button
+async function onlineRematch() {
+  const d = ONL.d, code = G.code, me = G.me;
+  if (d && d.rematch && d.rematch.by !== me) {
+    try { const nd = await joinOnline(d.rematch.code); startOnline(d.rematch.code, nd); } catch (e) { toast(onlineErr(e)); }
+    return;
+  }
+  if (d && d.rematch && d.rematch.by === me) { openOnline({ wait: d.rematch.code }); return; }
+  try {
+    const c = G.clock, ci = c ? CLOCKS.findIndex(x => x[0] * 60000 === c.base && x[1] * 1000 === c.inc) : 0;
+    const nc = await createOnline({ clock: Math.max(0, ci) }, -me);
+    await onlineRef(code).update({ rematch: { code: nc, by: me }, updated: fbTs() });
+    openOnline({ wait: nc, rematch: true });
+  } catch (e) { toast(onlineErr(e)); }
+}
+function onlineRematchCheck(d) {
+  const r = d.rematch;
+  if (!r || r.by === G.me || ONL.rematchShown === r.code) return;
+  ONL.rematchShown = r.code;
+  sound('move');
+  const btn = document.querySelector('.ov [data-a=again]');
+  if (btn) { btn.textContent = 'Accept rematch'; const p = btn.closest('.card').querySelector('.rmnote'); if (p) p.textContent = `${oppName()} wants a rematch!`; }
+  else toast(`${oppName()} wants a rematch! Tap Rematch to play.`);
+}
+
+// ---------- the "Play a friend online" popup: create a game, wait for the friend, or join with a code ----------
+function openOnline(opt = {}) {
+  if (SV.game && !SV.game.online && SV.game.moves && SV.game.moves.length) { toast(SV.game.pvp ? 'Finish your game on this phone first' : 'Finish or resign your bot game first'); return; }
+  if (SV.game && SV.game.online && !opt.wait) { G = SV.game; startGame(); return; } // already in an online game: go back to it
+  document.querySelectorAll('.ov').forEach(x => x.remove());
+  const P = Object.assign({ color: 'r', clock: 4 }, SV.onl || {});
+  let mode = opt.wait ? 'wait' : opt.join != null ? 'join' : 'home', code = opt.wait || cleanCode(opt.join), err = '', busy = false, unsub = null, poll = null;
+  const o = document.createElement('div'); o.className = 'ov';
+  const close = () => { if (unsub) unsub(); if (poll) clearInterval(poll); o.remove(); };
+  const draw = () => {
+    let body = '';
+    if (fb.state === 'loading' || (fb.state === 'ready' && !fb.db)) body = '<p>Connecting...</p>';
+    else if (fb.state === 'offline') body = '<p>Online games need an internet connection.</p>';
+    else if (!fb.user) {
+      if (code) try { localStorage.setItem('pocketArcade.chess.join', JSON.stringify({ code, at: Date.now() })); } catch (e) { }
+      body = `<p>You and your friend both need to be signed in to an arcade account.</p><a class="btn" style="display:block;text-align:center;text-decoration:none" href="./">Sign in on the Arcade page</a>${code ? `<small class="note">After you sign in, come back to Chess and the game code ${code} will still be here.</small>` : ''}`;
+    } else if (mode === 'wait') {
+      body = `<p style="margin-bottom:6px">${opt.rematch ? 'Rematch ready. Colors are swapped.' : 'Send this code to your friend.'} The game starts when they join.</p>
+        <div class="gcode">${code.split('').map(c => `<span>${c}</span>`).join('')}</div>
+        <div class="row" style="margin-top:4px"><button class="btn alt" data-a="copy">Copy link</button>${navigator.share ? '<button class="btn alt" data-a="share">Share</button>' : '<button class="btn alt" data-a="copycode">Copy code</button>'}</div>
+        <p class="waitln"><span class="st think">Waiting for your friend</span></p>
+        <div class="row"><button class="btn alt" data-a="cancel">Cancel game</button></div>`;
+    } else {
+      body = `<div class="lbl2">Your name</div><input class="field" id="onName" maxlength="16" value="${esc(myName())}" autocomplete="off" style="margin:0">
+        <div class="lbl2">Join your friend's game</div>
+        <div class="joinrow"><input class="field" id="onCode" maxlength="7" placeholder="CODE" autocomplete="off" autocapitalize="characters" spellcheck="false" value="${esc(code)}"><button class="btn" data-a="join"${busy ? ' disabled' : ''}>Join</button></div>
+        <div class="lbl2" style="margin-top:16px">Or start a new game</div>
+        <div class="seg">${[['w', 'White', 6], ['r', 'Random', 0], ['b', 'Black', -6]].map(([k, n, p]) => `<button data-c="${k}" aria-pressed="${P.color === k}">${p ? pieceSVG(p, '') : ''}${n}</button>`).join('')}</div>
+        <div class="chips" style="margin-top:8px">${CLOCKS.map(([m, inc, n], i) => `<button data-k="${i}" aria-pressed="${P.clock === i}">${n}</button>`).join('')}</div>
+        <button class="btn" data-a="create" style="width:100%;margin-top:12px"${busy ? ' disabled' : ''}>Create game</button>
+        <small class="note">You'll get a code and a link to send. Moves sync live, so you can be in different houses.</small>`;
+    }
+    o.innerHTML = `<div class="card pvpset onl${draw.done ? ' still' : ''}"><h3 style="font-size:21px">${mode === 'wait' ? 'Game code' : 'Play a friend online'}</h3>${err ? `<p class="onerr">${esc(err)}</p>` : ''}${body}${mode !== 'wait' ? '<div class="row" style="margin-top:14px"><button class="btn alt" data-a="close">Close</button></div>' : ''}</div>`;
+    const ci = o.querySelector('#onCode'); if (ci && mode === 'join') { ci.focus(); }
+    draw.done = true; // pop in once, not on every redraw
+  };
+  const keepName = () => { const n = o.querySelector('#onName'); if (n) { const v = n.value.trim().replace(/\s+/g, ' ').slice(0, 16); if (v) SV.onlineName = v; save(); } };
+  const watch = () => { // host: start as soon as the friend joins
+    if (unsub || !fb.db) return;
+    unsub = onlineRef(code).onSnapshot(s => {
+      if (!s.exists) return;
+      const d = s.data();
+      if (d.status === 'playing' && d.white && d.black) { close(); startOnline(code, d); }
+    }, e => { err = onlineErr(e); draw(); });
+  };
+  draw(); document.body.append(o);
+  if (mode === 'wait') watch();
+  // keep redrawing until the connection is ready
+  if (fb.state !== 'ready') poll = setInterval(() => { if (fb.state !== 'loading') { clearInterval(poll); poll = null; draw(); if (mode === 'wait') watch(); } }, 400);
+  o.addEventListener('input', e => { if (e.target.id === 'onCode') { const v = cleanCode(e.target.value); if (v !== e.target.value) e.target.value = v; code = v; } });
+  o.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'onCode') o.querySelector('[data-a=join]').click(); });
+  o.onclick = async e => {
+    const t = e.target;
+    if (t.closest('[data-c]')) { keepName(); P.color = t.closest('[data-c]').dataset.c; SV.onl = P; save(); draw(); return; }
+    if (t.closest('[data-k]')) { keepName(); P.clock = +t.closest('[data-k]').dataset.k; SV.onl = P; save(); draw(); return; }
+    const a = t.closest('[data-a]'); const act = a && a.dataset.a;
+    if (act === 'close' || (t === o && mode !== 'wait')) { close(); return; }
+    if (act === 'copy' || act === 'copycode') { try { await navigator.clipboard.writeText(act === 'copy' ? joinLink(code) : code); toast(act === 'copy' ? 'Link copied' : 'Code copied'); } catch (x) { toast(act === 'copy' ? joinLink(code) : code); } return; }
+    if (act === 'share') { try { await navigator.share({ title: 'Pocket Arcade chess', text: `Play chess with me! Code: ${code}`, url: joinLink(code) }); } catch (x) { } return; }
+    if (act === 'cancel') { const c = code; close(); try { await onlineRef(c).delete(); } catch (x) { } toast('Game cancelled'); return; }
+    if (act === 'create' && !busy) {
+      keepName(); busy = true; err = ''; draw();
+      try { code = await createOnline(P); mode = 'wait'; busy = false; draw(); watch(); }
+      catch (x) { busy = false; err = onlineErr(x); draw(); }
+      return;
+    }
+    if (act === 'join' && !busy) {
+      keepName(); code = cleanCode((o.querySelector('#onCode') || {}).value || code);
+      if (code.length !== 6) { err = 'Codes are 6 letters and numbers.'; draw(); return; }
+      busy = true; err = ''; draw();
+      try { const d = await joinOnline(code); close(); try { localStorage.removeItem('pocketArcade.chess.join'); } catch (x) { } startOnline(code, d); }
+      catch (x) { busy = false; err = onlineErr(x); draw(); }
+    }
+  };
+}
+$('onlineBtn').onclick = () => openOnline();
+// opened from an invite link (?join=CODE), or came back after signing in
+{
+  const q = new URLSearchParams(location.search).get('join');
+  let pend = q ? cleanCode(q) : null;
+  if (q) history.replaceState(null, '', location.pathname);
+  if (!pend) try { const j = JSON.parse(localStorage.getItem('pocketArcade.chess.join') || 'null'); if (j && Date.now() - j.at < 2 * 3600e3) pend = j.code; } catch (e) { }
+  if (pend) {
+    const go = () => { if (fb.state === 'loading') { setTimeout(go, 300); return; } if (!SV.game || !SV.game.online) { SV.mode = 'play'; save(); showMenu(); openOnline({ join: pend }); } };
+    setTimeout(go, 200);
+  }
+}
+
+// =====================================================================
 // CUSTOM COLORS (board squares + accent), color wheel or hex code
 // =====================================================================
 const UI_PRESETS = [
@@ -2834,7 +3163,7 @@ const SCREEN_DEF = {
 };
 // highlight colors are blended into the square colors so the board pattern still shows
 const HL = { mv: ['Last move', '#f6f669', 'mv'], sel: ['Selected piece', '#f6f669', 'sel'], hi: ['Hints & best move', '#4d9be0', 'hi'], chk: ['Check', '#ff2828'], pre: ['Premove', '#d9534f', 'pre'], ok: ['Puzzle: correct', '#81b64c', 'ok'], no: ['Puzzle: wrong', '#d63a2f', 'no'] };
-const BTN = { friend: ['Play a friend', '#7b5cd6'], daily: ['Daily puzzle', '#c9822a'], redeem: ['Redemption', '#ff6a2e'], done: ['Daily solved', '#4f7d26'], 'cal-ok': ['Calendar: on time', '#5d8a33'], 'cal-late': ['Calendar: late', '#8a9a45'], 'cal-try': ['Calendar: not solved', '#b65a3c'] };
+const BTN = { friend: ['Play a friend', '#7b5cd6'], online: ['Play online', '#2a8fd6'], daily: ['Daily puzzle', '#c9822a'], redeem: ['Redemption', '#ff6a2e'], done: ['Daily solved', '#4f7d26'], 'cal-ok': ['Calendar: on time', '#5d8a33'], 'cal-late': ['Calendar: late', '#8a9a45'], 'cal-try': ['Calendar: not solved', '#b65a3c'] };
 const ARROWS = { d: ['Arrows (Alt)', '#ffaa00'], s: ['Arrows (Alt+Shift)', '#15781b'], c: ['Arrows (Alt+Ctrl/Cmd)', '#882020'], a: ['Arrows (Alt+Shift+Ctrl/Cmd)', '#003088'] };
 const theme = () => document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
 // remember the built-in colors so they can be restored
