@@ -624,6 +624,35 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
   #game #transport button { height: 40px; }
   #game .panel > .tools, #game #overBar, #game #hintBox { flex: none; }
 }
+/* ---------- redesign step 3b: lobby ---------- */
+.tcacc { margin: 12px 0 4px; }
+.tchead { display: flex; align-items: center; gap: 10px; width: 100%; height: 48px; padding: 0 14px; border-radius: 8px; background: var(--panel); border: 1px solid var(--line); font-weight: 800; font-size: 15px; }
+.tchead svg { width: 20px; height: 20px; color: var(--soft); }
+.tchead i { margin-left: auto; font-style: normal; color: var(--soft); }
+.tcgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; animation: dropIn .2s var(--ease); }
+.tccol { display: flex; flex-direction: column; gap: 6px; }
+.tccol small { font-size: 11.5px; font-weight: 900; color: var(--soft); text-transform: uppercase; letter-spacing: .5px; text-align: center; }
+.tcgrid button, .tcrow button { height: 40px; border-radius: 8px; background: var(--panel); border: 1px solid var(--line); font-weight: 800; font-size: 14px; }
+.tcgrid button[aria-pressed="true"], .tcrow button[aria-pressed="true"] { border: 2px solid var(--accent); }
+.tcrow { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
+.tccustom { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.tccustom label { font-size: 12px; font-weight: 900; color: var(--soft); }
+.tccustom .field { margin: 4px 0 0; font-size: 16px; padding: 8px 10px; }
+.playbig { display: block; width: 100%; height: 52px; margin: 14px 0 6px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 18px; font-weight: 900; box-shadow: 0 4px 0 var(--accent-d); }
+.playbig small { font-size: 13px; font-weight: 800; opacity: .85; margin-left: 4px; }
+.playbig:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 var(--accent-d); }
+.lrows { display: flex; flex-direction: column; gap: 6px; margin: 14px 0 4px; }
+.lrows .bigbtn, .lrows .histbtn { min-height: 48px; margin: 0; padding: 8px 12px; border-radius: 8px; background: var(--panel); color: var(--ink); border: 1px solid var(--line); gap: 12px; }
+.lrows .bigbtn::before { content: ''; width: 24px; height: 24px; border-radius: 6px; flex: none; }
+.lrows .bigbtn.friend::before { background: var(--friend, #7b5cd6); }
+.lrows .bigbtn.online::before { background: var(--online, #2a8fd6); }
+.lrows .bigbtn b, .lrows .histbtn b { font-size: 15px; }
+.lrows .bigbtn small, .lrows .histbtn small { color: var(--soft); opacity: 1; font-size: 12.5px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lrows .bigbtn > div, .lrows .histbtn > span { flex: 1; min-width: 0; }
+.lrows .bigbtn .go { background: none; color: var(--soft); padding: 0; font-size: 0; }
+.lrows .bigbtn .go::after { content: '›'; font-size: 22px; }
+.lrows .histbtn svg { width: 24px; height: 24px; }
+.bot.sel { border: 2px solid var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
 </style>
 </head>
 <body>
@@ -657,14 +686,18 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
     <div class="seg modeseg" role="group" aria-label="Mode" id="modeSeg"><button data-m="play">Play</button><button data-m="puz">Puzzles</button><button data-m="learn">Learn</button><button data-m="lb">Leaderboard</button></div>
     <div id="playMenu">
     <div class="rate" id="rateCard"></div>
-    <button class="bigbtn friend" id="friendBtn"><div><b>Play a friend</b><small id="friendSub">Two players, one phone. Pass it back and forth.</small></div><span class="go">Play</span></button>
-    <button class="bigbtn online" id="onlineBtn"><div><b>Play a friend online</b><small id="onlineSub">Different houses? Send them a code and play live.</small></div><span class="go">Play</span></button>
     <button class="cont" id="contBtn" hidden><div><b>Continue game</b><small id="contInfo"></small></div><span class="go">Play</span></button>
-    <button class="histbtn" id="histBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg><span><b>Game history</b><small id="histInfo">Replay and share your past games</small></span><i>›</i></button>
-    <button class="histbtn" id="achBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg><span><b>Achievements</b><small id="achInfo"></small></span><i>›</i></button>
+    <div class="tcacc" id="tcAcc"></div>
     <h2>Play as</h2>
     <div class="seg" role="group" aria-label="Your color" id="colorSeg"></div>
     <button class="opt" id="tbOpt" role="switch"><div class="tx"><b>Takebacks</b><small id="tbNote"></small></div><span class="sw"></span></button>
+    <button class="playbig" id="playBtn"></button>
+    <div class="lrows">
+    <button class="bigbtn friend" id="friendBtn"><div><b>Play a friend</b><small id="friendSub">Two players, one phone. Pass it back and forth.</small></div><span class="go">Play</span></button>
+    <button class="bigbtn online" id="onlineBtn"><div><b>Play a friend online</b><small id="onlineSub">Different houses? Send them a code and play live.</small></div><span class="go">Play</span></button>
+    <button class="histbtn" id="histBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg><span><b>Game history</b><small id="histInfo">Replay and share your past games</small></span><i>›</i></button>
+    <button class="histbtn" id="achBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg><span><b>Achievements</b><small id="achInfo"></small></span><i>›</i></button>
+    </div>
     <h2>Choose your opponent</h2>
     <div class="bots" id="bots"></div>
     </div>
@@ -1432,7 +1465,7 @@ function replay() {
 function newGame(botId) {
   const pref = SV.color;
   const me = pref === 'w' ? 1 : pref === 'b' ? -1 : (Math.random() < .5 ? 1 : -1);
-  G = { bot: botId, me, moves: [], takebacks: 0, hints: 0, tb: !!SV.tb, over: null };
+  G = { bot: botId, me, moves: [], takebacks: 0, hints: 0, tb: !!SV.tb, over: null, clock: newClock() };
   SV.game = G; save();
   startGame();
 }
@@ -1443,7 +1476,7 @@ function startGame() {
   if (G.pvp) { G.me = E.side; flipped = G.layout === 'rotate' && E.side === -1; } else flipped = G.me === -1;
   $('menu').hidden = true; $('game').hidden = false;
   $('back').textContent = G.pvp || G.online ? '‹ Chess' : '‹ Bots';
-  if (G.pvp || G.online) startClock();
+  if (G.clock) startClock();
   render();
   if (!G.over) { const st = E.status(); if (st) finish(st); else maybeBot(); }
   if (G.online && !G.over) onlineAttach();
@@ -1509,8 +1542,9 @@ function render() {
   // players
   const meMat = material(G.me), botMat = material(-G.me);
   const bot = G.pvp ? BOTS[0] : botById(G.bot);
-  const botRow = `${avatar(bot)}<div class="who"><b>${bot.name}</b><span class="elo">${bot.elo}</span><div class="caps">${capsHTML(G.me)}${botMat > meMat ? `<span class="adv">+${botMat - meMat}</span>` : ''}</div></div>${thinking ? '<span class="st think">Thinking</span>' : ''}`;
-  const meRow = `<div class="av" style="background:var(--panel2)">${pieceSVG(G.me * 1, '')}</div><div class="who"><b>You</b><span class="elo">${Math.round(SV.rating)}</span><div class="caps">${capsHTML(-G.me)}${meMat > botMat ? `<span class="adv">+${meMat - botMat}</span>` : ''}</div></div>${!thinking && !G.over && E.side === G.me ? '<span class="st turn">Your move</span>' : ''}`;
+  const clkOf = c => G.clock ? `<span class="clk" id="clk${c === 1 ? 0 : 1}"></span>` : '';
+  const botRow = `${avatar(bot)}<div class="who"><b>${bot.name}</b><span class="elo">${bot.elo}</span><div class="caps">${capsHTML(G.me)}${botMat > meMat ? `<span class="adv">+${botMat - meMat}</span>` : ''}</div></div>${G.clock ? clkOf(-G.me) : thinking ? '<span class="st think">Thinking</span>' : ''}`;
+  const meRow = `<div class="av" style="background:var(--panel2)">${pieceSVG(G.me * 1, '')}</div><div class="who"><b>You</b><span class="elo">${Math.round(SV.rating)}</span><div class="caps">${capsHTML(-G.me)}${meMat > botMat ? `<span class="adv">+${meMat - botMat}</span>` : ''}</div></div>${G.clock ? clkOf(G.me) : !thinking && !G.over && E.side === G.me ? '<span class="st turn">Your move</span>' : ''}`;
   if (G.pvp || G.online) {
     const row = c => { const i = c === 1 ? 0 : 1, mine = material(c), theirs = material(-c);
       const tm = G.online ? (c === G.me ? 'your move' : 'thinking') : 'to move';
@@ -1524,6 +1558,7 @@ function render() {
     $('topPl').classList.remove('rot'); $('board').classList.remove('faceoff');
     $('topPl').innerHTML = flipped === (G.me === -1) ? botRow : meRow;
     $('botPl').innerHTML = flipped === (G.me === -1) ? meRow : botRow;
+    drawClocks();
   }
   // move list
   let mh = '';
@@ -1665,6 +1700,7 @@ function play(m, animate) {
   E.make(m);
   G.moves.push(E.uci(m)); sans.push(s);
   if (G.online) { clockMoved(mover); if (mover === G.me && !ONL.applying) onlineSend(); }
+  else if (!G.pvp && G.clock) clockMoved(mover);
   if (G.pvp) {
     clockMoved(mover);
     G.me = E.side;
@@ -1692,7 +1728,10 @@ function maybeBot() {
   const bot = botById(G.bot);
   let opts = bot.opts;
   if (!opts.noise && G.moves.length < 8) opts = { time: 700, depth: 5, noise: 14, random: 0 }; // a little opening variety for the strong bots
-  const t0 = Date.now(), minWait = 350 + Math.random() * 450;
+  // on the clock: the bot spends a share of its remaining time, and hurries when it's low
+  let rem = Infinity;
+  if (G.clock) { rem = liveTime(G.me === 1 ? 1 : 0); opts = Object.assign({}, opts, { time: Math.max(60, Math.min(opts.time, rem / 30)) }); }
+  const t0 = Date.now(), minWait = rem < 20000 ? 40 : rem < 60000 ? 150 : 350 + Math.random() * 450;
   ask(opts, u => {
     setTimeout(() => {
       thinking = false;
@@ -2313,7 +2352,7 @@ $('friendBtn').onclick = () => {
 // clocks: they start after White's first move
 let clockTimer = null;
 const fmtClock = ms => { ms = Math.max(0, ms); if (ms < 20000) return (ms / 1000).toFixed(1); const s = Math.ceil(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
-const clocked = () => G && (G.pvp || G.online) && G.clock;
+const clocked = () => G && G.clock && !G.hist;
 function liveTime(i) { const c = G.clock; let t = c.t[i]; if (c.last && !G.over && (E.side === 1 ? 0 : 1) === i) t -= Date.now() - c.last; return t; }
 function drawClocks() {
   if (!clocked()) return;
@@ -2355,7 +2394,7 @@ $('drawBtn').onclick = () => {
 };
 
 // ---------- results + rating ----------
-function finish(st) { finishGame(st); histAdd(); }
+function finish(st) { if (clockTimer) stopClock(); finishGame(st); histAdd(); }
 function finishGame(st) {
   if (G.online) {
     stopClock(); thinking = false; premove = null;
@@ -2465,13 +2504,19 @@ function showMenu(keepOverlays) {
   $('tbNote').textContent = SV.tb ? 'On: undo your moves, but wins give half the rating points.' : 'Off: full rating points. Turn on to undo moves.';
   $('bots').innerHTML = BOTS.map(b => {
     const r = SV.rec[b.id];
-    return `<button class="bot" data-b="${b.id}">${avatar(b)}<div class="tx"><b>${b.name}</b><span class="elo">${b.elo}</span><small>${b.blurb}</small></div><div class="rec">${r && r.w ? '<span class="crown">BEATEN</span>' : ''}${r ? `${r.w}-${r.l}-${r.d}` : ''}</div></button>`;
+    return `<button class="bot${b.id === selBot() ? ' sel' : ''}" data-b="${b.id}">${avatar(b)}<div class="tx"><b>${b.name}</b><span class="elo">${b.elo}</span><small>${b.blurb}</small></div><div class="rec">${r && r.w ? '<span class="crown">BEATEN</span>' : ''}${r ? `${r.w}-${r.l}-${r.d}` : ''}</div></button>`;
   }).join('');
 }
 $('tbOpt').onclick = () => { SV.tb = !SV.tb; save(); showMenu(); };
 $('colorSeg').onclick = e => { const b = e.target.closest('button'); if (!b) return; SV.color = b.dataset.c; save(); showMenu(); };
 $('bots').onclick = e => {
   const b = e.target.closest('.bot'); if (!b) return;
+  if (b.dataset.b !== selBot()) { SV.botSel = b.dataset.b; save(); markSelBot(); renderPlayBtn(); sound('move'); return; } // first tap picks the bot
+  startVsBot(b.dataset.b);
+};
+function startVsBot(id) {
+  const b = { dataset: { b: id } };
+  SV.botSel = id;
   sound('move');
   if (SV.game && SV.game.online) { toast('Finish or resign your online game first'); return; }
   if (SV.game && SV.game.pvp && SV.game.moves.length) {
@@ -2490,7 +2535,7 @@ $('bots').onclick = e => {
     return;
   }
   newGame(b.dataset.b);
-};
+}
 $('contBtn').onclick = () => { G = SV.game; startGame(); };
 
 // ---------- bits ----------
@@ -4081,7 +4126,7 @@ function syncShell() {
   document.body.dataset.screen = vis;
   const cur = { game: 'play', puzzle: 'puz', anaSec: 'puz', archSec: 'puz', trainSec: 'learn', histSec: 'hist', achSec: 'ach' }[vis] || (SV.mode === 'puz' ? 'puz' : SV.mode === 'learn' ? 'learn' : SV.mode === 'lb' ? 'lb' : 'play');
   document.querySelectorAll('[data-nav]').forEach(b => { b.classList.toggle('on', b.dataset.nav === cur); if (['play', 'puz', 'learn', 'lb', 'hist', 'ach'].includes(b.dataset.nav)) b.setAttribute('aria-current', b.dataset.nav === cur ? 'page' : 'false'); });
-  if (vis === 'menu') drawMenuBoard();
+  if (vis === 'menu') { drawMenuBoard(); if (typeof renderPlayBtn === 'function') renderPlayBtn(); }
 }
 new MutationObserver(() => { clearTimeout(syncShell.t); syncShell.t = setTimeout(syncShell, 0); })
   .observe(document.querySelector('.app'), { attributes: true, subtree: true, attributeFilter: ['hidden'] });
@@ -4153,6 +4198,41 @@ function setGameTab(t) {
 $('gTabs').onclick = e => { const b = e.target.closest('[data-gt]'); if (b) setGameTab(b.dataset.gt); };
 setGameTab('moves');
 syncShell();
+
+// =====================================================================
+// LOBBY (Play tab): time control, Play button, selectable bots. Clocks now work against bots too.
+// =====================================================================
+const TC_GROUPS = [['Bullet', [[1, 0], [1, 1], [2, 1]]], ['Blitz', [[3, 0], [3, 2], [5, 0]]], ['Rapid', [[10, 0], [15, 10], [30, 0]]]];
+function tcName([m, i]) { return !m ? 'No clock' : i ? `${m} | ${i}` : `${m} min`; }
+const tcKind = ([m, i]) => !m ? '' : (m + i * 40 / 60) < 3 ? 'Bullet' : (m + i * 40 / 60) < 10 ? 'Blitz' : 'Rapid';
+function curTC() { return Array.isArray(SV.tc) && SV.tc.length === 2 ? SV.tc : [0, 0]; }
+let tcOpen = false;
+function renderTC() {
+  const tc = curTC(), k = tcKind(tc);
+  const isPreset = TC_GROUPS.some(([, l]) => l.some(x => x[0] === tc[0] && x[1] === tc[1])) || !tc[0];
+  $('tcAcc').innerHTML = `<button class="tchead" aria-expanded="${tcOpen}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg><span>${k ? `${k} • ` : ''}${tcName(tc)}</span><i>${tcOpen ? '▴' : '▾'}</i></button>
+    ${tcOpen ? `<div class="tcgrid">${TC_GROUPS.map(([g, l]) => `<div class="tccol"><small>${g}</small>${l.map(x => `<button data-tc="${x[0]},${x[1]}" aria-pressed="${x[0] === tc[0] && x[1] === tc[1]}">${tcName(x)}</button>`).join('')}</div>`).join('')}</div>
+      <div class="tcrow"><button data-tc="0,0" aria-pressed="${!tc[0]}">No clock</button><button data-tc="custom" aria-pressed="${!isPreset}">Custom</button></div>
+      ${!isPreset || SV.tcCustom ? `<div class="tccustom"><label>Minutes<input class="field" type="number" min="1" max="90" id="tcMin" value="${tc[0] || 10}"></label><label>Increment<input class="field" type="number" min="0" max="60" id="tcInc" value="${tc[1] || 0}"></label></div>` : ''}` : ''}`;
+}
+$('tcAcc').addEventListener('click', e => {
+  if (e.target.closest('.tchead')) { tcOpen = !tcOpen; renderTC(); return; }
+  const b = e.target.closest('[data-tc]'); if (!b) return;
+  if (b.dataset.tc === 'custom') { SV.tcCustom = true; const tc = curTC(); if (!tc[0]) SV.tc = [10, 5]; save(); renderTC(); return; }
+  SV.tcCustom = false; SV.tc = b.dataset.tc.split(',').map(Number); save(); tcOpen = false; renderTC(); renderPlayBtn();
+});
+$('tcAcc').addEventListener('change', e => {
+  if (e.target.id !== 'tcMin' && e.target.id !== 'tcInc') return;
+  const m = Math.max(1, Math.min(90, Math.round(+$('tcMin').value || 10))), i = Math.max(0, Math.min(60, Math.round(+$('tcInc').value || 0)));
+  SV.tc = [m, i]; save(); renderTC(); renderPlayBtn();
+});
+function selBot() { return SV.botSel && BOTS.some(b => b.id === SV.botSel) ? SV.botSel : (SV.game && SV.game.bot) || BOTS[0].id; } // hoisted: the bot list draws before this code runs
+function renderPlayBtn() { const b = botById(selBot()); $('playBtn').innerHTML = `Play vs ${esc(b.name)} <small>${b.elo}${curTC()[0] ? ' · ' + tcName(curTC()) : ''}</small>`; }
+function markSelBot() { $('bots').querySelectorAll('.bot').forEach(x => x.classList.toggle('sel', x.dataset.b === selBot())); }
+$('playBtn').onclick = () => startVsBot(selBot());
+// a clock for a new bot game, from the lobby's time control
+function newClock() { const [m, i] = curTC(); return m ? { base: m * 60000, inc: i * 1000, t: [m * 60000, m * 60000], last: null } : null; }
+renderTC(); renderPlayBtn();
 
 // =====================================================================
 // CUSTOM COLORS (board squares + accent), color wheel or hex code
@@ -4519,7 +4599,7 @@ function openColors() {
 $('colorBtn').onclick = openColors;
 initFB();
 
-window.__chess = { get scrub() { return scrub; }, fb, pushBoard, openColors, cycleSetup, openSettings, syncShell, ACH, checkAch, openEnd, END_LINES, openingAt, loadOpenings, openTrainer, OPEN_LINES, get TR() { return TR; }, T, hist, gameLink, gamePGN, openPuzzle, pzNotes, pzGoal, get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
+window.__chess = { startVsBot, get scrub() { return scrub; }, fb, pushBoard, openColors, cycleSetup, openSettings, syncShell, ACH, checkAch, openEnd, END_LINES, openingAt, loadOpenings, openTrainer, OPEN_LINES, get TR() { return TR; }, T, hist, gameLink, gamePGN, openPuzzle, pzNotes, pzGoal, get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
 showMenu();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('./sw.js').catch(() => { });
 })();
