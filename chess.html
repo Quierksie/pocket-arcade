@@ -558,6 +558,38 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
 .setcard .rowbtn { display: flex; align-items: center; width: 100%; gap: 10px; padding: 12px; border-radius: 12px; background: var(--panel2); font-weight: 800; margin-top: 8px; text-align: left; }
 .setcard .rowbtn svg { width: 20px; height: 20px; }
 .setcard .rowbtn i { margin-left: auto; font-style: normal; color: var(--soft); font-size: 20px; }
+/* ---------- redesign step 2: board + player plates ---------- */
+/* player plates: 48px, avatar 36px, clock on the right */
+.pl { height: 48px; min-height: 48px; padding: 0 2px; margin: 8px 0; gap: 10px; }
+.pl .av { width: 36px; height: 36px; border-radius: 6px; flex: none; display: grid; place-items: center; }
+.pl .av svg { width: 30px; height: 30px; }
+.pl .who { line-height: 1.15; }
+.pl .who b { font-size: 14px; font-weight: 700; }
+.caps { height: 16px; margin-top: 2px; }
+.caps svg { width: 14px; height: 14px; margin-right: -4px; }
+.caps .gap { width: 8px; }
+.caps .adv { margin-left: 8px; }
+.clk { min-width: 98px; height: 36px; border-radius: 6px; padding: 0 10px; display: grid; place-items: center end; font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.clk.is-active-turn { background: var(--ink); color: var(--bg); }
+.pl .st { margin-left: auto; height: 30px; padding: 0 10px; border-radius: 6px; display: inline-flex; align-items: center; background: var(--panel2); font-size: 13px; }
+.pl .st.turn { background: color-mix(in srgb, var(--accent) 18%, transparent); }
+/* coordinates tucked inside the edge squares */
+.sq .cf, .sq .cr { font-size: clamp(9px, 1.4vw, 11px); font-weight: 800; pointer-events: none; user-select: none; }
+.sq .cr { left: 4px; top: 2px; } .sq .cf { right: 4px; bottom: 2px; }
+/* move markers and motion */
+.sq.dot::after { left: 36%; top: 36%; width: 28%; height: 28%; }
+.sq .pc.anim { transition: transform .13s cubic-bezier(.2, 0, 0, 1); }
+.ghost { transform: translate(-50%, -50%) scale(1.08); z-index: 100; will-change: left, top; filter: drop-shadow(0 6px 8px rgba(0,0,0,.3)); }
+.ghost svg { display: block; }
+.sq.hov { box-shadow: inset 0 0 0 4px rgba(255,255,255,.75); }
+/* promotion picker over the promotion square's column */
+.promopop { position: absolute; z-index: 40; width: 12.5%; display: flex; flex-direction: column; background: var(--panel); border-radius: 4px; box-shadow: 0 6px 20px rgba(0,0,0,.45); overflow: hidden; animation: dropIn .15s var(--ease); }
+.promopop.up { flex-direction: column-reverse; }
+.promopop button { aspect-ratio: 1; display: block; padding: 4%; border-radius: 0; }
+.promopop button:hover { background: var(--panel2); }
+.promopop button svg { width: 100%; height: 100%; display: block; }
+.promopop .px { aspect-ratio: auto; height: 32px; display: grid; place-items: center; font-weight: 900; color: var(--soft); background: var(--panel2); font-size: 16px; }
+.promoveil { position: absolute; inset: 0; z-index: 39; background: rgba(0,0,0,.35); }
 </style>
 </head>
 <body>
@@ -1550,13 +1582,17 @@ $('board').addEventListener('pointermove', e => {
   if (!drag || e.pointerId !== drag.id) return;
   if (!drag.on && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 6) {
     drag.on = true;
-    const size = $('board').getBoundingClientRect().width / 8 * 1.15;
+    const size = $('board').getBoundingClientRect().width / 8;
     const g = document.createElement('div'); g.className = 'ghost'; g.style.width = g.style.height = size + 'px';
     g.innerHTML = pieceSVG(E.board[drag.sq], ''); g.firstChild.style.width = g.firstChild.style.height = '100%';
     document.body.append(g); drag.g = g;
     const pc = $('board').querySelector(`[data-sq="${drag.sq}"] .pc`); if (pc) pc.classList.add('lift');
   }
-  if (drag.on) { drag.g.style.left = e.clientX + 'px'; drag.g.style.top = e.clientY + 'px'; }
+  if (drag.on) {
+    drag.g.style.left = e.clientX + 'px'; drag.g.style.top = e.clientY + 'px';
+    const over = sqFromPoint(e.clientX, e.clientY);
+    if (over !== drag.hov) { const b = $('board'); b.querySelectorAll('.sq.hov').forEach(x => x.classList.remove('hov')); if (over >= 0) { const q = b.querySelector(`[data-sq="${over}"]`); if (q) q.classList.add('hov'); } drag.hov = over; }
+  }
 });
 function endDrag(e) {
   if (!drag || e.pointerId !== drag.id) return;
@@ -1575,15 +1611,7 @@ $('board').addEventListener('pointerup', endDrag);
 $('board').addEventListener('pointercancel', e => { if (drag && drag.g) drag.g.remove(); drag = null; render(); });
 
 function promoPick(opts, animate) {
-  const o = document.createElement('div'); o.className = 'ov';
-  o.innerHTML = `<div class="card"><h3 style="font-size:21px">Promote to</h3><div class="promo">${[5, 4, 3, 2].map(t => `<button data-t="${t}" aria-label="${['', '', 'Knight', 'Bishop', 'Rook', 'Queen'][t]}">${pieceSVG(t * G.me, '')}</button>`).join('')}</div></div>`;
-  document.body.append(o);
-  o.onclick = e => {
-    const b = e.target.closest('button');
-    if (!b) { o.remove(); selectSq(-1); render(); return; }
-    o.remove();
-    play(opts.find(m => E.promo(m) === +b.dataset.t), animate);
-  };
+  choosePromo(E.side, t => play(opts.find(m => E.promo(m) === t), animate), () => { selectSq(-1); render(); }, $('board'), E.to(opts[0]), flipped);
 }
 
 function play(m, animate) {
@@ -2233,7 +2261,7 @@ function drawClocks() {
   for (const i of [0, 1]) {
     const el = $('clk' + i); if (!el) continue;
     const t = liveTime(i), on = !G.over && G.clock.last && (E.side === 1 ? 0 : 1) === i;
-    el.textContent = fmtClock(t); el.classList.toggle('on', !!on); el.classList.toggle('low', t < 20000);
+    el.textContent = fmtClock(t); el.classList.toggle('on', !!on); el.classList.toggle('is-active-turn', !!on); el.classList.toggle('low', t < 20000);
     if (G.online) { // your own clock ran out = you lose; theirs a few seconds past zero (gone quiet) = you win
       const mine = (G.me === 1 ? 0 : 1) === i;
       if (!G.over && ((mine && t <= 0) || (!mine && t <= -3000))) { stopClock(); finish({ result: (i === 0) ? '0-1' : '1-0', reason: 'time' }); return; }
@@ -2552,11 +2580,27 @@ function dailyStreak() {
 }
 
 // ---------- shared board widget ----------
-function choosePromo(color, done, cancel) {
-  const o = document.createElement('div'); o.className = 'ov';
-  o.innerHTML = `<div class="card"><h3 style="font-size:21px">Promote to</h3><div class="promo">${[5, 4, 3, 2].map(t => `<button data-t="${t}">${pieceSVG(t * color, '')}</button>`).join('')}</div></div>`;
-  document.body.append(o);
-  o.onclick = e => { const b = e.target.closest('button'); o.remove(); if (b) done(+b.dataset.t); else cancel(); };
+// promotion picker: Queen, Knight, Rook, Bishop stacked over the promotion square's column, plus ✕ to cancel
+function choosePromo(color, done, cancel, boardEl, toSq, flip) {
+  const wrap = boardEl && boardEl.closest('.wrap');
+  if (!wrap) { // fallback: a centered popup
+    const o = document.createElement('div'); o.className = 'ov';
+    o.innerHTML = `<div class="card"><h3 style="font-size:21px">Promote to</h3><div class="promo">${[5, 2, 4, 3].map(t => `<button data-t="${t}">${pieceSVG(t * color, '')}</button>`).join('')}</div></div>`;
+    document.body.append(o);
+    o.onclick = e => { const b = e.target.closest('button'); o.remove(); if (b) done(+b.dataset.t); else cancel(); };
+    return;
+  }
+  const file = toSq & 7, rank = toSq >> 4, col = flip ? 7 - file : file, row = flip ? rank : 7 - rank, top = row === 0;
+  const veil = document.createElement('div'); veil.className = 'promoveil';
+  const pop = document.createElement('div'); pop.className = 'promopop' + (top ? '' : ' up');
+  pop.style.left = (col * 12.5) + '%';
+  if (top) pop.style.top = '0'; else pop.style.bottom = '0';
+  pop.innerHTML = [5, 2, 4, 3].map(t => `<button data-t="${t}" aria-label="${PN[t]}">${pieceSVG(t * color, '')}</button>`).join('') + '<button class="px" data-t="0" aria-label="Cancel">✕</button>';
+  wrap.append(veil, pop);
+  const close = () => { veil.remove(); pop.remove(); };
+  veil.onpointerdown = e => { e.preventDefault(); e.stopPropagation(); close(); cancel(); };
+  pop.onpointerdown = e => e.stopPropagation();
+  pop.onclick = e => { const b = e.target.closest('button'); if (!b) return; close(); const t = +b.dataset.t; if (t) done(t); else cancel(); };
 }
 function makeBoard(el, ctl) {
   const B = { sel: -1, tg: [], drag: null, anim: null };
@@ -2567,7 +2611,7 @@ function makeBoard(el, ctl) {
     const opts = B.tg.filter(m => X().to(m) === to);
     if (!opts.length) return false;
     const go = m => { B.select(-1); ctl.onMove(m); };
-    if (opts.length > 1) choosePromo(X().side, t => go(opts.find(m => X().promo(m) === t)), () => { B.select(-1); B.draw(); });
+    if (opts.length > 1) choosePromo(X().side, t => go(opts.find(m => X().promo(m) === t)), () => { B.select(-1); B.draw(); }, el, to, ctl.flipped());
     else go(opts[0]);
     return true;
   };
@@ -2587,13 +2631,17 @@ function makeBoard(el, ctl) {
     const d = B.drag; if (!d || e.pointerId !== d.id) return;
     if (!d.on && Math.hypot(e.clientX - d.x, e.clientY - d.y) > 6) {
       d.on = true;
-      const size = el.getBoundingClientRect().width / 8 * 1.15;
+      const size = el.getBoundingClientRect().width / 8;
       const g = document.createElement('div'); g.className = 'ghost'; g.style.width = g.style.height = size + 'px';
       g.innerHTML = pieceSVG(X().board[d.sq], ''); g.firstChild.style.width = g.firstChild.style.height = '100%';
       document.body.append(g); d.g = g;
       const pc = el.querySelector(`[data-sq="${d.sq}"] .pc`); if (pc) pc.classList.add('lift');
     }
-    if (d.on) { d.g.style.left = e.clientX + 'px'; d.g.style.top = e.clientY + 'px'; }
+    if (d.on) {
+      d.g.style.left = e.clientX + 'px'; d.g.style.top = e.clientY + 'px';
+      const over = sqAt(e.clientX, e.clientY);
+      if (over !== d.hov) { el.querySelectorAll('.sq.hov').forEach(x => x.classList.remove('hov')); if (over >= 0) { const q = el.querySelector(`[data-sq="${over}"]`); if (q) q.classList.add('hov'); } d.hov = over; }
+    }
   });
   el.addEventListener('pointerup', e => {
     const d = B.drag; if (!d || e.pointerId !== d.id) return;
