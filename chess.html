@@ -232,6 +232,13 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
 .pzstat.bad { box-shadow: inset 0 0 0 2px var(--noc, #d63a2f); }
 .sq.ok { background: var(--ok-l, #9fd36a); } .sq.d.ok { background: var(--ok-d, #6fae3f); }
 .sq.no { background: var(--no-l, #f08a7e); } .sq.d.no { background: var(--no-d, #d65a4c); }
+.res .howto { margin: 10px 0 4px; }
+.res .howto .lbl { font-size: 12px; font-weight: 900; color: var(--soft); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+.res .howto .hw { display: flex; gap: 8px; align-items: flex-start; padding: 5px 0; font-size: 14px; }
+.res .howto .hw small { display: block; color: var(--soft); font-size: 12.5px; font-weight: 600; line-height: 1.35; }
+.res .howto .ic { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 11px; font-weight: 900; flex: none; background: #9a978f; margin-top: 1px; }
+.res .howto .hw.you .ic { background: var(--accent); }
+.pzstat small { line-height: 1.35; }
 .res { background: var(--panel); border-radius: 16px; padding: 14px; margin-top: 8px; }
 .res h3 { margin: 0 0 8px; font-size: 20px; font-weight: 900; display: flex; align-items: center; gap: 8px; }
 .res h3 .dl { font-size: 18px; margin-left: auto; }
@@ -1763,17 +1770,17 @@ function coachWhy(X, c, best, opp, plies, threat) {
   if (promo) S.push(`Promotes to a ${PN[promo]}.`);
   if (hits.length >= 2) S.push(`Forks the ${hits.slice(0, 2).map(([, p]) => PN[Math.abs(p)]).join(' and ')}.`);
   else if (check) S.push('Gives check.');
-  else { const n = oppAfter.find(o => !oppBefore.some(b => b.sq === o.sq) && o.sq !== to); if (n) S.push(`Attacks their ${PN[n.t]}.`); }
+  else { const n = oppAfter.find(o => o.v >= 3 && !oppBefore.some(b => b.sq === o.sq) && o.sq !== to); if (n && !victim) S.push(`Attacks their ${PN[n.t]}.`); }
   const wasHanging = ownBefore.find(o => o.sq === from);
-  if (wasHanging && !ownAfter.some(o => o.sq === to)) S.push(`Moves your ${PN[me]} out of danger.`);
-  else { const saved = ownBefore.find(o => o.sq !== from && !ownAfter.some(a => a.sq === o.sq)); if (saved) S.push(`Protects your ${PN[saved.t]}.`); }
+  if (wasHanging && wasHanging.v >= 3 && !ownAfter.some(o => o.sq === to) && !victim) S.push(`Moves your ${PN[me]} out of danger.`);
+  else if (!S.length) { const saved = ownBefore.find(o => o.v >= 3 && o.sq !== from && !ownAfter.some(a => a.sq === o.sq)); if (saved) S.push(`Protects your ${PN[saved.t]}.`); }
   // what goes wrong: the reply that punishes it
   if (drop >= 10 && c.score > -90000 && c.rsan) {
     if (rVictim && !(recap && victim)) S.push(`${opp} answers ${c.rsan}, winning your ${PN[rVictim]}.`);
     else if (best.score > 90000 && c.score < 90000) S.push(`Misses ${best.san}, which forces checkmate.`);
     else S.push(`${opp} answers ${c.rsan}${rVictim ? '' : ' and gets the better position'}.`);
   } else if (drop >= 10 && best.score > c.score + 150) S.push(`Misses ${best.san}.`);
-  else { const n = ownAfter.find(o => !ownBefore.some(b => b.sq === o.sq) && o.sq !== to); if (n && drop >= 5) S.push(`Leaves your ${PN[n.t]} unprotected.`); }
+  else { const n = ownAfter.find(o => o.v >= 3 && !ownBefore.some(b => b.sq === o.sq) && o.sq !== to); if (n && drop >= 5) S.push(`Leaves your ${PN[n.t]} unprotected.`); }
   if (!S.length && plies < 20) {
     if ((me === 2 || me === 3) && (from >> 4) === (mover === 1 ? 0 : 7)) S.push(`Develops your ${PN[me]}.`);
     else if (me === 1 && [2, 3, 4, 5].includes(to & 7)) S.push('Takes space in the center.');
@@ -2568,10 +2575,63 @@ async function startDaily(ds) {
   rec.id = p.id; if (ds >= EXTREME_FROM) rec.x = 1; save();
   openPuzzle(p, { mode: 'daily', date: ds });
 }
+// ---------- puzzle explanations: the goal, why a wrong move fails, and what each move in the line does ----------
+const flipPov = t => t.replace(/\byour\b/g, '\u0001').replace(/\btheir\b/g, 'your').replace(/\u0001/g, 'their');
+const lc1 = t => t ? t[0].toLowerCase() + t.slice(1) : t;
+function materialOf(X, c) { let n = 0; for (let s = 0; s < 120; s++) { if (s & 0x88) { s += 7; continue; } const p = X.board[s]; if (p && (p > 0) === (c > 0)) n += PV[Math.abs(p)]; } return n; }
+// what to look for, without giving the answer away
+function pzGoal(p) {
+  const n = solverMoves(p);
+  if (p.themes.includes('mate')) return `Find checkmate in ${n}.`;
+  if (p.themes.includes('equality')) return 'Find the move that saves the game.';
+  const X = MX(); X.load(p.fen); X.make(X.fromUci(p.moves[0]));
+  const me = X.side, start = materialOf(X, me) - materialOf(X, -me);
+  for (const u of p.moves.slice(1)) { const m = X.fromUci(u); if (!m) break; X.make(m); }
+  const gain = materialOf(X, me) - materialOf(X, -me) - start;
+  if (p.themes.includes('promotion') && gain >= 3) return 'Calculate a way to get a new queen.';
+  return gain >= 1 ? 'Calculate a way to win material.' : 'Find the move that gives you a big advantage.';
+}
+// a note for every move in the puzzle line: [{ who: 'opp' | 'you', san, why }]
+function pzNotes(p) {
+  const X = MX(); X.load(p.fen);
+  const out = [], mate = p.themes.includes('mate'), last = p.moves.length;
+  p.moves.forEach((u, i) => {
+    const m = X.fromUci(u); if (!m) return;
+    const san = X.san(m), you = i % 2 === 1;
+    const c = { uci: u, san, score: mate && you ? 100000 - (last - i) : 0, reply: p.moves[i + 1] || null, rsan: '' };
+    let why = coachWhy(X, c, c, '', 99, null).filter(t => t !== 'Improves your position the most.' && t !== 'A solid move.');
+    if (X.inCheck()) why.unshift(X.legalMoves().length === 1 ? 'Gets out of check (the only legal move).' : 'Gets out of check.');
+    else if (X.legalMoves().length === 1) why.unshift('The only legal move.');
+    if (i === 0 && !why.length) why = ['The mistake that starts the puzzle.'];
+    if (!you) why = why.map(flipPov);
+    out.push({ who: you ? 'you' : 'opp', san, why: why.join(' ') });
+    X.make(m);
+  });
+  return out;
+}
+// why a wrong move doesn't work: find the opponent's best answer and describe it
+function pzWrongWhy(s, m, pre) {
+  const opp = s.color === 1 ? 'Black' : 'White', st = P.status();
+  if (st) return { text: st.reason === 'checkmate' ? '' : `That's ${st.reason}, so the game would be a draw.`, reply: null };
+  const check = P.inCheck(), to = P.to(m);
+  const r = P.think({ time: 160, depth: 5, noise: 0, random: 0, full: true });
+  if (!r.move) return { text: 'That doesn’t work here.', reply: null };
+  const rsan = P.san(r.move), rTo = P.to(r.move), rV = P.flag(r.move) & 2 ? 1 : Math.abs(P.board[rTo]);
+  P.make(r.move); const mated = P.status() && P.status().reason === 'checkmate'; P.unmake();
+  let text;
+  if (mated) text = `That lets ${opp} play ${rsan}, checkmate.`;
+  else if (pre.victim && rTo === to && rV) text = PV[pre.victim] >= PV[pre.me] ? `You take the ${PN[pre.victim]}, but ${opp} takes back with ${rsan}, so you don't come out ahead.` : `You take the ${PN[pre.victim]}, but ${opp} takes back with ${rsan}, so you lose your ${PN[pre.me]} for it.`;
+  else if (rV) text = `${opp} answers ${rsan}, winning your ${PN[rV]}.`;
+  else if (pre.victim) text = `Taking the ${PN[pre.victim]} is fine, but there's something stronger.`;
+  else if (check) text = `The check doesn't lead anywhere. ${opp} answers ${rsan}.`;
+  else text = s.p.themes.includes('mate') ? `That doesn't lead to checkmate. ${opp} answers ${rsan}.` : `${opp} answers ${rsan} and you don't win anything.`;
+  return { text, reply: P.uci(r.move) };
+}
 function openPuzzle(p, o) {
   PS = { p, mode: o.mode, date: o.date, step: 0, color: 0, mistakes: 0, hints: 0, rated: false, result: null, done: false, busy: true, t0: 0, time: 0, last: [], hintSq: [], okSq: [], noSq: [], retry: !!o.retry, redeem: !!o.redeem, showSol: false };
   P.load(p.fen);
   PS.color = -P.side; // the solver is the side that answers the opening move
+  try { PS.goal = pzGoal(p); PS.notes = pzNotes(p); } catch (e) { PS.goal = 'Find the best move.'; PS.notes = []; }
   showScreen('puzzle', '‹ Puzzles');
   $('pzResult').hidden = true; $('pzTools').hidden = false;
   if (o.mode === 'rated' && !o.retry) { PZ.tried.push(p.id); if (PZ.tried.length > 3000) PZ.tried.shift(); save(); }
@@ -2603,11 +2663,13 @@ function pzStatus(k, extra) {
   const pc = `<span class="ic" style="background:${s.color === 1 ? '#fafaf7' : '#2c2b29'};box-shadow:inset 0 0 0 2px var(--line)"></span>`;
   el.innerHTML = {
     wait: `${pc}<div>Get ready...<small>Watch your opponent's move</small></div>`,
-    turn: `${pc}<div>${side} to move<small>Find the best move${s.p.themes.includes('mate') ? ` (${THEME_NAMES['mateIn' + solverMoves(s.p)] || 'mate'})` : ''}</small></div>`,
-    good: `${ic('#81b64c', '✓')}<div>${extra || 'Best move!'}<small>Keep going</small></div>`,
-    bad: `${ic('#d63a2f', '✕')}<div>Incorrect<small>${s.mode === 'rated' && !s.retry ? 'That counts as a miss. You can still keep trying.' : 'Try again, or tap Solution.'}</small></div>`,
+    turn: (() => { const o = s.notes && s.notes[s.step - 1], oppSide = s.color === 1 ? 'Black' : 'White';
+      if (s.step <= 1) return `${pc}<div>${side} to move<small>${o ? `${oppSide} played ${o.san}. ` : ''}${s.goal || 'Find the best move.'}</small></div>`;
+      return `${pc}<div>${oppSide} answered ${o ? o.san : ''}<small>${o && o.why ? esc(o.why) + ' ' : ''}Your move: keep going.</small></div>`; })(),
+    good: `${ic('#81b64c', '✓')}<div>${extra || 'Best move!'}<small>${s.why ? esc(s.why) : 'Keep going'}</small></div>`,
+    bad: `${ic('#d63a2f', '✕')}<div>Incorrect<small>${s.wrongWhy ? esc(s.wrongWhy) + ' ' : ''}${s.mode === 'rated' && !s.retry ? 'That counts as a miss, but you can keep trying.' : 'Try again, or tap Solution.'}</small></div>`,
     solved: `${ic('#81b64c', '★')}<div>${s.mistakes || s.hints ? 'Solved' : s.redeemed ? 'Streak redeemed!' : 'Solved perfectly!'}<small>${extra || ''}</small></div>`,
-    shown: `${ic('#9a978f', '•')}<div>Solution shown<small>Try the next one</small></div>`,
+    shown: `${ic('#9a978f', '•')}<div>${extra ? 'Solution' : 'Solution shown'}<small>${extra || 'Try the next one'}</small></div>`,
   }[k] + (s.mode === 'rated' && !s.retry ? streakHTML(PZ.streak) : '');
   if (!PZ.streak) shownStreak = 0;
   $('pzHint').disabled = s.done || k === 'wait';
@@ -2630,12 +2692,14 @@ function pzPlayOpp() {
 function pzMove(m) {
   const s = PS; if (!s || s.done) return;
   const exp = s.p.moves[s.step], u = P.uci(m), san = P.san(m);
+  const pre = { me: Math.abs(P.board[P.from(m)]), victim: P.flag(m) & 2 ? 1 : Math.abs(P.board[P.to(m)]) };
   P.make(m);
   const mate = P.status() && P.status().reason === 'checkmate';
   if (u === exp || mate) {
     s.step++; s.last = [P.from(m), P.to(m)]; s.okSq = [P.to(m)]; s.hintSq = [];
     moveSound(san); pzBoard.draw();
     if (s.step >= s.p.moves.length || mate) { pzFinish(true); return; }
+    const nt = s.notes && s.notes[s.step - 1]; s.why = nt && nt.why;
     pzStatus('good', ['Best move!', 'Great move!', 'Correct!'][Math.floor(Math.random() * 3)]);
     s.busy = true;
     setTimeout(() => { if (PS === s) pzPlayOpp(); }, 450);
@@ -2646,8 +2710,21 @@ function pzMove(m) {
   s.noSq = [P.from(m), P.to(m)]; s.busy = true;
   pzBoard.draw(); sound('lose');
   if (s.mode === 'rated' && !s.retry && !s.rated) pzRate(false);
+  let ww = { text: '', reply: null };
+  try { ww = pzWrongWhy(s, m, pre); } catch (e) { }
+  s.wrongWhy = ww.text;
   pzStatus('bad');
-  setTimeout(() => { if (PS !== s) return; P.unmake(); s.noSq = []; s.busy = false; pzBoard.draw(); }, 700);
+  const lastBefore = s.last;
+  const putBack = n => { if (PS !== s) return; for (let i = 0; i < n; i++) P.unmake(); s.noSq = []; s.last = lastBefore; s.busy = false; pzBoard.draw(); };
+  if (!ww.reply) { setTimeout(() => putBack(1), 900); return; }
+  // play their answer so you can see what goes wrong, then undo both moves
+  setTimeout(() => {
+    if (PS !== s) return;
+    const rm = P.fromUci(ww.reply), rs = P.san(rm);
+    pzBoard.anim = { from: P.from(rm), to: P.to(rm) };
+    P.make(rm); s.last = [P.from(rm), P.to(rm)]; moveSound(rs); pzBoard.draw();
+    setTimeout(() => putBack(2), 1700);
+  }, 650);
 }
 function pzRate(ok) {
   const s = PS;
@@ -2701,6 +2778,7 @@ function pzResult(pts, accurate) {
     <h3>${s.showSol ? 'Puzzle missed' : accurate ? 'Solved!' : 'Solved with help'}${s.delta != null && s.mode === 'rated' ? `<span class="dl ${s.delta >= 0 ? 'up' : 'down'}">${s.delta >= 0 ? '+' : ''}${s.delta}</span>` : ''}</h3>
     <div class="grid"><div>Puzzle rating<b>${p.rating}</b></div><div>Pass rate (est.)<b>${passRate(p)}%</b></div><div>Target time<b>${tt}s</b></div><div>Your time<b class="${!s.showSol && s.time <= tt ? 'up' : ''}">${s.showSol ? '-' : s.time + 's'}</b></div></div>
     <div class="themes">${p.themes.map(t => `<span class="chip2">${THEME_NAMES[t] || t}</span>`).join('')}</div>
+    ${s.notes && s.notes.length ? `<div class="howto"><div class="lbl">How it works</div>${s.notes.map((n, i) => `<div class="hw ${n.who}"><span class="ic">${i === 0 ? '?' : n.who === 'you' ? '★' : '•'}</span><div><b>${i === 0 ? (s.color === 1 ? 'Black' : 'White') + ' played' : n.who === 'you' ? 'You' : (s.color === 1 ? 'Black' : 'White')} ${n.san}</b>${n.why ? `<small>${esc(n.why)}</small>` : ''}</div></div>`).join('')}</div>` : ''}
     ${pts.length ? `<div class="pts">${pts.map(([n, v]) => `<div>${n}<b>+${v}</b></div>`).join('')}<div class="tot">Puzzle points<b>+${total}</b></div><div>${tierLabel(j)}<span>${j.into}/${j.need}</span></div></div>` : ''}
     ${s.mode === 'rated' && PZ.lost && !s.redeem ? `<button class="bigbtn redeem" id="rsRedeem"><div><b>Redemption puzzle</b><small>Solve a harder one perfectly to win back your ${PZ.lost.streak} streak</small></div><span class="go">${FLAME}${PZ.lost.streak}</span></button>` : ''}
     <div class="row"><button class="btn alt" id="rsAna">Analysis</button><button class="btn alt" id="rsRetry">Retry</button>${s.mode === 'rated' ? '<button class="btn" id="rsNext">Next puzzle</button>' : '<button class="btn" id="rsBack">Done</button>'}</div></div>`;
@@ -2728,11 +2806,13 @@ $('pzSol').onclick = () => {
     if (PS !== s) return;
     if (s.step >= s.p.moves.length) { pzFinish(false); return; }
     const m = P.fromUci(s.p.moves[s.step]); const san = P.san(m);
+    const nt = s.notes && s.notes[s.step], who = nt && nt.who === 'you' ? 'You' : (s.color === 1 ? 'Black' : 'White');
     pzBoard.anim = { from: P.from(m), to: P.to(m) };
     P.make(m); s.step++; s.last = [P.from(m), P.to(m)]; s.hintSq = []; moveSound(san); pzBoard.draw();
-    setTimeout(stepOne, 700);
+    pzStatus('shown', `${who}: ${san}.${nt && nt.why ? ' ' + esc(nt.why) : ''}`);
+    setTimeout(stepOne, 1600);
   };
-  pzStatus('shown'); stepOne();
+  stepOne();
 };
 $('pzRetry').onclick = () => { if (PS) openPuzzle(PS.p, { mode: PS.mode, date: PS.date, retry: true }); };
 $('pzNext').onclick = () => { if (!PS) return; if (PS.mode === 'rated') startRated(); else openPuzMenu(); };
@@ -3576,7 +3656,7 @@ function openColors() {
 $('colorBtn').onclick = openColors;
 initFB();
 
-window.__chess = { fb, pushBoard, openColors, cycleSetup, get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
+window.__chess = { fb, pushBoard, openColors, cycleSetup, openPuzzle, pzNotes, pzGoal, get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
 showMenu();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('./sw.js').catch(() => { });
 })();
