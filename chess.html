@@ -44,6 +44,22 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
 .rate .num small { display: block; font-size: 12px; color: var(--soft); font-weight: 800; letter-spacing: .5px; margin-bottom: 4px; }
 .rate .meta { color: var(--soft); font-size: 13px; font-weight: 700; line-height: 1.55; margin-left: auto; text-align: right; }
 .rate .meta b { color: var(--ink); }
+.opn { font-size: 13px; font-weight: 800; color: var(--soft); margin: 2px 2px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; animation: dropIn .25s var(--ease); }
+.opn span { background: var(--panel2); color: var(--ink); border-radius: 6px; padding: 1px 6px; margin-right: 6px; font-size: 11.5px; }
+.hgame .hop { display: block; color: var(--soft); font-size: 11.5px; font-weight: 700; opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.oplist { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.opcard { background: var(--panel); border-radius: 16px; padding: 12px 14px; }
+.opcard .oh, .res .oh { display: flex; align-items: center; gap: 8px; }
+.opcard .oh b { font-size: 16px; }
+.opcard .eco { font-size: 11.5px; font-weight: 800; color: var(--soft); background: var(--panel2); border-radius: 6px; padding: 1px 6px; }
+.stars { margin-left: auto; letter-spacing: 1px; font-size: 16px; }
+.stars i { font-style: normal; color: var(--line); } .stars i.on { color: #f2b01e; }
+.opcard p { font-size: 13px; color: var(--soft); font-weight: 600; margin: 6px 0 8px; line-height: 1.35; }
+.opcard .oacts { display: flex; gap: 6px; align-items: center; }
+.opcard .oacts .chip2 { padding: 7px 16px; font-size: 13.5px; }
+.opcard .oacts small { margin-left: auto; color: var(--soft); font-size: 12px; font-weight: 700; }
+#trResult .res .row { margin-top: 10px; }
+.modeseg button { font-size: 13px; padding-left: 2px; padding-right: 2px; }
 .histbtn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; margin-top: 10px; border-radius: 16px; background: var(--panel); color: var(--ink); text-align: left; }
 .histbtn svg { width: 24px; height: 24px; color: var(--accent); flex: none; }
 .histbtn b { display: block; font-size: 15px; }
@@ -473,7 +489,7 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
   </header>
 
   <section class="menu" id="menu">
-    <div class="seg modeseg" role="group" aria-label="Mode" id="modeSeg"><button data-m="play">Play bots</button><button data-m="puz">Puzzles</button><button data-m="lb">Leaderboard</button></div>
+    <div class="seg modeseg" role="group" aria-label="Mode" id="modeSeg"><button data-m="play">Play</button><button data-m="puz">Puzzles</button><button data-m="learn">Learn</button><button data-m="lb">Leaderboard</button></div>
     <div id="playMenu">
     <div class="rate" id="rateCard"></div>
     <button class="bigbtn friend" id="friendBtn"><div><b>Play a friend</b><small id="friendSub">Two players, one phone. Pass it back and forth.</small></div><span class="go">Play</span></button>
@@ -488,6 +504,7 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
     </div>
     <div id="puzMenu" hidden></div>
     <div id="lbMenu" hidden></div>
+    <div id="learnMenu" hidden></div>
   </section>
   <section id="puzzle" hidden>
     <div class="pzbar"><span id="pzMode"></span><span id="pzRate"></span></div>
@@ -518,6 +535,17 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
     </div>
   </section>
 
+  <section id="trainSec" hidden>
+    <div class="pzbar"><span id="trName"></span><span id="trProg"></span></div>
+    <div class="wrap"><div class="board" id="tboard" role="grid" aria-label="Openings trainer board"></div></div>
+    <div class="pzstat" id="trStat"></div>
+    <div class="tools" id="trTools">
+      <button class="tool" id="trHint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V16h8v-1.3A7 7 0 0 0 12 2z"/></svg>Hint</button>
+      <button class="tool" id="trRestart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>Restart</button>
+      <button class="tool" id="trSwitch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg><span id="trMode">Learn</span></button>
+    </div>
+    <div id="trResult" hidden></div>
+  </section>
   <section id="histSec" hidden><div id="histBody"></div></section>
   <section id="archSec" hidden>
     <div class="cal-head"><button id="calPrev" aria-label="Previous month">‹</button><b id="calTitle"></b><button id="calNext" aria-label="Next month">›</button></div>
@@ -530,6 +558,7 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
     <div class="pl" id="topPl"></div>
     <div class="wrap"><div class="board" id="board" role="grid" aria-label="Chess board"></div></div>
     <div class="pl" id="botPl"></div>
+    <div class="opn" id="openLn" hidden></div>
     <div class="moves" id="moves"></div>
     <div class="anal hintbox" id="hintBox" hidden></div>
     <div class="tools" id="tools">
@@ -1323,7 +1352,7 @@ function render() {
   $('undoBtn').hidden = !tbOn(G);
   $('undoBtn').disabled = G.pvp ? !G.moves.length : myMoveCount() === 0;
   $('hintBtn').hidden = !!G.online; $('drawBtn').hidden = false;
-  renderHintBox();
+  renderHintBox(); renderOpening();
   $('resignLbl').textContent = !G.over && G.moves.length <= 1 ? 'Abort' : 'Resign';
   const cool = G.drawAt != null && G.moves.length - G.drawAt < 6;
   $('drawBtn').disabled = !!G.drawPending || cool || (!G.pvp && !G.online && (thinking || E.side !== G.me)) || G.moves.length < 2;
@@ -2203,11 +2232,12 @@ function showResult() {
 function showMenu(keepOverlays) {
   stopAnalysis(); premove = null; stopClock(); if (keepOverlays !== true) onlineDetach();
   $('game').hidden = true; $('menu').hidden = false; $('back').textContent = '‹ Arcade';
-  ['puzzle', 'anaSec', 'archSec'].forEach(x => { $(x).hidden = true; });
+  SCREENS.forEach(x => { if (x !== 'menu') $(x).hidden = true; }); // every other screen (puzzles, history, trainer...)
   if (keepOverlays !== true) document.querySelectorAll('.ov').forEach(o => o.remove());
-  const pm = SV.mode === 'puz', lm = SV.mode === 'lb';
-  $('playMenu').hidden = pm || lm; $('puzMenu').hidden = !pm; $('lbMenu').hidden = !lm;
-  $('modeSeg').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.m === (pm ? 'puz' : lm ? 'lb' : 'play')));
+  const pm = SV.mode === 'puz', lm = SV.mode === 'lb', em = SV.mode === 'learn';
+  $('playMenu').hidden = pm || lm || em; $('puzMenu').hidden = !pm; $('lbMenu').hidden = !lm; $('learnMenu').hidden = !em;
+  $('modeSeg').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.m === (pm ? 'puz' : lm ? 'lb' : em ? 'learn' : 'play')));
+  if (em) renderLearnMenu();
   if (pm) { renderPuzMenu(); loadPuzzles().catch(() => { }); }
   if (lm) { renderLbMenu(); if (keepOverlays !== true) loadBoards(); }
   renderBoards();
@@ -2488,7 +2518,7 @@ const sqN = n => (n.charCodeAt(1) - 49) * 16 + (n.charCodeAt(0) - 97);
 const moveSound = san => sound(san.includes('+') || san.includes('#') ? 'check' : san.includes('x') ? 'cap' : 'move');
 
 // ---------- screens ----------
-const SCREENS = ['menu', 'game', 'puzzle', 'anaSec', 'archSec', 'histSec'];
+const SCREENS = ['menu', 'game', 'puzzle', 'anaSec', 'archSec', 'histSec', 'trainSec'];
 function showScreen(id, back) {
   SCREENS.forEach(s => { $(s).hidden = s !== id; });
   $('back').textContent = back;
@@ -2946,6 +2976,7 @@ function openPuzMenu() { cancelBrain(); PS = null; SV.mode = 'puz'; save(); show
 $('modeSeg').onclick = e => { const b = e.target.closest('[data-m]'); if (!b) return; SV.mode = b.dataset.m; save(); showMenu(); };
 function pzBack() {
   if (!$('histSec').hidden) { showMenu(); return true; }
+  if (!$('trainSec').hidden) { TR = null; SV.mode = 'learn'; showMenu(); return true; }
   if (!$('anaSec').hidden) { cancelBrain(); if (PS) { showScreen('puzzle', '‹ Puzzles'); pzBoard.draw(); } else openPuzMenu(); return true; }
   if (!$('puzzle').hidden || !$('archSec').hidden) { openPuzMenu(); return true; }
   return false;
@@ -3330,6 +3361,7 @@ function histAdd() {
   const names = bot ? (G.me === 1 ? [playerName(), bot.name] : [bot.name, playerName()]) : G.names.slice();
   const rec = { id: Date.now().toString(36), at: Date.now(), kind, bot: bot ? bot.id : null, elo: bot ? bot.elo : null, names, me: kind === 'pvp' ? 0 : G.me,
     moves: G.moves.join(' '), result: G.over.result, reason: G.over.reason, delta: G.over.rated ? G.over.delta : null };
+  const op = openingAt(G.moves); if (op) rec.op = op.eco + '|' + op.name;
   const H = hist(); H.unshift(rec); if (H.length > 300) H.length = 300;
   G.over.saved = true; G.histRec = rec; save();
 }
@@ -3353,7 +3385,7 @@ function drawHistory() {
     const opp = h.kind === 'pvp' ? `${esc(h.names[0])} vs ${esc(h.names[1])}` : `vs ${esc(h.names[h.me === 1 ? 1 : 0])}${h.elo ? ` <span class="el">${h.elo}</span>` : ''}${h.kind === 'online' ? ' <span class="el">online</span>' : ''}`;
     const when = new Date(h.at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
     const dl = h.delta != null ? `<span class="dl ${h.delta >= 0 ? 'up' : 'down'}">${h.delta >= 0 ? '+' : ''}${h.delta}</span>` : '';
-    return `<button class="hgame" data-h="${H.indexOf(h)}"><span class="res" style="background:${tag[1]}">${tag[0]}</span><span class="hw"><b>${opp}</b><small>${when} · ${n} move${n === 1 ? '' : 's'}${WHY[h.reason] ? ' · ' + WHY[h.reason] : ''}</small></span>${dl}<i>›</i></button>`;
+    return `<button class="hgame" data-h="${H.indexOf(h)}"><span class="res" style="background:${tag[1]}">${tag[0]}</span><span class="hw"><b>${opp}</b><small>${when} · ${n} move${n === 1 ? '' : 's'}${WHY[h.reason] ? ' · ' + WHY[h.reason] : ''}</small>${h.op ? `<small class="hop">${esc(h.op.split('|')[1])}</small>` : ''}</span>${dl}<i>›</i></button>`;
   };
   $('histBody').innerHTML = `<h2 style="margin-top:4px">Game history</h2>
     <div class="chips hfil">${Object.entries(F).map(([k, n]) => `<button data-hf="${k}" aria-pressed="${histFilter === k}">${n}</button>`).join('')}</div>
@@ -3385,12 +3417,13 @@ function openHistGame(h, shared) {
 // ---------- sharing ----------
 const b64url = s => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const unb64url = s => decodeURIComponent(escape(atob(s.replace(/-/g, '+').replace(/_/g, '/'))));
-const gameLink = h => location.origin + location.pathname + '?g=' + b64url(JSON.stringify({ n: h.names, m: h.moves, r: h.result, w: h.reason, a: h.at, k: h.kind, e: h.elo || 0 }));
+const gameLink = h => location.origin + location.pathname + '?g=' + b64url(JSON.stringify({ n: h.names, m: h.moves, r: h.result, w: h.reason, a: h.at, k: h.kind, e: h.elo || 0, o: h.op || '' }));
 function gamePGN(h) {
   const X = MX(); X.load(E.START); const out = [];
   (h.moves ? h.moves.split(' ') : []).forEach((u, i) => { const m = X.fromUci(u); if (!m) return; if (i % 2 === 0) out.push(`${i / 2 + 1}.`); out.push(X.san(m)); X.make(m); });
   const d = new Date(h.at), ds = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
   const tags = [['Event', h.kind === 'bot' ? 'Pocket Arcade vs bot' : h.kind === 'online' ? 'Pocket Arcade online' : 'Pocket Arcade'], ['Site', location.origin + location.pathname], ['Date', ds], ['White', h.names[0]], ['Black', h.names[1]], ['Result', h.result], ['Termination', h.reason || '']];
+  { const op = h.op ? h.op.split('|') : (() => { const o = openingAt(h.moves ? h.moves.split(' ') : []); return o && [o.eco, o.name]; })(); if (op) tags.push(['ECO', op[0]], ['Opening', op[1]]); }
   return tags.map(([k, v]) => `[${k} "${String(v).replace(/"/g, "'")}"]`).join('\n') + '\n\n' + out.join(' ') + ' ' + h.result;
 }
 function openShare(h) {
@@ -3419,13 +3452,160 @@ $('shareBtn').onclick = () => { const h = G && (G.hist || G.histRec); if (h) ope
     history.replaceState(null, '', location.pathname);
     try {
       const d = JSON.parse(unb64url(q));
-      const h = { names: d.n, moves: d.m, result: d.r, reason: d.w, at: d.a || Date.now(), kind: d.k || 'pvp', elo: d.e || null, me: 0 };
+      const h = { names: d.n, moves: d.m, result: d.r, reason: d.w, at: d.a || Date.now(), kind: d.k || 'pvp', elo: d.e || null, me: 0, op: d.o || '' };
       if (!Array.isArray(h.names) || typeof h.moves !== 'string') throw 0;
       const X = MX(); X.load(E.START); for (const u of h.moves.split(' ')) { const m = u && X.fromUci(u); if (!m) throw 0; X.make(m); } // only legal games
       setTimeout(() => { openHistGame(h, true); toast(`Shared game: ${h.names[0]} vs ${h.names[1]}`); }, 100);
     } catch (e) { toast("That game link doesn't work"); }
   }
 }
+
+const OPEN_LINES = [{"id":"italian","side":"w","name":"Italian Game","eco":"C53","about":"Quick development, a bishop aimed at f7, and a slow build-up in the center. A great first opening.","line":"e4 e5 Nf3 Nc6 Bc4 Bc5 c3 Nf6 d3 d6 O-O O-O","notes":["Grab the center and open lines for your queen and bishop.","Develop the knight and attack the e5 pawn.","The bishop eyes f7, the weakest square near Black’s king.","Prepare d4 later and keep the bishop on c4 safe from Na5.","Support e4 calmly. The center stays solid.","Castle so your king is safe and your rook can join."]},{"id":"ruy","side":"w","name":"Ruy Lopez","eco":"C84","about":"The classic. White pressures the knight that defends e5 and plays for a long-term edge in the center.","line":"e4 e5 Nf3 Nc6 Bb5 a6 Ba4 Nf6 O-O Be7 Re1 b5 Bb3 d6 c3 O-O","notes":["Grab the center.","Develop and attack e5.","Pin-like pressure on the knight that guards e5.","Keep the bishop on the diagonal instead of trading it.","Castle early. e4 is protected by tactics for now.","The rook guards e4 so Black can’t grab it.","Retreat while still aiming at f7.","Prepare d4 to build a big center."]},{"id":"scotch","side":"w","name":"Scotch Game","eco":"C45","about":"White opens the center right away with d4. Open lines and fast piece play.","line":"e4 e5 Nf3 Nc6 d4 exd4 Nxd4 Bc5 Be3 Qf6 c3 Nge7","notes":["Grab the center.","Develop and attack e5.","Strike the center immediately.","Take back with a strong centralized knight.","Develop and defend the knight on d4.","Give the knight a second defender with a pawn."]},{"id":"london","side":"w","name":"London System","eco":"D02","about":"A setup you can play against almost anything: d4, Bf4, e3, c3 and a solid pawn triangle.","line":"d4 d5 Bf4 Nf6 e3 e6 Nf3 c5 c3 Nc6 Nbd2 Bd6 Bg3 O-O Bd3","notes":["Take the center with the queen’s pawn.","Get the dark-squared bishop out before e3 locks it in.","Support d4 and open the light-squared bishop.","Develop the knight toward the center.","Build the pawn triangle so d4 stays rock solid.","The knight supports e4 and keeps c3 free for the pawn.","Keep the bishop instead of trading it on d6.","Develop the last minor piece, aiming at Black’s king."]},{"id":"qgd","side":"w","name":"Queen's Gambit Declined","eco":"D53","about":"White offers the c-pawn to pull Black’s d-pawn away from the center. Black declines and holds.","line":"d4 d5 c4 e6 Nc3 Nf6 Bg5 Be7 e3 O-O Nf3 h6 Bh4 b6","notes":["Take the center.","The gambit: challenge d5 from the side.","Add pressure to d5.","Pin the knight that defends d5.","Open the light-squared bishop.","Develop the last knight.","Keep the pin instead of trading."]},{"id":"vienna","side":"w","name":"Vienna Game","eco":"C29","about":"White develops the queen’s knight first, then hits the center with f4. Sharp and fun.","line":"e4 e5 Nc3 Nf6 f4 d5 fxe5 Nxe4 Nf3 Be7 d4 O-O Bd3","notes":["Grab the center.","Develop and guard e4.","Attack e5 with the f-pawn.","Take the center pawn and push Black’s knight around.","Develop and protect the e5 pawn.","Build a big center and open the bishop.","Develop and challenge the knight on e4."]},{"id":"english","side":"w","name":"English Opening","eco":"A29","about":"Start with the c-pawn and control d5 from the side. A flexible, positional opening.","line":"c4 e5 Nc3 Nf6 g3 d5 cxd5 Nxd5 Bg2 Nb6 Nf3 Nc6 O-O Be7","notes":["Control d5 from the side.","Develop and add pressure to d5.","Prepare the bishop on the long diagonal.","Trade a wing pawn for a center pawn.","The bishop hits the knight and the long diagonal.","Develop and attack e5.","Castle into safety."]},{"id":"friedliver","side":"w","name":"Fried Liver Attack","eco":"C57","about":"A famous trap. If Black takes back on d5 with the knight, White sacrifices on f7 and drags the king out.","line":"e4 e5 Nf3 Nc6 Bc4 Nf6 Ng5 d5 exd5 Nxd5 Nxf7 Kxf7 Qf3+ Ke6 Nc3","notes":["Grab the center.","Develop and attack e5.","Aim at f7.","Double attack on f7 with knight and bishop.","Take the pawn and open the bishop’s line to f7.","The sacrifice: knight takes f7, forking queen and rook.","Check and attack the pinned knight on d5.","Bring another attacker to d5. Black’s king is stuck in the middle."]},{"id":"najdorf","side":"b","name":"Sicilian Najdorf","eco":"B90","about":"The fighting answer to 1.e4. Black takes on d4 and keeps flexible pawns with ...a6.","line":"e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6 Nc3 a6 Be3 e5 Nb3 Be6","notes":["Fight for d4 without copying White.","Prepare ...Nf6 without allowing e5.","Trade a wing pawn for a center pawn.","Develop with tempo on e4.","Keep b5 and g4 under control and prepare ...e5.","Kick the knight and grab space.","Develop and fight for d5."]},{"id":"dragon","side":"b","name":"Sicilian Dragon","eco":"B76","about":"Black fianchettoes the bishop on g7 where it breathes fire down the long diagonal.","line":"e4 c5 Nf3 d6 d4 cxd4 Nxd4 Nf6 Nc3 g6 Be3 Bg7 f3 O-O Qd2 Nc6","notes":["Fight for d4.","Prepare ...Nf6.","Trade for a center pawn.","Develop and attack e4.","Prepare the fianchetto.","The dragon bishop on the long diagonal.","Castle quickly.","Develop and challenge the d4 knight."]},{"id":"french","side":"b","name":"French Defense","eco":"C02","about":"Black builds a solid wall with ...e6 and ...d5, then attacks White’s pawn chain with ...c5.","line":"e4 e6 d4 d5 e5 c5 c3 Nc6 Nf3 Qb6 Be2 cxd4 cxd4 Nge7","notes":["Prepare ...d5.","Challenge the center.","Hit the base of White’s pawn chain.","Add pressure to d4.","Three attackers on d4.","Trade off the support pawn.","Head for f5 to pile up on d4."]},{"id":"carokann","side":"b","name":"Caro-Kann Defense","eco":"B19","about":"Very solid. Black supports ...d5 with the c-pawn and gets the light bishop out before ...e6.","line":"e4 c6 d4 d5 Nc3 dxe4 Nxe4 Bf5 Ng3 Bg6 h4 h6 Nf3 Nd7 h5 Bh7","notes":["Prepare ...d5 with support.","Challenge the center.","Trade the center pawn.","Develop the bishop with tempo on the knight.","Step back and stay on the good diagonal.","Make room so the bishop can’t be trapped.","Develop and stop Ne5.","Keep the bishop alive on h7."]},{"id":"scandi","side":"b","name":"Scandinavian Defense","eco":"B01","about":"Black hits e4 right away with ...d5 and develops the queen early to a safe spot on a5.","line":"e4 d5 exd5 Qxd5 Nc3 Qa5 d4 Nf6 Nf3 c6 Bc4 Bf5","notes":["Strike the center immediately.","Take back with the queen.","Move to a safe square that still pins c3.","Develop the knight.","Give the queen a retreat and support d5.","Develop the bishop outside the pawn chain."]},{"id":"kid","side":"b","name":"King's Indian Defense","eco":"E97","about":"Black lets White build a big center, castles fast, then strikes back with ...e5 and a kingside attack.","line":"d4 Nf6 c4 g6 Nc3 Bg7 e4 d6 Nf3 O-O Be2 e5 O-O Nc6 d5 Ne7","notes":["Develop and stop e4 for now.","Prepare the fianchetto.","The bishop on the long diagonal.","Hold e5.","Castle before opening things up.","Strike the center.","Add pressure on d4.","Reroute toward the kingside for ...f5."]},{"id":"slav","side":"b","name":"Slav Defense","eco":"D17","about":"Black defends d5 with ...c6, keeps the light bishop free, and can grab c4 when the time is right.","line":"d4 d5 c4 c6 Nf3 Nf6 Nc3 dxc4 a4 Bf5 e3 e6 Bxc4 Bb4","notes":["Take the center.","Support d5 without blocking the bishop.","Develop.","Take the c4 pawn.","Develop the bishop before ...e6.","Open the dark bishop and solidify.","Pin the knight and develop."]},{"id":"twoknights","side":"b","name":"Two Knights: dodge the Fried Liver","eco":"C58","about":"Against Ng5, never take back on d5 with the knight. ...Na5 is the right move and Black gets great play.","line":"e4 e5 Nf3 Nc6 Bc4 Nf6 Ng5 d5 exd5 Na5 Bb5+ c6 dxc6 bxc6 Be2 h6 Nf3 e4 Ne5","notes":["Grab the center.","Develop and guard e5.","Counterattack e4.","Block the attack on f7 and hit the bishop.","The key move: hit the bishop instead of ...Nxd5.","Block the check and offer a pawn.","Take back and open lines for your pieces.","Kick the knight.","Chase it again and grab space."]}];
+// =====================================================================
+// OPENINGS: names for the position on the board (Lichess's CC0 opening list, built by
+// tools/openings into openings.json) and the Learn tab's openings trainer.
+// =====================================================================
+// openings.json maps a short fingerprint of each position (board, side, castling, en passant) to "ECO|Name"
+const opHash = s => { let a = 2166136261, b = 5381; for (let i = 0; i < s.length; i++) { const c = s.charCodeAt(i); a ^= c; a = Math.imul(a, 16777619); b = (Math.imul(b, 33) ^ c) | 0; } return (a >>> 0).toString(36) + (b >>> 0).toString(36).slice(-3); };
+let OPEN = null, openLoading = null;
+const loadOpenings = () => openLoading || (openLoading = fetch('openings.json').then(r => r.json()).then(d => { OPEN = d; if (G && !$('game').hidden) render(); return d; }).catch(() => { openLoading = null; }));
+const opCache = new Map();
+// the deepest named position in the first n moves: { eco, name } or null
+function openingAt(moves, n = moves.length) {
+  if (!OPEN) return null;
+  const key = moves.slice(0, n).join(' ');
+  if (opCache.has(key)) return opCache.get(key);
+  const X = MX(); X.load(E.START); let best = null;
+  for (let i = 0; i < n && i < 40; i++) {
+    const m = X.fromUci(moves[i]); if (!m) break; X.make(m);
+    const v = OPEN[opHash(X.fen().split(' ').slice(0, 4).join(' '))];
+    if (v) { const [eco, name] = v.split('|'); best = { eco, name }; }
+  }
+  if (opCache.size > 400) opCache.clear();
+  opCache.set(key, best);
+  return best;
+}
+function renderOpening() {
+  const el = $('openLn'); if (!el) return;
+  if (!G || !G.moves.length) { el.hidden = true; return; }
+  if (!OPEN) { loadOpenings(); el.hidden = true; return; }
+  const n = scrub != null ? scrub : G.over ? view : G.moves.length;
+  const o = openingAt(G.moves, n);
+  el.hidden = !o; if (o) el.innerHTML = `<span>${o.eco}</span>${esc(o.name)}`;
+}
+
+// ---------- the trainer ----------
+const OPS = () => (SV.open = SV.open && typeof SV.open === 'object' ? SV.open : {});
+let learnSide = 'w', TR = null;
+const T = ENGINE();
+const starsHTML = n => `<span class="stars">${[1, 2, 3].map(i => `<i class="${i <= n ? 'on' : ''}">★</i>`).join('')}</span>`;
+function renderLearnMenu() {
+  const S = OPS(), list = OPEN_LINES.filter(o => o.side === learnSide);
+  const learned = OPEN_LINES.filter(o => (S[o.id] || {}).stars >= 1).length, mastered = OPEN_LINES.filter(o => (S[o.id] || {}).stars >= 3).length;
+  $('learnMenu').innerHTML = `<div class="pcard"><div class="top"><div><div class="lbl">Openings trainer</div><b class="big">${learned}/${OPEN_LINES.length}</b> <span class="meta">practiced · ${mastered} mastered</span></div></div>
+      <div class="meta" style="margin-top:6px"><b>Learn</b> shows each move with an arrow and why it's played. <b>Practice</b> makes you play it from memory. A clean practice run earns a star. 3 stars = mastered.</div></div>
+    <div class="seg" id="learnSeg" style="margin-top:12px"><button data-ls="w" aria-pressed="${learnSide === 'w'}">${pieceSVG(6, '')}As White</button><button data-ls="b" aria-pressed="${learnSide === 'b'}">${pieceSVG(-6, '')}As Black</button></div>
+    <div class="oplist">${list.map(o => { const st = S[o.id] || {}; return `<div class="opcard"><div class="oh"><b>${esc(o.name)}</b><span class="eco">${o.eco}</span>${starsHTML(st.stars || 0)}</div>
+      <p>${esc(o.about)}</p><div class="oacts"><button class="chip2" data-learn="${o.id}">Learn</button><button class="chip2 on" data-prac="${o.id}">Practice</button>${st.plays ? `<small>${st.plays} run${st.plays === 1 ? '' : 's'}</small>` : ''}</div></div>`; }).join('')}</div>
+    <p class="tnote" style="text-align:center">Endgame practice is coming here next.</p>`;
+}
+$('learnMenu').addEventListener('click', e => {
+  const s = e.target.closest('[data-ls]'); if (s) { learnSide = s.dataset.ls; renderLearnMenu(); return; }
+  const l = e.target.closest('[data-learn]'); if (l) { openTrainer(l.dataset.learn, 'learn'); return; }
+  const p = e.target.closest('[data-prac]'); if (p) openTrainer(p.dataset.prac, 'practice');
+});
+const trBoard = makeBoard($('tboard'), {
+  get eng() { return T; },
+  flipped: () => TR && TR.op.side === 'b',
+  canMove: () => TR && !TR.busy && !TR.done && T.side === TR.color,
+  onMove: m => trMove(m),
+  hl: () => TR ? { last: TR.last, hint: TR.hintSq, ok: TR.okSq, no: TR.noSq } : {},
+});
+function openTrainer(id, mode) {
+  const op = OPEN_LINES.find(o => o.id === id); if (!op) return;
+  cancelBrain(); stopAnalysis(); stopClock(); onlineDetach();
+  TR = { op, mode, line: op.line.split(' '), color: op.side === 'w' ? 1 : -1, step: 0, mistakes: 0, tries: 0, busy: false, done: false, last: [], hintSq: [], okSq: [], noSq: [] };
+  T.load(T.START);
+  showScreen('trainSec', '‹ Learn');
+  $('trName').textContent = op.name; $('trMode').textContent = mode === 'learn' ? 'Learn' : 'Practice';
+  $('trResult').hidden = true; $('trTools').hidden = false;
+  trBoard.select(-1); trBoard.draw(); trStep();
+}
+const myNote = () => TR.op.notes[Math.floor(TR.step / 2)];
+const sanOf = t => t.replace(/[+#]/g, '');
+// whose turn: play the opponent's move, or set up yours
+function trStep() {
+  const s = TR; if (!s) return;
+  $('trProg').textContent = `Move ${Math.min(s.line.length, s.step + 1)} of ${s.line.length}`;
+  if (s.step >= s.line.length) { trDone(); return; }
+  if (T.side !== s.color) { // their move
+    s.busy = true; trStatus('wait');
+    setTimeout(() => {
+      if (TR !== s) return;
+      const m = T.legalMoves().find(x => sanOf(T.san(x)) === sanOf(s.line[s.step])); if (!m) return;
+      const san = T.san(m); trBoard.anim = { from: T.from(m), to: T.to(m) };
+      T.make(m); s.last = [T.from(m), T.to(m)]; s.okSq = []; s.step++; moveSound(san); trBoard.draw();
+      s.busy = false; s.theirs = san; trStep();
+    }, s.step === 0 ? 500 : 550);
+    return;
+  }
+  s.tries = 0;
+  const exp = T.legalMoves().find(x => sanOf(T.san(x)) === sanOf(s.line[s.step]));
+  s.hintSq = s.mode === 'learn' && exp ? [T.from(exp), T.to(exp)] : [];
+  trBoard.draw(); trStatus('turn');
+}
+function trMove(m) {
+  const s = TR, san = T.san(m);
+  if (sanOf(san) === sanOf(s.line[s.step])) {
+    T.make(m); s.last = [T.from(m), T.to(m)]; s.okSq = [T.to(m)]; s.hintSq = []; s.noSq = []; s.step++;
+    moveSound(san); trBoard.draw(); trStatus('good', san);
+    s.busy = true; setTimeout(() => { if (TR !== s) return; s.busy = false; trStep(); }, s.mode === 'learn' ? 900 : 450);
+    return;
+  }
+  // wrong move
+  s.mistakes++; s.tries++; sound('lose');
+  s.noSq = [T.from(m), T.to(m)]; trBoard.draw();
+  if (s.tries >= 2 || s.mode === 'learn') { const exp = T.legalMoves().find(x => sanOf(T.san(x)) === sanOf(s.line[s.step])); if (exp) s.hintSq = [T.from(exp), T.to(exp)]; }
+  trStatus('bad', san);
+  setTimeout(() => { if (TR !== s) return; s.noSq = []; trBoard.draw(); }, 600);
+}
+function trStatus(k, san) {
+  const s = TR, el = $('trStat'), them = s.color === 1 ? 'Black' : 'White';
+  el.className = 'pzstat' + (k === 'good' ? ' good' : k === 'bad' ? ' bad' : '');
+  const ic = (bg, t) => `<span class="ic" style="background:${bg}">${t}</span>`;
+  const pc = `<span class="ic" style="background:${s.color === 1 ? '#fafaf7' : '#2c2b29'};box-shadow:inset 0 0 0 2px var(--line)"></span>`;
+  const next = s.line[s.step];
+  el.innerHTML = {
+    wait: `${ic('#9a978f', '…')}<div>${them} to move<small>${s.step === 0 ? esc(s.op.about) : 'Watch their reply.'}</small></div>`,
+    turn: s.mode === 'learn'
+      ? `${pc}<div>Play ${next}<small>${s.theirs ? `${them} played ${s.theirs}. ` : ''}${esc(myNote() || '')}</small></div>`
+      : `${pc}<div>Your move<small>${s.theirs ? `${them} played ${s.theirs}. ` : ''}What's the next move in the ${esc(s.op.name)}?</small></div>`,
+    good: `${ic('#81b64c', '✓')}<div>${san}${s.mode === 'practice' ? ' is right!' : ''}<small>${esc(s.op.notes[Math.floor((s.step - 1) / 2)] || '')}</small></div>`,
+    bad: `${ic('#d63a2f', '✕')}<div>Not ${san}<small>${s.hintSq.length ? `The move here is ${next}. ${esc(myNote() || '')}` : 'That’s not the move in this line. Try again.'}</small></div>`,
+  }[k];
+}
+function trDone() {
+  const s = TR; s.done = true; s.hintSq = []; trBoard.draw();
+  const S = OPS(), st = S[s.op.id] || (S[s.op.id] = { stars: 0, plays: 0 });
+  st.plays++;
+  let msg;
+  if (s.mode === 'practice') {
+    if (!s.mistakes) { st.stars = Math.min(3, (st.stars || 0) + 1); msg = st.stars >= 3 ? 'Mastered! You know this line by heart.' : 'Clean run! +1 star.'; }
+    else msg = `${s.mistakes} mistake${s.mistakes === 1 ? '' : 's'}. Get a clean run to earn a star.`;
+  } else msg = 'Now try Practice and play it from memory.';
+  save(); sound(s.mode === 'practice' && !s.mistakes ? 'win' : 'move');
+  $('trStat').className = 'pzstat good';
+  $('trStat').innerHTML = `<span class="ic" style="background:#81b64c">✓</span><div>Line complete<small>${msg}</small></div>`;
+  $('trTools').hidden = true;
+  const r = $('trResult'); r.hidden = false;
+  const sides = OPEN_LINES.filter(o => o.side === s.op.side), nx = sides[(sides.indexOf(s.op) + 1) % sides.length];
+  r.innerHTML = `<div class="res"><div class="oh"><b>${esc(s.op.name)}</b>${starsHTML(st.stars)}</div>
+    <div class="row"><button class="btn alt" data-tr="again">${s.mode === 'learn' ? 'Learn again' : 'Practice again'}</button><button class="btn" data-tr="${s.mode === 'learn' ? 'prac' : 'next'}">${s.mode === 'learn' ? 'Practice' : 'Next: ' + esc(nx.name)}</button></div></div>`;
+  r.onclick = e => { const b = e.target.closest('[data-tr]'); if (!b) return; const k = b.dataset.tr; openTrainer(k === 'next' ? nx.id : s.op.id, k === 'again' ? s.mode : k === 'prac' ? 'practice' : 'practice'); };
+}
+$('trHint').onclick = () => { const s = TR; if (!s || s.done || T.side !== s.color) return; const exp = T.legalMoves().find(x => sanOf(T.san(x)) === sanOf(s.line[s.step])); if (exp) { s.hintSq = [T.from(exp), T.to(exp)]; if (s.mode === 'practice') s.mistakes++; trBoard.draw(); trStatus('turn'); if (s.mode === 'practice') toast('Hint used: this run won’t earn a star'); } };
+$('trRestart').onclick = () => TR && openTrainer(TR.op.id, TR.mode);
+$('trSwitch').onclick = () => TR && openTrainer(TR.op.id, TR.mode === 'learn' ? 'practice' : 'learn');
 
 // =====================================================================
 // CUSTOM COLORS (board squares + accent), color wheel or hex code
@@ -3792,7 +3972,7 @@ function openColors() {
 $('colorBtn').onclick = openColors;
 initFB();
 
-window.__chess = { fb, pushBoard, openColors, cycleSetup, hist, gameLink, gamePGN, openPuzzle, pzNotes, pzGoal, get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
+window.__chess = { fb, pushBoard, openColors, cycleSetup, openingAt, loadOpenings, openTrainer, OPEN_LINES, get TR() { return TR; }, T, hist, gameLink, gamePGN, openPuzzle, pzNotes, pzGoal, get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
 showMenu();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('./sw.js').catch(() => { });
 })();

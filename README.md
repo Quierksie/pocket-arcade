@@ -33,6 +33,11 @@ match /chessOnline/{code} {
 ### Leaderboard
 The **Leaderboard** tab (next to Play bots and Puzzles) switches between chess and puzzle ratings, and shows your place and how many points you are behind the player above you.
 
+### Openings
+The opening's name (from Lichess's free CC0 list of about 3,500 openings, built into `openings.json` by `tools/openings/`) shows under the board during games and replays, in Game history, and in shared PGNs.
+
+The **Learn** tab has an openings trainer with 16 main lines (8 as White, 8 as Black, in `tools/openings/lines.js`; `node tools/openings/check-lines.js` checks them). **Learn** shows each of your moves with an arrow and why it's played; **Practice** makes you play the line from memory. A clean practice run earns a star, and 3 stars means mastered.
+
 ### Game history
 Every finished chess game (bots, same phone, online) is saved on your device, newest first, up to 300. **Game history** on the Chess menu lists them with filters and your wins, losses, draws and win rate. Tap one to replay it with move ratings. **Share** (after any game, or on a replay) copies a link that opens a replay of the game, or the PGN for chess.com / Lichess.
 
