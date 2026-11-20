@@ -497,17 +497,97 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+/* ---------- app shell: side rail + board stage + side panel on wide screens, tab bar on phones ---------- */
+:root { --nav-width: 0px; --panel-w: 0px; }
+.rail { display: none; }
+.tabbar { display: none; }
+#menu .modeseg { display: none; } /* the rail / tab bar switch sections now */
+.menustage { display: none; }
+@media (max-width: 767px) {
+  body[data-screen="menu"] .tabbar { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; height: calc(56px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: var(--panel); border-top: 1px solid var(--line); }
+  body[data-screen="menu"] .app { padding-bottom: calc(70px + env(safe-area-inset-bottom)); }
+  .tabbar button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 11px; font-weight: 800; color: var(--soft); }
+  .tabbar button svg { width: 22px; height: 22px; }
+  .tabbar button.on { color: var(--accent); }
+}
+@media (min-width: 768px) {
+  :root { --nav-width: 64px; --panel-w: 300px; --board: min(calc(100dvh - 144px), calc(100vw - var(--nav-width) - var(--panel-w) - 48px)); }
+  html, body { overflow: hidden; }
+  .app-shell { display: grid; grid-template-columns: var(--nav-width) minmax(0, 1fr); height: 100dvh; overflow: hidden; }
+  .app { max-width: none; width: 100%; height: 100dvh; min-height: 0; padding: 0; overflow: hidden; }
+  .app > header { display: none; }
+  /* rail */
+  .rail { display: flex; flex-direction: column; gap: 2px; height: 100dvh; padding: 10px 8px; border-right: 1px solid var(--line); background: var(--panel); overflow-y: auto; scrollbar-width: none; }
+  .rail .brand { display: flex; align-items: center; gap: 10px; padding: 6px 6px 14px; color: var(--ink); text-decoration: none; font-weight: 900; font-size: 15px; white-space: nowrap; }
+  .rail .brand img { width: 32px; height: 32px; border-radius: 8px; flex: none; }
+  .rbtn { display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 12px; border-radius: 10px; color: var(--soft); font-size: 14px; font-weight: 700; white-space: nowrap; text-align: left; }
+  .rbtn svg { width: 20px; height: 20px; flex: none; }
+  .rbtn:hover { background: var(--panel2); color: var(--ink); }
+  .rbtn.on { background: var(--panel2); color: var(--ink); box-shadow: inset 3px 0 0 var(--accent); }
+  .rbtn:active:not(:disabled) { transform: none; }
+  .rail-foot { margin-top: auto; display: flex; flex-direction: column; gap: 2px; padding-top: 10px; border-top: 1px solid var(--line); }
+  .rail .rbtn span, .rail .brand span { display: none; }
+  .rail .rbtn { justify-content: center; padding: 0; }
+  .rail [data-nav="collapse"] { display: none; }
+  /* every screen: board stage on the left, panel on the right */
+  .app > section:not([hidden]) { display: grid; grid-template-columns: minmax(0, 1fr) var(--panel-w); height: 100dvh; }
+  .stage { display: flex !important; flex-direction: column; align-items: center; justify-content: center; padding: 16px; min-width: 0; min-height: 0; overflow: hidden; }
+  .stage-in { width: var(--board); }
+  .stage .wrap { width: var(--board); }
+  .panel { height: 100dvh; overflow-y: auto; padding: 16px; border-left: 1px solid var(--line); min-width: 0; scrollbar-width: thin; }
+  .panel > .tools { position: sticky; bottom: -16px; background: var(--bg); padding: 8px 0 12px; margin-bottom: -16px; z-index: 2; }
+  /* list screens (history, achievements, archive) use the whole width */
+  #histSec:not([hidden]), #achSec:not([hidden]), #archSec:not([hidden]) { display: block; overflow-y: auto; padding: 24px max(24px, calc((100% - 760px) / 2)); }
+  .achgrid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+  .toast, .achpop { left: calc(50% + var(--nav-width) / 2); }
+}
+@media (min-width: 1024px) {
+  :root { --nav-width: 180px; --panel-w: 360px; }
+  .rail .rbtn span, .rail .brand span { display: inline; }
+  .rail .rbtn { justify-content: flex-start; padding: 0 12px; }
+  .rail [data-nav="collapse"] { display: flex; }
+  .app-shell.is-collapsed { --nav-width: 64px; }
+  .app-shell.is-collapsed .rail .rbtn span, .app-shell.is-collapsed .rail .brand span { display: none; }
+  .app-shell.is-collapsed .rail .rbtn { justify-content: center; padding: 0; }
+  .app-shell.is-collapsed [data-nav="collapse"] svg { transform: rotate(180deg); }
+}
+/* settings popover */
+.setcard .lbl2 { text-align: left; margin: 14px 0 6px; font-size: 12px; font-weight: 900; color: var(--soft); text-transform: uppercase; letter-spacing: .5px; }
+.setcard .seg button { font-size: 13.5px; }
+.setcard .note { display: block; text-align: left; margin-top: 6px; }
+.setcard .rowbtn { display: flex; align-items: center; width: 100%; gap: 10px; padding: 12px; border-radius: 12px; background: var(--panel2); font-weight: 800; margin-top: 8px; text-align: left; }
+.setcard .rowbtn svg { width: 20px; height: 20px; }
+.setcard .rowbtn i { margin-left: auto; font-style: normal; color: var(--soft); font-size: 20px; }
 </style>
 </head>
 <body>
+<div class="app-shell" id="shell">
+<nav class="rail" id="rail" aria-label="Chess sections">
+  <a class="brand" href="./" title="Back to Pocket Arcade"><img src="icon.png" alt=""><span>Pocket Arcade</span></a>
+  <button class="rbtn" data-nav="play" title="Play"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6M10 4v3l-3 5h10l-3-5V4"/><path d="M6 20h12l-1-8H7z"/></svg><span>Play</span></button>
+  <button class="rbtn" data-nav="puz" title="Puzzles"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3h4v3a2 2 0 1 0 4 0V3h3v7h-3a2 2 0 1 0 0 4h3v7h-7v-3a2 2 0 1 0-4 0v3H3v-7h3a2 2 0 1 0 0-4H3V3h7z"/></svg><span>Puzzles</span></button>
+  <button class="rbtn" data-nav="learn" title="Learn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7l10-4 10 4-10 4z"/><path d="M6 9v5c0 2 3 3 6 3s6-1 6-3V9"/><path d="M22 7v6"/></svg><span>Learn</span></button>
+  <button class="rbtn" data-nav="lb" title="Leaderboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10h4v10M10 20V4h4v16M16 20v-7h4v7"/></svg><span>Leaderboard</span></button>
+  <button class="rbtn" data-nav="hist" title="History"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg><span>History</span></button>
+  <button class="rbtn" data-nav="ach" title="Achievements"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg><span>Achievements</span></button>
+  <div class="rail-foot">
+    <button class="rbtn" data-nav="home" title="Arcade"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg><span>Arcade</span></button>
+    <button class="rbtn" data-nav="settings" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>Settings</span></button>
+    <button class="rbtn" data-nav="colors" title="Colors"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="1.5"/><circle cx="17.5" cy="10.5" r="1.5"/><circle cx="8.5" cy="7.5" r="1.5"/><circle cx="6.5" cy="12.5" r="1.5"/><path d="M12 2a10 10 0 0 0 0 20c1 0 1.7-.8 1.7-1.7 0-.4-.2-.8-.4-1.1-.3-.3-.4-.7-.4-1.1 0-.9.8-1.7 1.7-1.7h2a5.6 5.6 0 0 0 5.4-5.6C22 6 17.5 2 12 2z"/></svg><span>Colors</span></button>
+    <button class="rbtn" data-nav="theme" title="Light / dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><span>Light / dark</span></button>
+    <button class="rbtn" data-nav="collapse" title="Collapse"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/><path d="M20 4v16"/></svg><span>Collapse</span></button>
+  </div>
+</nav>
 <div class="app">
   <header>
     <a href="./" id="back">‹ Arcade</a>
     <h1>Chess</h1>
-    <div class="hdr-r"><button class="ib" id="setupBtn" aria-label="Switch to your next color setup" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg></button><button class="ib" id="colorBtn" aria-label="Customize colors"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4c0-4.4-4-8-9-8z"/><circle cx="7.5" cy="11" r="1.3" fill="currentColor"/><circle cx="10.5" cy="7" r="1.3" fill="currentColor"/><circle cx="15" cy="7.5" r="1.3" fill="currentColor"/></svg></button><button class="ib" id="themeBtn" aria-label="Switch light or dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button></div>
+    <div class="hdr-r"><button class="ib" id="setupBtn" aria-label="Switch to your next color setup" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg></button><button class="ib" id="colorBtn" aria-label="Customize colors"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4c0-4.4-4-8-9-8z"/><circle cx="7.5" cy="11" r="1.3" fill="currentColor"/><circle cx="10.5" cy="7" r="1.3" fill="currentColor"/><circle cx="15" cy="7.5" r="1.3" fill="currentColor"/></svg></button><button class="ib" id="settingsBtn" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button><button class="ib" id="themeBtn" hidden aria-label="Switch light or dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button></div>
   </header>
 
   <section class="menu" id="menu">
+    <div class="stage menustage"><div class="stage-in"><div class="wrap"><div class="board" id="menuBoard" aria-hidden="true"></div></div></div></div>
+    <div class="panel">
     <div class="seg modeseg" role="group" aria-label="Mode" id="modeSeg"><button data-m="play">Play</button><button data-m="puz">Puzzles</button><button data-m="learn">Learn</button><button data-m="lb">Leaderboard</button></div>
     <div id="playMenu">
     <div class="rate" id="rateCard"></div>
@@ -525,24 +605,32 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
     <div id="puzMenu" hidden></div>
     <div id="lbMenu" hidden></div>
     <div id="learnMenu" hidden></div>
+    </div>
   </section>
   <section id="puzzle" hidden>
+    <div class="stage"><div class="stage-in">
     <div class="pzbar"><span id="pzMode"></span><span id="pzRate"></span></div>
     <div class="wrap"><div class="board" id="pboard" role="grid" aria-label="Puzzle board"></div></div>
+    </div></div>
+    <div class="panel">
     <div class="pzstat" id="pzStat"></div>
     <div class="tools" id="pzTools">
       <button class="tool" id="pzHint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V16h8v-1.3A7 7 0 0 0 12 2z"/></svg>Hint</button>
       <button class="tool" id="pzRetry"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>Retry</button>
       <button class="tool" id="pzSol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Solution</button>
       <button class="tool" id="pzNext"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Next</button>
-      <button class="tool" id="pzPen" title="Draw arrows and highlights (or hold Alt and click)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20 18 6M18 6h-6M18 6v6"/></svg>Arrows</button>
+      <button class="tool" id="pzPen" title="Draw arrows and highlights"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20 18 6M18 6h-6M18 6v6"/></svg>Arrows</button>
     </div>
     <div id="pzResult" hidden></div>
+    </div>
   </section>
 
   <section id="anaSec" hidden>
+    <div class="stage"><div class="stage-in">
     <div class="pzbar"><span>Analysis board</span><span id="anEval"></span></div>
     <div class="wrap"><div class="board" id="aboard" role="grid" aria-label="Analysis board"></div></div>
+    </div></div>
+    <div class="panel">
     <div class="anal" id="anInfo"></div>
     <div class="moves" id="anMoves"></div>
     <button class="opt" id="anReply" role="switch"><div class="tx"><b>Engine replies</b><small>The engine answers each of your moves so you can test lines against it.</small></div><span class="sw"></span></button>
@@ -551,13 +639,17 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
       <button class="tool" id="anBest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Play best</button>
       <button class="tool" id="anFlip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg>Flip</button>
       <button class="tool" id="anReset"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>Reset</button>
-      <button class="tool" id="anPen" title="Draw arrows and highlights (or hold Alt and click)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20 18 6M18 6h-6M18 6v6"/></svg>Arrows</button>
+      <button class="tool" id="anPen" title="Draw arrows and highlights"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20 18 6M18 6h-6M18 6v6"/></svg>Arrows</button>
+    </div>
     </div>
   </section>
 
   <section id="trainSec" hidden>
+    <div class="stage"><div class="stage-in">
     <div class="pzbar"><span id="trName"></span><span id="trProg"></span></div>
     <div class="wrap"><div class="board" id="tboard" role="grid" aria-label="Openings trainer board"></div></div>
+    </div></div>
+    <div class="panel">
     <div class="pzstat" id="trStat"></div>
     <div class="tools" id="trTools">
       <button class="tool" id="trHint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V16h8v-1.3A7 7 0 0 0 12 2z"/></svg>Hint</button>
@@ -565,6 +657,7 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
       <button class="tool" id="trSwitch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg><span id="trMode">Learn</span></button>
     </div>
     <div id="trResult" hidden></div>
+    </div>
   </section>
   <section id="achSec" hidden><div id="achBody"></div></section>
   <section id="histSec" hidden><div id="histBody"></div></section>
@@ -576,9 +669,12 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
 
 
   <section id="game" hidden>
+    <div class="stage"><div class="stage-in">
     <div class="pl" id="topPl"></div>
     <div class="wrap"><div class="board" id="board" role="grid" aria-label="Chess board"></div></div>
     <div class="pl" id="botPl"></div>
+    </div></div>
+    <div class="panel">
     <div class="opn" id="openLn" hidden></div>
     <div class="moves" id="moves"></div>
     <div class="anal hintbox" id="hintBox" hidden></div>
@@ -588,7 +684,7 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
       <button class="tool" id="flipBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg>Flip</button>
       <button class="tool" id="drawBtn" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h14M5 15h14"/></svg>Draw</button>
       <button class="tool" id="resignBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22V3M5 4h12l-2 4 2 4H5"/></svg><span id="resignLbl">Resign</span></button>
-      <button class="tool" id="annoBtn" title="Draw arrows and highlights (or hold Alt and click)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20 18 6M18 6h-6M18 6v6"/></svg>Arrows</button>
+      <button class="tool" id="annoBtn" title="Draw arrows and highlights"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20 18 6M18 6h-6M18 6v6"/></svg>Arrows</button>
     </div>
     <div id="overBar" hidden>
       <div class="review">
@@ -601,8 +697,11 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
       <div class="anal" id="anal"></div>
       <div class="overbar"><button class="btn alt" id="botsBtn">Change bot</button><button class="btn alt" id="shareBtn">Share</button><button class="btn" id="rematchBtn">Rematch</button></div>
     </div>
+    </div>
   </section>
 </div>
+</div>
+<nav class="tabbar" id="tabbar" aria-label="Chess sections"><button data-nav="play"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6M10 4v3l-3 5h10l-3-5V4"/><path d="M6 20h12l-1-8H7z"/></svg><span>Play</span></button><button data-nav="puz"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3h4v3a2 2 0 1 0 4 0V3h3v7h-3a2 2 0 1 0 0 4h3v7h-7v-3a2 2 0 1 0-4 0v3H3v-7h3a2 2 0 1 0 0-4H3V3h7z"/></svg><span>Puzzles</span></button><button data-nav="learn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7l10-4 10 4-10 4z"/><path d="M6 9v5c0 2 3 3 6 3s6-1 6-3V9"/><path d="M22 7v6"/></svg><span>Learn</span></button><button data-nav="lb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10h4v10M10 20V4h4v16M16 20v-7h4v7"/></svg><span>Ranks</span></button><button data-nav="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>Settings</span></button></nav>
 
 <script>
 function ENGINE() {
@@ -1976,24 +2075,28 @@ function makeAnno(el, flippedFn, opts = {}) {
   const sqAt = (x, y) => { const r = el.getBoundingClientRect(); const j = Math.floor((x - r.left) / r.width * 8), i = Math.floor((y - r.top) / r.height * 8); if (i < 0 || i > 7 || j < 0 || j > 7) return -1; const f = flippedFn(); return (f ? i : 7 - i) * 16 + (f ? 7 - j : j); };
   const disp = sq => { const f = flippedFn(), file = sq & 7, rank = sq >> 4; return f ? [7 - file, rank] : [file, 7 - rank]; };
   const colorOf = e => { const sh = e.shiftKey, ct = e.ctrlKey || e.metaKey; return sh && ct ? 'a' : sh ? 's' : ct ? 'c' : 'd'; };
+  const colorOfRight = e => e.shiftKey ? 's' : (e.ctrlKey || e.metaKey) ? 'c' : e.altKey ? 'a' : 'd'; // right-click: plain, Shift, Ctrl/Cmd, Alt
   A.clear = () => { if (A.arrows.length || A.marks.length) { A.arrows = []; A.marks = []; A.draw(); } };
   A.sync = key => { if (key !== A.key) { A.key = key; A.arrows = []; A.marks = []; } };
   el.addEventListener('contextmenu', e => e.preventDefault());
   el.addEventListener('pointerdown', e => {
     // Mac turns Ctrl+click into a right-click, so Alt+Ctrl+click can arrive as button 2
-    const altDraw = e.altKey && (e.button === 0 || (e.button === 2 && e.ctrlKey));
-    if (e.button === 2 && !altDraw) { // right-click: only cancels a premove now
+    // how arrows are drawn is a setting: Alt + left-click, right-click drag, or both
+    const mode = arrowMode();
+    const altDraw = mode !== 'right' && e.altKey && (e.button === 0 || (e.button === 2 && e.ctrlKey));
+    let rightDraw = false;
+    if (e.button === 2 && !altDraw) {
       e.preventDefault(); e.stopImmediatePropagation();
-      if (opts.onRight && opts.onRight()) A.clear();
-      else if (!rightTip) { rightTip = true; toast('To draw arrows, hold Alt (Option on Mac) and click'); }
-      return;
+      if (opts.onRight && opts.onRight()) { A.clear(); return; } // right-click cancels a premove first
+      if (mode === 'alt') { if (!rightTip) { rightTip = true; toast('To draw arrows, hold Alt (Option on Mac) and click. You can change this in Settings.'); } return; }
+      rightDraw = true;
     }
-    const drawing = altDraw || (A.pen && e.button === 0);
+    const drawing = altDraw || rightDraw || (A.pen && e.button === 0);
     if (drawing) {
       e.preventDefault(); e.stopImmediatePropagation();
       if (altDraw) altUsed = true;
       const sq = sqAt(e.clientX, e.clientY); if (sq < 0) return;
-      A.start = { sq, col: altDraw ? colorOf(e) : A.pen, id: e.pointerId };
+      A.start = { sq, col: altDraw ? colorOf(e) : rightDraw ? colorOfRight(e) : A.pen, id: e.pointerId };
       try { el.setPointerCapture(e.pointerId); } catch (err) { }
       return;
     }
@@ -3863,6 +3966,79 @@ updAchBtn();
 setTimeout(checkAch, 800); // award anything already earned
 
 // =====================================================================
+// APP SHELL: side rail (computers/tablets), bottom tab bar (phones) and the Settings menu
+// =====================================================================
+// which section is showing -> body[data-screen] (the CSS uses it) and which nav button is lit
+function syncShell() {
+  const vis = SCREENS.find(id => !$(id).hidden) || 'menu';
+  document.body.dataset.screen = vis;
+  const cur = { game: 'play', puzzle: 'puz', anaSec: 'puz', archSec: 'puz', trainSec: 'learn', histSec: 'hist', achSec: 'ach' }[vis] || (SV.mode === 'puz' ? 'puz' : SV.mode === 'learn' ? 'learn' : SV.mode === 'lb' ? 'lb' : 'play');
+  document.querySelectorAll('[data-nav]').forEach(b => { b.classList.toggle('on', b.dataset.nav === cur); if (['play', 'puz', 'learn', 'lb', 'hist', 'ach'].includes(b.dataset.nav)) b.setAttribute('aria-current', b.dataset.nav === cur ? 'page' : 'false'); });
+  if (vis === 'menu') drawMenuBoard();
+}
+new MutationObserver(() => { clearTimeout(syncShell.t); syncShell.t = setTimeout(syncShell, 0); })
+  .observe(document.querySelector('.app'), { attributes: true, subtree: true, attributeFilter: ['hidden'] });
+// leave whatever is open (the game stays saved, like the back button) and go to a menu tab
+function goSection(m) {
+  if (!$('game').hidden) { cancelBrain(); stopAnalysis(); premove = null; thinking = false; }
+  if (!$('trainSec').hidden) TR = null;
+  if (m === 'hist') { openHistory(); return; }
+  if (m === 'ach') { openAch(); return; }
+  SV.mode = m; save(); showMenu();
+}
+function onNav(e) {
+  const b = e.target.closest('[data-nav]'); if (!b) return;
+  const k = b.dataset.nav;
+  if (k === 'home') { location.href = './'; return; }
+  if (k === 'settings') { openSettings(); return; }
+  if (k === 'colors') { openColors(); return; }
+  if (k === 'theme') { $('themeBtn').click(); return; }
+  if (k === 'collapse') { SV.railCollapsed = !SV.railCollapsed; save(); $('shell').classList.toggle('is-collapsed', SV.railCollapsed); if (G && !$('game').hidden) setTimeout(render, 50); return; }
+  goSection(k);
+}
+$('rail').addEventListener('click', onNav);
+$('tabbar').addEventListener('click', onNav);
+$('shell').classList.toggle('is-collapsed', !!SV.railCollapsed);
+// the board shown next to the menu on wide screens: your saved game, or the starting position
+const MB = ENGINE();
+const menuBoard = makeBoard($('menuBoard'), { get eng() { return MB; }, flipped: () => SV.game ? SV.game.me === -1 : SV.color === 'b', canMove: () => false, onMove: () => { }, hl: () => ({}) });
+function drawMenuBoard() {
+  if (getComputedStyle(document.querySelector('.menustage')).display === 'none') return;
+  MB.load(MB.START);
+  const g = SV.game; if (g && g.moves) for (const u of g.moves) { const m = MB.fromUci(u); if (!m) break; MB.make(m); }
+  menuBoard.draw();
+}
+window.addEventListener('resize', () => { if (document.body.dataset.screen === 'menu') drawMenuBoard(); });
+// ---------- Settings ----------
+const ARROW_MODES = { alt: ['Alt + click', 'Hold Alt (Option on Mac) and left-click drag. Right-click only cancels premoves.'], right: ['Right-click', 'Right-click drag for arrows and right-click a square to highlight it, like chess.com. Right-click also cancels a premove.'], both: ['Both', 'Alt + left-click and right-click drag both draw.'] };
+const arrowMode = () => ARROW_MODES[SV.arrows] ? SV.arrows : 'alt';
+function openSettings() {
+  const o = document.createElement('div'); o.className = 'ov';
+  const draw = () => {
+    const am = arrowMode(), dark = document.documentElement.dataset.theme !== 'light';
+    o.innerHTML = `<div class="card pvpset setcard"><h3 style="font-size:21px">Settings</h3>
+      <div class="lbl2">Draw arrows with</div>
+      <div class="seg">${Object.entries(ARROW_MODES).map(([k, [n]]) => `<button data-am="${k}" aria-pressed="${am === k}">${n}</button>`).join('')}</div>
+      <small class="note">${ARROW_MODES[am][1]} Add Shift, Ctrl/Cmd or both for other colors. On a phone, use the Arrows button.</small>
+      <div class="lbl2">Theme</div>
+      <div class="seg"><button data-th="dark" aria-pressed="${dark}">Dark</button><button data-th="light" aria-pressed="${!dark}">Light</button></div>
+      <button class="rowbtn" data-a="colors">${ICON_COLORS}<span>Colors, pictures and saved setups</span><i>›</i></button>
+      <div class="row" style="margin-top:14px"><button class="btn" data-a="done">Done</button></div></div>`;
+  };
+  draw(); document.body.append(o);
+  o.onclick = e => {
+    const am = e.target.closest('[data-am]'); if (am) { SV.arrows = am.dataset.am; save(); draw(); return; }
+    const th = e.target.closest('[data-th]'); if (th) { const want = th.dataset.th; if ((document.documentElement.dataset.theme === 'light') !== (want === 'light')) $('themeBtn').click(); draw(); return; }
+    const a = e.target.closest('[data-a]');
+    if (a && a.dataset.a === 'colors') { o.remove(); openColors(); return; }
+    if ((a && a.dataset.a === 'done') || e.target === o) o.remove();
+  };
+}
+const ICON_COLORS = document.querySelector('[data-nav="colors"] svg').outerHTML;
+$('settingsBtn').onclick = openSettings;
+syncShell();
+
+// =====================================================================
 // CUSTOM COLORS (board squares + accent), color wheel or hex code
 // =====================================================================
 const UI_PRESETS = [
@@ -3968,7 +4144,7 @@ const SCREEN_DEF = {
 // highlight colors are blended into the square colors so the board pattern still shows
 const HL = { mv: ['Last move', '#f6f669', 'mv'], sel: ['Selected piece', '#f6f669', 'sel'], hi: ['Hints & best move', '#4d9be0', 'hi'], chk: ['Check', '#ff2828'], pre: ['Premove', '#d9534f', 'pre'], ok: ['Puzzle: correct', '#81b64c', 'ok'], no: ['Puzzle: wrong', '#d63a2f', 'no'] };
 const BTN = { friend: ['Play a friend', '#7b5cd6'], online: ['Play online', '#2a8fd6'], daily: ['Daily puzzle', '#c9822a'], redeem: ['Redemption', '#ff6a2e'], done: ['Daily solved', '#4f7d26'], 'cal-ok': ['Calendar: on time', '#5d8a33'], 'cal-late': ['Calendar: late', '#8a9a45'], 'cal-try': ['Calendar: not solved', '#b65a3c'] };
-const ARROWS = { d: ['Arrows (Alt)', '#ffaa00'], s: ['Arrows (Alt+Shift)', '#15781b'], c: ['Arrows (Alt+Ctrl/Cmd)', '#882020'], a: ['Arrows (Alt+Shift+Ctrl/Cmd)', '#003088'] };
+const ARROWS = { d: ['Arrows (main color)', '#ffaa00'], s: ['Arrows (with Shift)', '#15781b'], c: ['Arrows (with Ctrl/Cmd)', '#882020'], a: ['Arrows (4th color)', '#003088'] };
 const theme = () => document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
 // remember the built-in colors so they can be restored
 BOTS.forEach(b => { b.bg0 = b.bg0 || b.bg; });
@@ -4227,7 +4403,7 @@ function openColors() {
 $('colorBtn').onclick = openColors;
 initFB();
 
-window.__chess = { fb, pushBoard, openColors, cycleSetup, ACH, checkAch, openEnd, END_LINES, openingAt, loadOpenings, openTrainer, OPEN_LINES, get TR() { return TR; }, T, hist, gameLink, gamePGN, openPuzzle, pzNotes, pzGoal, get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
+window.__chess = { fb, pushBoard, openColors, cycleSetup, openSettings, syncShell, ACH, checkAch, openEnd, END_LINES, openingAt, loadOpenings, openTrainer, OPEN_LINES, get TR() { return TR; }, T, hist, gameLink, gamePGN, openPuzzle, pzNotes, pzGoal, get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
 showMenu();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('./sw.js').catch(() => { });
 })();

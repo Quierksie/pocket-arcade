@@ -53,8 +53,14 @@ Each puzzle starts with what the opponent just played and a goal that doesn't gi
 ### Hints
 **Hint** works against bots and in Play a friend (same phone). It checks every legal move and the opponent's best answer to each, then shows a panel with the ★ best move and why (wins a piece, forks, stops a checkmate threat, develops a piece...), the next best moves with how they compare, and a tempting capture or check that doesn't work, with the reply that punishes it. Tap a move in the panel to see it on the board, or tap Hint again to hide it. In Play a friend, the result screen shows how many hints each player used. Bot games with hints are unrated.
 
+### Layout
+On computers (1024px and wider) Chess uses a chess.com-style layout that never scrolls: a side rail (Play, Puzzles, Learn, Leaderboard, History, Achievements, then Arcade, Settings, Colors, Light/dark and Collapse), the board centered and sized to the window, and a 360px panel on the right with everything else. Tablets get an icon-only rail and a 300px panel. Phones keep the single column with a bottom tab bar on the menu screens. Each screen's markup is split into `.stage` (board) and `.panel` (the rest).
+
+### Settings
+The gear button (header on phones, rail on computers) opens Settings: how arrows are drawn (Alt + click, right-click drag, or both), light/dark, and a shortcut to colors.
+
 ### Arrows
-Hold **Alt** (Option on Mac) and drag on the board to draw an arrow, or Alt + click a square to highlight it. Alt alone draws orange, Alt+Shift green, Alt+Ctrl/Cmd red and Alt+Shift+Ctrl/Cmd blue. A normal click clears them. On a phone, use the **Arrows** button instead. Right-click cancels a premove.
+By default, hold **Alt** (Option on Mac) and drag on the board to draw an arrow, or Alt + click a square to highlight it. Alt alone draws orange, Alt+Shift green, Alt+Ctrl/Cmd red and Alt+Shift+Ctrl/Cmd blue. In Settings you can switch to right-click drag (plain, Shift, Ctrl/Cmd, Alt for the four colors) or allow both. A normal click clears them. On a phone, use the **Arrows** button instead. Right-click cancels a premove.
 
 ### Color setups
 Tap the palette button to customize every color, then **Save as new** under *My setups* to keep that look under a name. Tap a setup to switch to it, and use **Update**, **Rename** or **Delete** on the one you picked. Once you have two or more, the ⇄ button next to the palette flips through them without opening the editor.
