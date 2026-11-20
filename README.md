@@ -33,6 +33,9 @@ match /chessOnline/{code} {
 ### Leaderboard
 The **Leaderboard** tab (next to Play bots and Puzzles) switches between chess and puzzle ratings, and shows your place and how many points you are behind the player above you.
 
+### Hints
+**Hint** works against bots and in Play a friend (same phone). It checks every legal move and the opponent's best answer to each, then shows a panel with the ★ best move and why (wins a piece, forks, stops a checkmate threat, develops a piece...), the next best moves with how they compare, and a tempting capture or check that doesn't work, with the reply that punishes it. Tap a move in the panel to see it on the board, or tap Hint again to hide it. In Play a friend, the result screen shows how many hints each player used. Bot games with hints are unrated.
+
 ### Arrows
 Hold **Alt** (Option on Mac) and drag on the board to draw an arrow, or Alt + click a square to highlight it. Alt alone draws orange, Alt+Shift green, Alt+Ctrl/Cmd red and Alt+Shift+Ctrl/Cmd blue. A normal click clears them. On a phone, use the **Arrows** button instead. Right-click cancels a premove.
 

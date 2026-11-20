@@ -127,6 +127,20 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
 .anal .cnt { display: flex; flex-wrap: wrap; gap: 6px 10px; margin-top: 8px; font-size: 13px; }
 .anal .cnt span { display: inline-flex; align-items: center; gap: 4px; }
 .anal .cnt i { font-style: normal; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; color: #fff; font-size: 10.5px; display: grid; place-items: center; font-weight: 900; }
+.hintbox { padding: 10px 10px 6px; }
+.hintbox .hhd { display: flex; align-items: baseline; gap: 8px; color: var(--ink); font-weight: 900; font-size: 15px; padding: 0 4px 6px; }
+.hintbox .hhd small { color: var(--soft); font-size: 12px; font-weight: 700; }
+.hintbox .hx { margin-left: auto; width: 28px; height: 28px; border-radius: 50%; background: var(--panel2); color: var(--soft); font-weight: 900; }
+.hintbox .hsub { font-size: 11.5px; font-weight: 900; text-transform: uppercase; letter-spacing: .5px; color: var(--soft); margin: 8px 4px 2px; }
+.hintbox .hrow { display: flex; align-items: flex-start; gap: 8px; width: 100%; text-align: left; padding: 7px 6px; border-radius: 10px; background: none; color: var(--ink); }
+.hintbox .hrow.on { background: var(--panel2); }
+.hintbox .hrow .ic { margin-top: 1px; }
+.hintbox .hw { flex: 1; min-width: 0; font-size: 14px; }
+.hintbox .hw em { font-style: normal; color: var(--soft); font-size: 12.5px; font-weight: 800; }
+.hintbox .hy { display: block; color: var(--soft); font-size: 13px; font-weight: 600; line-height: 1.35; margin-top: 2px; }
+.hintbox .ev { margin-left: 0; }
+.hintbox .bar i.busy { width: 40%; animation: hbusy 1s ease-in-out infinite alternate; }
+@keyframes hbusy { from { margin-left: 0; } to { margin-left: 60%; } }
 .anal .nx { margin-top: 10px; width: 100%; padding: 9px; border-radius: 10px; background: var(--panel2); color: var(--ink); font-weight: 800; font-size: 13.5px; }
 .bestbtn { width: 100%; margin: 0 0 10px; padding: 11px; border-radius: 12px; background: var(--panel); font-weight: 800; font-size: 14px; color: var(--soft); display: flex; align-items: center; justify-content: center; gap: 8px; }
 .bestbtn svg { width: 18px; height: 18px; }
@@ -487,6 +501,7 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
     <div class="wrap"><div class="board" id="board" role="grid" aria-label="Chess board"></div></div>
     <div class="pl" id="botPl"></div>
     <div class="moves" id="moves"></div>
+    <div class="anal hintbox" id="hintBox" hidden></div>
     <div class="tools" id="tools">
       <button class="tool" id="undoBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg>Takeback</button>
       <button class="tool" id="hintBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V16h8v-1.3A7 7 0 0 0 12 2z"/></svg>Hint</button>
@@ -1155,6 +1170,8 @@ const ONL = { unsub: null, d: null, applying: false, fromServer: false, first: f
 
 let sans = [];
 let sel = -1, targets = [], hintSq = [], flipped = false, thinking = false, anim = null;
+let HINT = null; // the hint panel: { key (the position it's for), rows, busy, show }
+const posKey = () => G ? G.moves.join(' ') : '';
 let view = 0; // ply shown while reviewing a finished game
 let premove = null, ptargets = []; // move queued while the bot is thinking
 let AN = null, analyst = null;     // post-game analysis
@@ -1274,7 +1291,8 @@ function render() {
   $('botsBtn').textContent = G.pvp || G.online ? 'Menu' : 'Change bot';
   $('undoBtn').hidden = !tbOn(G);
   $('undoBtn').disabled = G.pvp ? !G.moves.length : myMoveCount() === 0;
-  $('hintBtn').hidden = !!(G.pvp || G.online); $('drawBtn').hidden = false;
+  $('hintBtn').hidden = !!G.online; $('drawBtn').hidden = false;
+  renderHintBox();
   $('resignLbl').textContent = !G.over && G.moves.length <= 1 ? 'Abort' : 'Resign';
   const cool = G.drawAt != null && G.moves.length - G.drawAt < 6;
   $('drawBtn').disabled = !!G.drawPending || cool || (!G.pvp && !G.online && (thinking || E.side !== G.me)) || G.moves.length < 2;
@@ -1460,17 +1478,6 @@ $('undoBtn').onclick = () => {
   G.takebacks++; save();
   replay(); selectSq(-1); hintSq = []; render();
   if (E.side !== G.me) maybeBot();
-};
-$('hintBtn').onclick = () => {
-  liveSnap();
-  if (!myTurn()) return;
-  $('hintBtn').disabled = true;
-  ask({ time: 900, depth: 30, noise: 0, random: 0 }, u => {
-    if (!u || !myTurn()) { render(); return; }
-    G.hints++; save();
-    hintSq = [sqOf(u.slice(0, 2)), sqOf(u.slice(2, 4))];
-    selectSq(hintSq[0]); render();
-  });
 };
 $('flipBtn').onclick = () => { flipped = !flipped; render(); };
 $('resignBtn').onclick = () => {
@@ -1684,6 +1691,152 @@ function renderAnalysis(n) {
   el.innerHTML = `<div class="ln"><span class="ic" style="background:${CLS[f.k].c}">${CLS[f.k].s}</span><span>${who}: <b>${sans[i]}</b> is ${CLS[f.k].n}</span><span class="ev">${evalText(n)}</span></div>` +
     (bad && f.bestSan ? `<div class="ln"><span class="ic" style="background:${CLS.best.c}">★</span><span>Better was <b>${f.bestSan}</b> (shown in blue)</span></div>` : '') + nxBtn;
 }
+// ---------- Hint coach: the best move, why, and how the other likely moves compare ----------
+// Looks at every legal move (and the opponent's best answer to each) in a background worker,
+// then explains the best one and a few others in plain words.
+let coachW = null;
+const PN = ['', 'pawn', 'knight', 'bishop', 'rook', 'queen', 'king'];
+function coachWorker() {
+  if (coachW) return coachW;
+  const src = ENGINE.toString() + `
+const E = ENGINE();
+onmessage = e => {
+  const d = e.data; E.load(d.fen); for (const u of d.moves) E.make(E.fromUci(u));
+  const L = E.legalMoves(), per = Math.max(25, Math.min(110, 1500 / L.length)), out = [];
+  const look = (c, opts) => { const m = E.fromUci(c.uci); E.make(m); const st = E.status();
+    if (st) { c.score = st.reason === 'checkmate' ? 100000 : 0; c.reply = null; c.rsan = ''; }
+    else { const r = E.think(opts); c.score = -(r.score || 0); c.reply = r.move ? E.uci(r.move) : null; c.rsan = r.move ? E.san(r.move) : ''; }
+    E.unmake(); };
+  for (const m of L) { const c = { uci: E.uci(m), san: E.san(m) }; look(c, { time: per, depth: 6, noise: 0, random: 0, full: true }); out.push(c); }
+  out.sort((a, b) => b.score - a.score);
+  for (const c of out.slice(0, 4)) look(c, { time: 280, depth: 30, noise: 0, random: 0, full: true }); // look harder at the top few
+  out.sort((a, b) => b.score - a.score);
+  // the threat: what the opponent would play if it were their turn right now
+  let threat = null;
+  if (!E.inCheck()) {
+    const f = E.fen().split(' '); f[1] = f[1] === 'w' ? 'b' : 'w'; f[3] = '-';
+    try { E.load(f.join(' ')); const L2 = E.legalMoves(); if (L2.length) { const r = E.think({ time: 250, depth: 5, noise: 0, random: 0, full: true }); if (r.move) { E.make(r.move); const mate = E.status() && E.status().reason === 'checkmate'; E.unmake(); threat = { uci: E.uci(r.move), san: E.san(r.move), score: mate ? 100000 : (r.score || 0) }; } } } catch (x) { }
+  }
+  postMessage({ id: d.id, out, threat });
+};`;
+  try { coachW = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' }))); } catch (e) { coachW = null; }
+  return coachW;
+}
+// pieces of color c that can be won: attacked by something cheaper, or attacked and not defended
+function enPrise(X, c) {
+  const B = X.board, att = [], def = [], out = [];
+  for (let s = 0; s < 120; s++) { if (s & 0x88) { s += 7; continue; } if (B[s]) for (const x of attacksFrom(X, s)) ((B[s] > 0) === (c > 0) ? def : att).push([x, PV[Math.abs(B[s])] || 99]); }
+  for (let s = 0; s < 120; s++) {
+    if (s & 0x88) { s += 7; continue; }
+    const p = B[s]; if (!p || (p > 0) !== (c > 0) || Math.abs(p) === 6) continue;
+    const v = PV[Math.abs(p)], a = att.filter(x => x[0] === s); if (!a.length) continue;
+    if (Math.min(...a.map(x => x[1])) < v || !def.some(x => x[0] === s)) out.push({ sq: s, t: Math.abs(p), v });
+  }
+  return out.sort((a, b) => b.v - a.v);
+}
+const scoreText = s => Math.abs(s) > 90000 ? (s > 0 ? 'M' : '-M') + Math.max(1, Math.ceil((100000 - Math.abs(s)) / 2)) : (s >= 0 ? '+' : '') + (s / 100).toFixed(1);
+// plain-words reasons for one candidate move
+function coachWhy(X, c, best, opp, plies, threat) {
+  const m = X.fromUci(c.uci), from = X.from(m), to = X.to(m), fl = X.flag(m), mover = X.side, me = Math.abs(X.board[from]);
+  const victim = fl & 2 ? 1 : Math.abs(X.board[to]), promo = X.promo(m);
+  const ownBefore = enPrise(X, mover), oppBefore = enPrise(X, -mover);
+  X.make(m);
+  const mate = X.status() && X.status().reason === 'checkmate', check = X.inCheck();
+  const ownAfter = enPrise(X, mover), oppAfter = enPrise(X, -mover);
+  const hits = attacksFrom(X, to).map(s => [s, X.board[s]]).filter(([s, p]) => p && (p > 0) !== (mover > 0) && (Math.abs(p) === 6 || oppAfter.some(o => o.sq === s)));
+  let rTo = -1, rVictim = 0;
+  if (c.reply) { const rm = X.fromUci(c.reply); if (rm) { rTo = X.to(rm); rVictim = X.flag(rm) & 2 ? 1 : Math.abs(X.board[rTo]); } }
+  X.unmake();
+  const S = [], drop = winPct(best.score) - winPct(c.score), mateIn = s => Math.max(1, Math.ceil((100000 - Math.abs(s)) / 2));
+  if (mate) return ['Checkmate!'];
+  if (c.score > 90000) S.push(`Forces checkmate in ${mateIn(c.score)}.`);
+  if (c.score < -90000) S.push(`Walks into checkmate${c.rsan ? `: ${opp} plays ${c.rsan}` : ''}.`);
+  else if (threat && threat.score > 90000) S.push(`Stops ${threat.san.replace('#', '')} checkmate.`);
+  const recap = rTo === to && rVictim;
+  if (victim) {
+    if (!recap) S.push(`Takes the ${PN[victim]}${c.score > -200 ? ' for free' : ''}.`);
+    else if (PV[victim] > PV[me]) S.push(`Wins material: your ${PN[me]} for their ${PN[victim]}.`);
+    else if (PV[victim] === PV[me]) S.push(`Trades ${PN[me]}s.`);
+    else S.push(`Gives up your ${PN[me]} for a ${PN[victim]}.`);
+  }
+  if (fl & 4) S.push('Castles to keep your king safe.');
+  if (promo) S.push(`Promotes to a ${PN[promo]}.`);
+  if (hits.length >= 2) S.push(`Forks the ${hits.slice(0, 2).map(([, p]) => PN[Math.abs(p)]).join(' and ')}.`);
+  else if (check) S.push('Gives check.');
+  else { const n = oppAfter.find(o => !oppBefore.some(b => b.sq === o.sq) && o.sq !== to); if (n) S.push(`Attacks their ${PN[n.t]}.`); }
+  const wasHanging = ownBefore.find(o => o.sq === from);
+  if (wasHanging && !ownAfter.some(o => o.sq === to)) S.push(`Moves your ${PN[me]} out of danger.`);
+  else { const saved = ownBefore.find(o => o.sq !== from && !ownAfter.some(a => a.sq === o.sq)); if (saved) S.push(`Protects your ${PN[saved.t]}.`); }
+  // what goes wrong: the reply that punishes it
+  if (drop >= 10 && c.score > -90000 && c.rsan) {
+    if (rVictim && !(recap && victim)) S.push(`${opp} answers ${c.rsan}, winning your ${PN[rVictim]}.`);
+    else if (best.score > 90000 && c.score < 90000) S.push(`Misses ${best.san}, which forces checkmate.`);
+    else S.push(`${opp} answers ${c.rsan}${rVictim ? '' : ' and gets the better position'}.`);
+  } else if (drop >= 10 && best.score > c.score + 150) S.push(`Misses ${best.san}.`);
+  else { const n = ownAfter.find(o => !ownBefore.some(b => b.sq === o.sq) && o.sq !== to); if (n && drop >= 5) S.push(`Leaves your ${PN[n.t]} unprotected.`); }
+  if (!S.length && plies < 20) {
+    if ((me === 2 || me === 3) && (from >> 4) === (mover === 1 ? 0 : 7)) S.push(`Develops your ${PN[me]}.`);
+    else if (me === 1 && [2, 3, 4, 5].includes(to & 7)) S.push('Takes space in the center.');
+  }
+  if (!S.length) S.push(c === best ? 'Improves your position the most.' : drop < 5 ? 'A solid move.' : 'Not as useful as the best move.');
+  return S.slice(0, 3);
+}
+function coachRows(out, threat) {
+  const X = MX(); X.load(E.fen());
+  const mover = X.side, opp = G.pvp ? G.names[mover === 1 ? 1 : 0] : G.online ? oppName() : botById(G.bot).name;
+  const best = out[0], pick = [best, ...out.slice(1, 3)];
+  // the tempting capture or check that doesn't work, if there is one
+  const trap = out.slice(3).find(c => (c.san.includes('x') || c.san.includes('+')) && winPct(best.score) - winPct(c.score) >= 10);
+  if (trap) pick.push(trap);
+  return pick.map(c => {
+    const drop = c === best ? 0 : Math.max(0, winPct(best.score) - winPct(c.score));
+    let k = c === best ? 'best' : drop < 2 ? 'excellent' : drop < 6 ? 'good' : drop < 15 ? 'inaccuracy' : drop < 25 ? 'mistake' : 'blunder';
+    if (c !== best && c.score < -90000 && best.score > -90000) k = 'blunder';
+    if (c !== best && best.score > 90000 && c.score < 90000 && k !== 'blunder') k = 'miss';
+    if (out.length === 1) k = 'forced';
+    return { uci: c.uci, san: c.san, k, ev: scoreText(c.score), why: coachWhy(X, c, best, esc(opp), G.moves.length, threat), trap: c === trap };
+  });
+}
+function renderHintBox() {
+  const el = $('hintBox'); if (!el) return;
+  const on = HINT && G && !G.over && scrub == null && HINT.key === posKey();
+  el.hidden = !on; if (!on) return;
+  if (HINT.busy) { el.innerHTML = `<div class="hhd"><span>Hint</span><small>Checking every move...</small></div><div class="bar"><i class="busy"></i></div>`; return; }
+  const who = G.pvp ? esc(G.names[E.side === 1 ? 0 : 1]) : 'You';
+  el.innerHTML = `<div class="hhd"><span>Hint for ${who}</span><small>tap a move to see it</small><button class="hx" aria-label="Close hint">✕</button></div>` +
+    HINT.rows.map((r, i) => `${i === 1 ? '<div class="hsub">Other moves</div>' : ''}${r.trap ? '<div class="hsub">Tempting, but...</div>' : ''}<button class="hrow${HINT.show === r.uci ? ' on' : ''}" data-u="${r.uci}"><span class="ic" style="background:${CLS[r.k].c}">${CLS[r.k].s}</span><span class="hw"><b>${r.san}</b> <em>${CLS[r.k].n}</em><span class="hy">${r.why.join(' ')}</span></span><span class="ev">${r.ev}</span></button>`).join('');
+}
+$('hintBox').addEventListener('click', e => {
+  if (e.target.closest('.hx')) { HINT = null; hintSq = []; selectSq(-1); render(); return; }
+  const b = e.target.closest('[data-u]'); if (!b || !HINT) return;
+  const u = b.dataset.u; HINT.show = u;
+  hintSq = [sqOf(u.slice(0, 2)), sqOf(u.slice(2, 4))]; selectSq(hintSq[0]); render();
+});
+$('hintBtn').onclick = () => {
+  liveSnap();
+  if (!myTurn()) return;
+  if (HINT && HINT.key === posKey() && !HINT.busy) { HINT = null; hintSq = []; selectSq(-1); render(); return; } // tap again to hide
+  const w = coachWorker(), key = posKey();
+  $('hintBtn').disabled = true;
+  const done = rows => {
+    if (!G || G.over || posKey() !== key || !myTurn()) { if (HINT && HINT.key === key) HINT = null; render(); return; }
+    G.hints++;
+    if (G.pvp) { G.hintsBy = G.hintsBy || [0, 0]; G.hintsBy[E.side === 1 ? 0 : 1]++; } // pass-and-play: count each player's hints
+    save();
+    HINT = { key, rows, show: rows[0].uci };
+    hintSq = [sqOf(rows[0].uci.slice(0, 2)), sqOf(rows[0].uci.slice(2, 4))];
+    selectSq(hintSq[0]); render();
+  };
+  HINT = { key, busy: true }; render();
+  if (!w) { // no workers: fall back to just the best move
+    ask({ time: 900, depth: 30, noise: 0, random: 0 }, u => u ? done([{ uci: u, san: E.san(E.fromUci(u)), k: 'best', ev: '', why: ['The engine’s top choice.'] }]) : (HINT = null, render()));
+    return;
+  }
+  const id = ++reqId;
+  w.onmessage = e => { if (e.data.id === id) done(coachRows(e.data.out, e.data.threat)); };
+  w.postMessage({ id, fen: E.START, moves: G.moves.slice() });
+};
+
 $('anal').addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) goTo(+b.dataset.go); });
 $('botsBtn').onclick = showMenu;
 $('back').onclick = e => { if (!$('game').hidden) { e.preventDefault(); cancelBrain(); stopAnalysis(); premove = null; thinking = false; showMenu(); } else if (pzBack()) e.preventDefault(); };
@@ -1994,7 +2147,7 @@ function showResult() {
     const o = G.over, wn = o.score === 1 ? G.names[0] : o.score === 0 ? G.names[1] : null;
     const why = { checkmate: 'by checkmate', stalemate: 'by stalemate', resignation: 'by resignation', repetition: 'by repetition', '50-move rule': 'by the 50-move rule', 'insufficient material': 'by insufficient material', time: 'on time', agreement: 'by agreement' }[o.reason] || '';
     const ov = document.createElement('div'); ov.className = 'ov';
-    ov.innerHTML = `<div class="card"><div class="av" style="background:var(--panel2)">${pieceSVG(o.score === 0 ? -6 : 6, '')}</div><h3>${wn ? esc(wn) + ' wins!' : 'Draw'}</h3><p>${why[0].toUpperCase() + why.slice(1)}. ${wn ? `${esc(wn)} played ${o.score === 1 ? 'White' : 'Black'}.` : 'Nobody wins this one.'}</p>${h2hLine(G.names[0], G.names[1], true)}<p style="font-size:13px;margin-top:10px">Rematch swaps colors.</p>
+    ov.innerHTML = `<div class="card"><div class="av" style="background:var(--panel2)">${pieceSVG(o.score === 0 ? -6 : 6, '')}</div><h3>${wn ? esc(wn) + ' wins!' : 'Draw'}</h3><p>${why[0].toUpperCase() + why.slice(1)}. ${wn ? `${esc(wn)} played ${o.score === 1 ? 'White' : 'Black'}.` : 'Nobody wins this one.'}</p>${h2hLine(G.names[0], G.names[1], true)}<p style="font-size:13px;margin-top:10px">${G.hintsBy && (G.hintsBy[0] || G.hintsBy[1]) ? `Hints used: ${G.names.map((n, i) => `${esc(n)} ${G.hintsBy[i]}`).join(', ')}. ` : ''}Rematch swaps colors.</p>
       <div class="row"><button class="btn alt" data-a="view">Review moves</button><button class="btn" data-a="again">Rematch</button></div></div>`;
     document.body.append(ov);
     ov.querySelector('[data-a=view]').onclick = () => ov.remove();
