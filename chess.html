@@ -590,6 +590,40 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
 .promopop button svg { width: 100%; height: 100%; display: block; }
 .promopop .px { aspect-ratio: auto; height: 32px; display: grid; place-items: center; font-weight: 900; color: var(--soft); background: var(--panel2); font-size: 16px; }
 .promoveil { position: absolute; inset: 0; z-index: 39; background: rgba(0,0,0,.35); }
+/* ---------- redesign step 3a: in-game panel ---------- */
+.gtabs { display: none; }
+.wide-only { display: none !important; }
+.ohead { display: flex; align-items: center; gap: 8px; min-height: 24px; margin: 4px 2px 2px; }
+.ohead .opn { flex: 1; min-width: 0; margin: 0; }
+.tcb { margin-left: auto; flex: none; font-size: 11.5px; font-weight: 900; color: var(--soft); background: var(--panel2); border-radius: 6px; padding: 3px 8px; }
+.moves .mrow { display: contents; }
+.moves .mrow .mn { color: var(--soft); margin-left: 6px; }
+.moves .mrow .mn:first-child { margin-left: 0; }
+.moves b .mi svg { width: 15px; height: 15px; vertical-align: -3px; margin-right: 1px; }
+.moves b .mi { font-style: normal; }
+.moves b.empty { display: none; }
+#transport .pos.hist b { color: var(--accent); }
+.tool.armed { background: var(--bad) !important; color: #fff !important; font-size: 11px; }
+@media (min-width: 768px) {
+  .wide-only { display: flex !important; }
+  .gtabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; margin-bottom: 10px; background: var(--panel); border-radius: 10px; }
+  .gtabs button { height: 34px; border-radius: 8px; font-size: 13.5px; font-weight: 800; color: var(--soft); }
+  .gtabs button[aria-selected="true"] { background: var(--panel2); color: var(--ink); }
+  #game[data-gt="moves"] #hintBox, #game[data-gt="anal"] #moves, #game[data-gt="anal"] #oHead { display: none !important; }
+  #game[data-gt="anal"] .panel::after { content: 'Tap Hint for the best move and why. After the game, every move gets a full review here.'; display: block; color: var(--soft); font-size: 13px; font-weight: 700; padding: 6px 4px; order: 9; }
+  .ohead { height: 36px; margin: 0 0 6px; padding: 0 8px; background: var(--panel); border-radius: 8px; }
+  #game .panel { display: flex; flex-direction: column; }
+  #game .moves { display: block; flex: 1 1 auto; min-height: 120px; max-height: none; overflow-y: auto; overflow-x: hidden; padding: 0; border-radius: 8px; background: var(--panel); }
+  .moves .mrow { display: grid; grid-template-columns: 44px 1fr 1fr; align-items: center; height: 30px; padding: 0 8px; }
+  .moves .mrow:nth-child(even) { background: color-mix(in srgb, var(--panel2) 55%, transparent); }
+  .moves .mrow .mn { margin: 0; font-size: 13px; }
+  .moves .mrow b { justify-self: start; padding: 2px 6px; border-radius: 5px; white-space: nowrap; }
+  .moves .mrow b.empty { display: block; }
+  .moves .mrow.none { display: block; padding: 8px; color: var(--soft); }
+  #game #transport { margin: 8px 0; flex: none; }
+  #game #transport button { height: 40px; }
+  #game .panel > .tools, #game #overBar, #game #hintBox { flex: none; }
+}
 </style>
 </head>
 <body>
@@ -707,8 +741,17 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
     <div class="pl" id="botPl"></div>
     </div></div>
     <div class="panel">
-    <div class="opn" id="openLn" hidden></div>
+    <div class="gtabs" id="gTabs" role="tablist"><button data-gt="new" role="tab">New game</button><button data-gt="moves" role="tab" aria-selected="true">Moves</button><button data-gt="anal" role="tab">Analysis</button></div>
+    <div class="ohead" id="oHead"><div class="opn" id="openLn" hidden></div><span class="tcb" id="tcBadge"></span></div>
     <div class="moves" id="moves"></div>
+    <div class="review" id="transport">
+      <button id="rvFirst" aria-label="First move"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14M18 6l-7 6 7 6"/></svg></button>
+      <button id="rvPrev" aria-label="Previous move"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <div class="pos" id="rvPos"></div>
+      <button id="rvNext" aria-label="Next move"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+      <button id="rvLast" aria-label="Last move"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 5v14M6 6l7 6-7 6"/></svg></button>
+    </div>
+
     <div class="anal hintbox" id="hintBox" hidden></div>
     <div class="tools" id="tools">
       <button class="tool" id="undoBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg>Takeback</button>
@@ -716,16 +759,10 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
       <button class="tool" id="flipBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg>Flip</button>
       <button class="tool" id="drawBtn" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h14M5 15h14"/></svg>Draw</button>
       <button class="tool" id="resignBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22V3M5 4h12l-2 4 2 4H5"/></svg><span id="resignLbl">Resign</span></button>
+      <button class="tool wide-only" id="gSetBtn" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>Settings</button>
       <button class="tool" id="annoBtn" title="Draw arrows and highlights"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20 18 6M18 6h-6M18 6v6"/></svg>Arrows</button>
     </div>
     <div id="overBar" hidden>
-      <div class="review">
-        <button id="rvFirst" aria-label="First move"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14M18 6l-7 6 7 6"/></svg></button>
-        <button id="rvPrev" aria-label="Previous move"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
-        <div class="pos" id="rvPos"></div>
-        <button id="rvNext" aria-label="Next move"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
-        <button id="rvLast" aria-label="Last move"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 5v14M6 6l7 6-7 6"/></svg></button>
-      </div>
       <div class="anal" id="anal"></div>
       <div class="overbar"><button class="btn alt" id="botsBtn">Change bot</button><button class="btn alt" id="shareBtn">Share</button><button class="btn" id="rematchBtn">Rematch</button></div>
     </div>
@@ -1400,6 +1437,7 @@ function newGame(botId) {
   startGame();
 }
 function startGame() {
+  setGameTab('moves');
   replay();
   sel = -1; targets = []; ptargets = []; hintSq = []; premove = null; anim = null; scrub = null; stopAnalysis(); AN = null;
   if (G.pvp) { G.me = E.side; flipped = G.layout === 'rotate' && E.side === -1; } else flipped = G.me === -1;
@@ -1491,12 +1529,14 @@ function render() {
   let mh = '';
   const tag = i => { if (!G.over) return ''; const f = moveInfo(i); return f && ['brilliant', 'great', 'inaccuracy', 'mistake', 'miss', 'blunder'].includes(f.k) ? `<span class="tag" style="background:${CLS[f.k].c}">${CLS[f.k].s}</span>` : ''; };
   const mc = i => G.over ? ` class="rv${i === shown - 1 ? ' cur' : ''}" data-ply="${i + 1}"` : ` data-ply="${i + 1}"` + (scrub != null ? (i === shown - 1 ? ' class="cur"' : '') : i === sans.length - 1 ? ' class="last"' : '');
-  for (let i = 0; i < sans.length; i += 2) mh += `<span>${i / 2 + 1}. <b${mc(i)}>${sans[i]}${tag(i)}</b>${sans[i + 1] ? ` <b${mc(i + 1)}>${sans[i + 1]}${tag(i + 1)}</b>` : ''}</span>`;
-  $('moves').innerHTML = mh || '<span>Good luck!</span>';
-  const cur = $('moves').querySelector('.cur');
-  if (G.over && cur) cur.scrollIntoView({ block: 'nearest', inline: 'center' });
-  else if (G.over && !shown) $('moves').scrollLeft = 0;
-  else $('moves').scrollLeft = 1e6;
+  // figurine notation: the piece letter becomes a little piece icon (Nf3 -> knight icon + f3)
+  const fig = (san, i) => { const t = 'NBRQK'.indexOf(san[0]); return t < 0 ? san : `<i class="mi">${pieceSVG((t + 2) * (i % 2 ? -1 : 1), '')}</i>${san.slice(1)}`; };
+  for (let i = 0; i < sans.length; i += 2) mh += `<div class="mrow"><span class="mn">${i / 2 + 1}.</span><b${mc(i)}>${fig(sans[i], i)}${tag(i)}</b>${sans[i + 1] ? `<b${mc(i + 1)}>${fig(sans[i + 1], i + 1)}${tag(i + 1)}</b>` : '<b class="empty"></b>'}</div>`;
+  $('moves').innerHTML = mh || '<div class="mrow none"><span>Good luck!</span></div>';
+  const cur = $('moves').querySelector('.cur'), ml = $('moves');
+  if (cur) { cur.scrollIntoView({ block: 'nearest', inline: 'center' }); }
+  else if (G.over && !shown) { ml.scrollLeft = 0; ml.scrollTop = 0; }
+  else { ml.scrollLeft = 1e6; ml.scrollTop = 1e6; }
   // tools
   $('tools').hidden = !!G.over; $('overBar').hidden = !G.over;
   $('botsBtn').textContent = G.hist && !G.shared ? 'History' : G.pvp || G.online ? 'Menu' : 'Change bot';
@@ -1508,12 +1548,17 @@ function render() {
   $('resignLbl').textContent = !G.over && G.moves.length <= 1 ? 'Abort' : 'Resign';
   const cool = G.drawAt != null && G.moves.length - G.drawAt < 6;
   $('drawBtn').disabled = !!G.drawPending || cool || (!G.pvp && !G.online && (thinking || E.side !== G.me)) || G.moves.length < 2;
-  if (G.over) {
-    $('rvPos').innerHTML = shown ? `<b>${sans[shown - 1]}</b>Move ${Math.ceil(shown / 2)} of ${Math.ceil(sans.length / 2)}` : `<b>Start</b>${sans.length} moves`;
-    $('rvFirst').disabled = $('rvPrev').disabled = shown === 0;
-    $('rvNext').disabled = $('rvLast').disabled = shown >= G.moves.length;
-    renderAnalysis(shown);
-  }
+  $('transport').hidden = !G.moves.length;
+  $('rvPos').innerHTML = G.over || scrub != null
+    ? (shown ? `<b>${sans[shown - 1]}</b>Move ${Math.ceil(shown / 2)} of ${Math.ceil(sans.length / 2)}` : `<b>Start</b>${sans.length} moves`)
+    : `<b>Live</b>Move ${Math.ceil(sans.length / 2)}`;
+  $('rvPos').classList.toggle('hist', scrub != null && !G.over);
+  $('rvFirst').disabled = $('rvPrev').disabled = shown === 0;
+  $('rvNext').disabled = $('rvLast').disabled = shown >= G.moves.length;
+  // opening bar: name + time control badge
+  { const c = G.clock, tc = c ? (CLOCKS.find(x => x[0] * 60000 === c.base && x[1] * 1000 === c.inc) || [0, 0, `${Math.round(c.base / 60000)} | ${Math.round(c.inc / 1000)}`])[2] : null;
+    $('tcBadge').textContent = tc || (G.online || G.pvp ? 'No clock' : G.hist ? 'Replay' : (G.hints || tbOn(G)) ? 'Unrated' : 'Rated'); }
+  if (G.over) renderAnalysis(shown);
   $('hintBtn').disabled = thinking || E.side !== G.me;
 }
 const sqOf = n => (n.charCodeAt(1) - 49) * 16 + (n.charCodeAt(0) - 97);
@@ -1688,15 +1733,26 @@ $('undoBtn').onclick = () => {
   if (E.side !== G.me) maybeBot();
 };
 $('flipBtn').onclick = () => { flipped = !flipped; render(); };
+// chess.com-style confirm: the first click arms the button ("Confirm resign?"), a second click within 4s does it
+function twoStep(btn, label, fn) {
+  if (btn.dataset.armed) { disarm(btn); fn(); return; }
+  document.querySelectorAll('.tool[data-armed]').forEach(disarm);
+  btn.dataset.armed = '1'; btn.dataset.html = btn.innerHTML; btn.classList.add('armed');
+  btn.innerHTML = btn.querySelector('svg').outerHTML + label;
+  btn._t = setTimeout(() => disarm(btn), 4000);
+}
+function disarm(btn) { if (!btn.dataset.armed) return; clearTimeout(btn._t); btn.innerHTML = btn.dataset.html; btn.classList.remove('armed'); delete btn.dataset.armed; delete btn.dataset.html; }
+document.addEventListener('pointerdown', e => { if (!e.target.closest('.tool[data-armed]')) document.querySelectorAll('.tool[data-armed]').forEach(disarm); }, true);
 $('resignBtn').onclick = () => {
   if (!G || G.over) return;
   liveSnap();
+  const btn = $('resignBtn');
   if (G.online) {
-    if (G.moves.length <= 1) confirmBox('Abort game?', `The game ends for ${esc(oppName())} too. Nothing is recorded.`, 'Abort', () => onlineAbort());
-    else confirmBox('Resign?', `${esc(oppName())} wins the game.`, 'Resign', () => { if (G && G.online && !G.over) finish({ result: G.me === 1 ? '0-1' : '1-0', reason: 'resignation' }); });
+    if (G.moves.length <= 1) twoStep(btn, 'Confirm abort?', () => onlineAbort());
+    else twoStep(btn, 'Confirm resign?', () => { if (G && G.online && !G.over) finish({ result: G.me === 1 ? '0-1' : '1-0', reason: 'resignation' }); });
     return;
   }
-  if (G.moves.length <= 1) { confirmBox('Abort game?', 'Nothing is recorded and your rating does not change.', 'Abort', () => abortGame()); return; }
+  if (G.moves.length <= 1) { twoStep(btn, 'Confirm abort?', () => abortGame()); return; }
   if (G.pvp) {
     const o = document.createElement('div'); o.className = 'ov';
     o.innerHTML = `<div class="card"><h3 style="font-size:21px">Who resigns?</h3><div class="row" style="flex-direction:column"><button class="btn alt" data-r="1">${esc(G.names[0])} (White) resigns</button><button class="btn alt" data-r="-1">${esc(G.names[1])} (Black) resigns</button><button class="btn" data-r="0">Keep playing</button></div></div>`;
@@ -1704,7 +1760,7 @@ $('resignBtn').onclick = () => {
     o.onclick = e => { const b = e.target.closest('[data-r]'); if (!b && e.target !== o) return; o.remove(); const r = b ? +b.dataset.r : 0; if (r) finish({ result: r === 1 ? '0-1' : '1-0', reason: 'resignation' }); };
     return;
   }
-  confirmBox('Resign?', `This counts as a loss against ${botById(G.bot).name}.`, 'Resign', () => {
+  twoStep(btn, 'Confirm resign?', () => {
     cancelBrain(); thinking = false;
     finish({ result: G.me === 1 ? '0-1' : '1-0', reason: 'resignation' });
   });
@@ -1722,10 +1778,13 @@ function goTo(n) {
   if (step) { anim = { from: sqOf(step.slice(0, 2)), to: sqOf(step.slice(2, 4)) }; const s = sans[n - 1]; sound(s.includes('+') || s.includes('#') ? 'check' : s.includes('x') ? 'cap' : 'move'); }
   view = n; selectSq(-1); render();
 }
-$('rvFirst').onclick = () => goTo(0);
-$('rvPrev').onclick = () => goTo(view - 1);
-$('rvNext').onclick = () => goTo(view + 1);
-$('rvLast').onclick = () => goTo(G.moves.length);
+// first / back / forward / last: review after the game, or look back during it (arrow keys do the same)
+const tpCur = () => G.over ? view : scrub != null ? scrub : G.moves.length;
+const tpGo = n => G && (G.over ? goTo(n) : scrubTo(n));
+$('rvFirst').onclick = () => tpGo(0);
+$('rvPrev').onclick = () => tpGo(tpCur() - 1);
+$('rvNext').onclick = () => tpGo(tpCur() + 1);
+$('rvLast').onclick = () => G && (G.over ? goTo(G.moves.length) : liveSnap());
 $('moves').addEventListener('click', e => { const b = e.target.closest('[data-ply]'); if (!b) return; if (G && G.over) goTo(+b.dataset.ply); else scrubTo(+b.dataset.ply); });
 document.addEventListener('keydown', e => {
   if (e.target.closest && e.target.closest('input, textarea') || document.querySelector('.ov:not(.closing)')) return;
@@ -2035,7 +2094,7 @@ $('hintBtn').onclick = () => {
     hintSq = [sqOf(rows[0].uci.slice(0, 2)), sqOf(rows[0].uci.slice(2, 4))];
     selectSq(hintSq[0]); render();
   };
-  HINT = { key, busy: true }; render();
+  HINT = { key, busy: true }; if (typeof setGameTab === 'function') setGameTab('anal'); render();
   if (!w) { // no workers: fall back to just the best move
     ask({ time: 900, depth: 30, noise: 0, random: 0 }, u => u ? done([{ uci: u, san: E.san(E.fromUci(u)), k: 'best', ev: '', why: ['The engine’s top choice.'] }]) : (HINT = null, render()));
     return;
@@ -2288,8 +2347,8 @@ $('drawBtn').onclick = () => {
   if (!G || G.over) return;
   liveSnap();
   if (G.drawAt != null && G.moves.length - G.drawAt < 6) { toast('Wait a few moves before offering again'); return; }
-  if (G.online) { onlineOfferDraw(); return; }
-  if (!G.pvp) { botDrawOffer(); return; }
+  if (G.online) { twoStep($('drawBtn'), 'Confirm draw?', onlineOfferDraw); return; }
+  if (!G.pvp) { twoStep($('drawBtn'), 'Confirm draw?', botDrawOffer); return; }
   const other = E.side === 1 ? G.names[1] : G.names[0], asker = E.side === 1 ? G.names[0] : G.names[1];
   G.drawAt = G.moves.length; save();
   confirmBox('Draw?', `${esc(asker)} offers a draw. ${esc(other)}, do you accept?`, 'Accept draw', () => finish({ result: '1/2-1/2', reason: 'agreement' }));
@@ -4084,6 +4143,15 @@ function openSettings() {
 }
 const ICON_COLORS = document.querySelector('[data-nav="colors"] svg').outerHTML;
 $('settingsBtn').onclick = openSettings;
+$('gSetBtn').onclick = openSettings;
+// in-game panel tabs on wide screens: New game (back to the lobby) / Moves / Analysis
+function setGameTab(t) {
+  if (t === 'new') { goSection('play'); return; }
+  $('game').dataset.gt = t;
+  $('gTabs').querySelectorAll('[data-gt]').forEach(b => b.setAttribute('aria-selected', b.dataset.gt === t));
+}
+$('gTabs').onclick = e => { const b = e.target.closest('[data-gt]'); if (b) setGameTab(b.dataset.gt); };
+setGameTab('moves');
 syncShell();
 
 // =====================================================================
@@ -4451,7 +4519,7 @@ function openColors() {
 $('colorBtn').onclick = openColors;
 initFB();
 
-window.__chess = { fb, pushBoard, openColors, cycleSetup, openSettings, syncShell, ACH, checkAch, openEnd, END_LINES, openingAt, loadOpenings, openTrainer, OPEN_LINES, get TR() { return TR; }, T, hist, gameLink, gamePGN, openPuzzle, pzNotes, pzGoal, get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
+window.__chess = { get scrub() { return scrub; }, fb, pushBoard, openColors, cycleSetup, openSettings, syncShell, ACH, checkAch, openEnd, END_LINES, openingAt, loadOpenings, openTrainer, OPEN_LINES, get TR() { return TR; }, T, hist, gameLink, gamePGN, openPuzzle, pzNotes, pzGoal, get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
 showMenu();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('./sw.js').catch(() => { });
 })();
