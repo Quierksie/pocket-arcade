@@ -63,6 +63,10 @@ Each puzzle starts with what the opponent just played and a goal that doesn't gi
 ### Layout
 On computers (1024px and wider) Chess uses a chess.com-style layout that never scrolls: a side rail (Play, Puzzles, Learn, Leaderboard, History, Achievements, then Arcade, Settings, Colors, Light/dark and Collapse), the board centered and sized to the window, and a 360px panel on the right with everything else. Tablets get an icon-only rail and a 300px panel. Phones keep the single column with a bottom tab bar on the menu screens. Each screen's markup is split into `.stage` (board) and `.panel` (the rest).
 
+During a game the panel has three tabs: **New game** (back to the lobby), **Moves** (the move list with piece icons, plus first/back/forward/last buttons that also work mid-game) and **Analysis** (hints, and the full review once the game ends). Resign, Abort and Draw ask for a second tap to confirm. The Play screen is a lobby: pick a time control (Bullet, Blitz, Rapid or none), color and takebacks, tap a bot to select it and press **Play**. Bot games now use the clock too.
+
+When a game ends, a result card appears over the board (full screen on phones) with the outcome, how it ended, both players with ratings and rating change, **Game Review** (opens the accuracy summary on the Analysis tab), **New** (back to the lobby) and **Rematch**. The ✕ closes it so you can look at the final position.
+
 ### Settings
 The gear button (header on phones, rail on computers) opens Settings: how arrows are drawn (Alt + click, right-click drag, or both), light/dark, and a shortcut to colors.
 

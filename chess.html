@@ -610,6 +610,7 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
   .gtabs button { height: 34px; border-radius: 8px; font-size: 13.5px; font-weight: 800; color: var(--soft); }
   .gtabs button[aria-selected="true"] { background: var(--panel2); color: var(--ink); }
   #game[data-gt="moves"] #hintBox, #game[data-gt="anal"] #moves, #game[data-gt="anal"] #oHead { display: none !important; }
+  #game[data-over] .panel::after { display: none !important; }
   #game[data-gt="anal"] .panel::after { content: 'Tap Hint for the best move and why. After the game, every move gets a full review here.'; display: block; color: var(--soft); font-size: 13px; font-weight: 700; padding: 6px 4px; order: 9; }
   .ohead { height: 36px; margin: 0 0 6px; padding: 0 8px; background: var(--panel); border-radius: 8px; }
   #game .panel { display: flex; flex-direction: column; }
@@ -653,6 +654,29 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
 .lrows .bigbtn .go::after { content: '›'; font-size: 22px; }
 .lrows .histbtn svg { width: 24px; height: 24px; }
 .bot.sel { border: 2px solid var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
+
+/* end-of-game card */
+.gomodal .gocard { position: relative; width: min(360px, 100%); text-align: center; padding: 22px 18px 16px; }
+.gomodal .gx { position: absolute; top: 8px; right: 8px; width: 34px; height: 34px; border: 0; border-radius: 8px; background: transparent; color: var(--soft); font-size: 18px; cursor: pointer; }
+.gomodal .gx:hover { background: var(--panel2); color: var(--ink); }
+.gomodal h3 { font-size: 24px; margin: 0; }
+.gomodal .gsub { margin: 2px 0 14px; color: var(--soft); font-size: 14px; }
+.gplayers { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; margin-bottom: 12px; }
+.gplayers .vs { font-size: 12px; color: var(--soft); font-weight: 800; }
+.gp { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px; border-radius: 10px; background: var(--panel2); min-width: 0; border: 2px solid transparent; }
+.gp.win { border-color: var(--accent); }
+.gp .av { width: 44px; height: 44px; margin: 0; }
+.gp b { font-size: 14px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gp span { font-size: 13px; color: var(--soft); }
+.gp em { font-style: normal; font-weight: 800; }
+.gp em.up { color: var(--accent); } .gp em.down { color: var(--bad); }
+.gp .crown { position: absolute; top: -10px; right: -4px; font-style: normal; font-size: 18px; }
+.gomodal .quote { font-size: 13px; margin: 0 0 8px; }
+.gomodal .grev { width: 100%; min-height: 48px; font-size: 17px; margin: 6px 0 8px; }
+.gomodal .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.gomodal .row .btn { min-height: 42px; }
+.ov.onboard { position: absolute; background: rgba(10,10,8,.45); padding: 12px; }
+@media (min-width: 768px) { body[data-screen=game] #game > .stage { position: relative; } }
 </style>
 </head>
 <body>
@@ -2441,43 +2465,64 @@ function finishGame(st) {
   sound(score === 1 ? 'win' : score === 0 ? 'lose' : 'move');
   setTimeout(() => showResult(), st.reason === 'resignation' ? 0 : 700);
 }
+// ---------- end-of-game card (chess.com style): over the board on wide screens, full screen on phones ----------
+const WHY_END = { checkmate: 'by checkmate', stalemate: 'by stalemate', resignation: 'by resignation', repetition: 'by repetition', '50-move rule': 'by the 50-move rule', 'insufficient material': 'by insufficient material', time: 'on time', agreement: 'by agreement' };
+function gameOverModal({ title, sub, players, extra = '', againLabel = 'Rematch', onAgain }) {
+  const wide = matchMedia('(min-width: 768px)').matches;
+  const ov = document.createElement('div'); ov.className = 'ov gomodal' + (wide ? ' onboard' : '');
+  const pc = p => `<div class="gp${p.win ? ' win' : ''}">${p.av}<b>${esc(p.name)}</b><span>${p.rating != null ? Math.round(p.rating) : p.side}${p.delta ? ` <em class="${p.delta > 0 ? 'up' : 'down'}">${p.delta > 0 ? '+' : ''}${p.delta}</em>` : ''}</span>${p.win ? '<i class="crown">👑</i>' : ''}</div>`;
+  const tc = G.clock ? tcName([Math.round(G.clock.base / 60000), Math.round(G.clock.inc / 1000)]) : '';
+  ov.innerHTML = `<div class="card gocard"><button class="gx" data-a="close" aria-label="Close and look at the board">✕</button>
+    <h3>${title}</h3><p class="gsub">${sub}</p>
+    <div class="gplayers">${pc(players[0])}<span class="vs">vs</span>${pc(players[1])}</div>
+    ${extra}
+    <button class="btn grev" data-a="review">Game Review</button>
+    <div class="row"><button class="btn alt" data-a="new">${tc ? `New ${tc}` : 'New game'}</button><button class="btn alt" data-a="again">${againLabel}</button></div></div>`;
+  (wide ? $('game').querySelector('.stage') : document.body).append(ov);
+  ov.onclick = e => {
+    const a = e.target.closest('[data-a]'), k = a && a.dataset.a;
+    if (k === 'close' || (!a && e.target === ov)) { ov.remove(); return; }
+    if (k === 'review') { ov.remove(); setGameTab('anal'); goTo(0); render(); return; }
+    if (k === 'new') { ov.remove(); goSection('play'); return; }
+    if (k === 'again') { ov.remove(); onAgain(); }
+  };
+  return ov;
+}
 function showResult() {
+  const o = G.over, sub = WHY_END[o.reason] || '';
+  const sideAv = c => `<div class="av" style="background:var(--panel2)">${pieceSVG(6 * c, '')}</div>`;
+  const wScore = o.result === '1-0' ? 1 : o.result === '0-1' ? 0 : .5;
   if (G.online) {
-    const o = G.over, opp = oppName();
-    const why = { checkmate: 'by checkmate', stalemate: 'by stalemate', resignation: 'by resignation', repetition: 'by repetition', '50-move rule': 'by the 50-move rule', 'insufficient material': 'by insufficient material', time: 'on time', agreement: 'by agreement' }[o.reason] || '';
-    const asked = ONL.d && ONL.d.rematch && ONL.d.rematch.by !== G.me;
-    const ov = document.createElement('div'); ov.className = 'ov';
-    ov.innerHTML = `<div class="card"><div class="av" style="background:var(--panel2)">${pieceSVG(o.score === 0 ? -6 * G.me : 6 * G.me, '')}</div><h3>${o.score === 1 ? 'You win!' : o.score === 0 ? esc(opp) + ' wins' : 'Draw'}</h3><p>${why ? why[0].toUpperCase() + why.slice(1) + '. ' : ''}${o.score === 1 ? `You beat ${esc(opp)}.` : o.score === 0 ? 'Good game!' : 'Nobody wins this one.'}</p>${h2hLine(G.names[0], G.names[1], true)}<p class="rmnote" style="font-size:13px;margin-top:10px">${asked ? `${esc(opp)} wants a rematch!` : 'Rematch swaps colors.'}</p>
-      <div class="row"><button class="btn alt" data-a="view">Review moves</button><button class="btn" data-a="again">${asked ? 'Accept rematch' : 'Rematch'}</button></div></div>`;
-    document.body.append(ov);
-    ov.querySelector('[data-a=view]').onclick = () => ov.remove();
-    ov.querySelector('[data-a=again]').onclick = () => { ov.remove(); onlineRematch(); };
+    const opp = oppName(), asked = ONL.d && ONL.d.rematch && ONL.d.rematch.by !== G.me;
+    gameOverModal({
+      title: o.score === 1 ? 'You won!' : o.score === 0 ? `${esc(opp)} won` : 'Draw', sub,
+      players: [0, 1].map(i => ({ name: G.names[i] + ((i === 0) === (G.me === 1) ? ' (you)' : ''), side: i ? 'Black' : 'White', av: sideAv(i ? -1 : 1), win: i === 0 ? wScore === 1 : wScore === 0 })),
+      extra: `${h2hLine(G.names[0], G.names[1], true)}<p class="rmnote" style="font-size:13px;margin-top:8px">${asked ? `${esc(opp)} wants a rematch!` : 'Rematch swaps colors.'}</p>`,
+      againLabel: asked ? 'Accept rematch' : 'Rematch', onAgain: onlineRematch,
+    });
     return;
   }
   if (G.pvp) {
-    const o = G.over, wn = o.score === 1 ? G.names[0] : o.score === 0 ? G.names[1] : null;
-    const why = { checkmate: 'by checkmate', stalemate: 'by stalemate', resignation: 'by resignation', repetition: 'by repetition', '50-move rule': 'by the 50-move rule', 'insufficient material': 'by insufficient material', time: 'on time', agreement: 'by agreement' }[o.reason] || '';
-    const ov = document.createElement('div'); ov.className = 'ov';
-    ov.innerHTML = `<div class="card"><div class="av" style="background:var(--panel2)">${pieceSVG(o.score === 0 ? -6 : 6, '')}</div><h3>${wn ? esc(wn) + ' wins!' : 'Draw'}</h3><p>${why[0].toUpperCase() + why.slice(1)}. ${wn ? `${esc(wn)} played ${o.score === 1 ? 'White' : 'Black'}.` : 'Nobody wins this one.'}</p>${h2hLine(G.names[0], G.names[1], true)}<p style="font-size:13px;margin-top:10px">${G.hintsBy && (G.hintsBy[0] || G.hintsBy[1]) ? `Hints used: ${G.names.map((n, i) => `${esc(n)} ${G.hintsBy[i]}`).join(', ')}. ` : ''}Rematch swaps colors.</p>
-      <div class="row"><button class="btn alt" data-a="view">Review moves</button><button class="btn" data-a="again">Rematch</button></div></div>`;
-    document.body.append(ov);
-    ov.querySelector('[data-a=view]').onclick = () => ov.remove();
-    ov.querySelector('[data-a=again]').onclick = () => { ov.remove(); pvpRematch(); };
+    const wn = o.score === 1 ? G.names[0] : o.score === 0 ? G.names[1] : null;
+    gameOverModal({
+      title: wn ? `${esc(wn)} won` : 'Draw', sub,
+      players: [0, 1].map(i => ({ name: G.names[i], side: i ? 'Black' : 'White', av: sideAv(i ? -1 : 1), win: i === 0 ? o.score === 1 : o.score === 0 })),
+      extra: `${h2hLine(G.names[0], G.names[1], true)}${G.hintsBy && (G.hintsBy[0] || G.hintsBy[1]) ? `<p style="font-size:13px;margin-top:8px">Hints used: ${G.names.map((n, i) => `${esc(n)} ${G.hintsBy[i]}`).join(', ')}.</p>` : ''}<p style="font-size:13px;margin-top:6px">Rematch swaps colors.</p>`,
+      onAgain: pvpRematch,
+    });
     return;
   }
-  const bot = botById(G.bot), o = G.over;
-  const title = o.score === 1 ? 'You win!' : o.score === 0 ? `${bot.name} wins` : 'Draw';
-  const why = { checkmate: 'by checkmate', stalemate: 'by stalemate', resignation: 'by resignation', repetition: 'by repetition', '50-move rule': 'by the 50-move rule', 'insufficient material': 'by insufficient material', agreement: 'by agreement' }[o.reason] || '';
+  const bot = botById(G.bot);
   const line = o.score === 1 ? ['Nice game! Rematch?', 'You got me. Well played!', 'I need more practice...'][Math.floor(Math.random() * 3)] : o.score === 0 ? ['Good game!', 'Better luck next time!', 'Want to try again?'][Math.floor(Math.random() * 3)] : 'Evenly matched!';
-  const ov = document.createElement('div'); ov.className = 'ov';
-  ov.innerHTML = `<div class="card">${avatar(bot)}<h3>${title}</h3><p>${why ? why[0].toUpperCase() + why.slice(1) + '. ' : ''}${bot.name}: “${line}”</p>
-    ${o.rated ? `<div class="delta ${o.delta > 0 ? 'up' : o.delta < 0 ? 'down' : ''}">${Math.round(SV.rating)} <small>(${o.delta >= 0 ? '+' : ''}${o.delta})</small></div>` : `<p style="font-size:13px">Unrated game${G.hints ? ' (hints used)' : ''}.</p>`}${o.rated && tbOn(G) && o.delta > 0 ? '<p style="font-size:13px;margin-top:-6px">Half points: takebacks were on.</p>' : ''}
-    <div class="row"><button class="btn alt" data-a="view">Review moves</button><button class="btn" data-a="again">Rematch</button></div></div>`;
-  document.body.append(ov);
-  ov.querySelector('[data-a=view]').onclick = () => ov.remove();
-  ov.querySelector('[data-a=again]').onclick = () => { ov.remove(); newGame(G.bot); };
+  const me = { name: playerName(), rating: SV.rating, delta: o.rated ? o.delta : 0, av: sideAv(G.me), win: o.score === 1 };
+  const them = { name: bot.name, rating: bot.elo, av: avatar(bot), win: o.score === 0 };
+  gameOverModal({
+    title: o.score === 1 ? 'You won!' : o.score === 0 ? `${bot.name} won` : 'Draw', sub,
+    players: G.me === 1 ? [me, them] : [them, me],
+    extra: `<p class="quote">${bot.name}: “${line}”</p>${o.rated ? '' : `<p style="font-size:13px">Unrated game${G.hints ? ' (hints used)' : ''}.</p>`}${o.rated && tbOn(G) && o.delta > 0 ? '<p style="font-size:13px">Half points: takebacks were on.</p>' : ''}`,
+    onAgain: () => newGame(G.bot),
+  });
 }
-
 // ---------- menu ----------
 function showMenu(keepOverlays) {
   stopAnalysis(); premove = null; stopClock(); if (keepOverlays !== true) onlineDetach();
@@ -4193,6 +4238,7 @@ $('gSetBtn').onclick = openSettings;
 function setGameTab(t) {
   if (t === 'new') { goSection('play'); return; }
   $('game').dataset.gt = t;
+  $('game').toggleAttribute('data-over', !!(G && G.over));
   $('gTabs').querySelectorAll('[data-gt]').forEach(b => b.setAttribute('aria-selected', b.dataset.gt === t));
 }
 $('gTabs').onclick = e => { const b = e.target.closest('[data-gt]'); if (b) setGameTab(b.dataset.gt); };
