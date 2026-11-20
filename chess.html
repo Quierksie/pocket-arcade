@@ -44,6 +44,26 @@ header h1 { flex: 1; text-align: center; font-size: 22px; font-weight: 900; marg
 .rate .num small { display: block; font-size: 12px; color: var(--soft); font-weight: 800; letter-spacing: .5px; margin-bottom: 4px; }
 .rate .meta { color: var(--soft); font-size: 13px; font-weight: 700; line-height: 1.55; margin-left: auto; text-align: right; }
 .rate .meta b { color: var(--ink); }
+.histbtn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; margin-top: 10px; border-radius: 16px; background: var(--panel); color: var(--ink); text-align: left; }
+.histbtn svg { width: 24px; height: 24px; color: var(--accent); flex: none; }
+.histbtn b { display: block; font-size: 15px; }
+.histbtn small { color: var(--soft); font-size: 12.5px; font-weight: 700; }
+.histbtn i, .hgame i { margin-left: auto; font-style: normal; font-size: 22px; color: var(--soft); }
+.hfil { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 10px; }
+.hfil button { padding: 7px 13px; border-radius: 99px; background: var(--panel); color: var(--soft); font-weight: 800; font-size: 13.5px; }
+.hfil button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.hstat { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px; }
+.hstat div { background: var(--panel); border-radius: 12px; padding: 8px 4px; text-align: center; font-size: 11.5px; font-weight: 800; color: var(--soft); }
+.hstat b { display: block; font-size: 20px; color: var(--ink); }
+.hlist { display: flex; flex-direction: column; gap: 6px; }
+.hgame { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; background: var(--panel); color: var(--ink); text-align: left; width: 100%; }
+.hgame .res { min-width: 32px; height: 32px; padding: 0 4px; border-radius: 9px; display: grid; place-items: center; color: #fff; font-weight: 900; font-size: 13px; flex: none; }
+.hgame .hw { flex: 1; min-width: 0; }
+.hgame .hw b { display: block; font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hgame .hw small { color: var(--soft); font-size: 12px; font-weight: 700; }
+.hgame .el { color: var(--soft); font-weight: 800; font-size: 12.5px; }
+.hgame .dl { font-size: 13px; font-weight: 900; }
+.hgame .dl.up { color: var(--accent); } .hgame .dl.down { color: var(--bad); }
 .cont { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 16px; background: linear-gradient(120deg, var(--accent), var(--accent-d)); color: #fff; width: 100%; text-align: left; margin-top: 12px; }
 .cont b { font-size: 17px; display: block; }
 .cont small { opacity: .85; font-size: 13px; }
@@ -459,6 +479,7 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
     <button class="bigbtn friend" id="friendBtn"><div><b>Play a friend</b><small id="friendSub">Two players, one phone. Pass it back and forth.</small></div><span class="go">Play</span></button>
     <button class="bigbtn online" id="onlineBtn"><div><b>Play a friend online</b><small id="onlineSub">Different houses? Send them a code and play live.</small></div><span class="go">Play</span></button>
     <button class="cont" id="contBtn" hidden><div><b>Continue game</b><small id="contInfo"></small></div><span class="go">Play</span></button>
+    <button class="histbtn" id="histBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg><span><b>Game history</b><small id="histInfo">Replay and share your past games</small></span><i>›</i></button>
     <h2>Play as</h2>
     <div class="seg" role="group" aria-label="Your color" id="colorSeg"></div>
     <button class="opt" id="tbOpt" role="switch"><div class="tx"><b>Takebacks</b><small id="tbNote"></small></div><span class="sw"></span></button>
@@ -497,6 +518,7 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
     </div>
   </section>
 
+  <section id="histSec" hidden><div id="histBody"></div></section>
   <section id="archSec" hidden>
     <div class="cal-head"><button id="calPrev" aria-label="Previous month">‹</button><b id="calTitle"></b><button id="calNext" aria-label="Next month">›</button></div>
     <div class="cal" id="cal"></div>
@@ -527,7 +549,7 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
         <button id="rvLast" aria-label="Last move"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 5v14M6 6l7 6-7 6"/></svg></button>
       </div>
       <div class="anal" id="anal"></div>
-      <div class="overbar"><button class="btn alt" id="botsBtn">Change bot</button><button class="btn" id="rematchBtn">Rematch</button></div>
+      <div class="overbar"><button class="btn alt" id="botsBtn">Change bot</button><button class="btn alt" id="shareBtn">Share</button><button class="btn" id="rematchBtn">Rematch</button></div>
     </div>
   </section>
 </div>
@@ -1296,7 +1318,8 @@ function render() {
   else $('moves').scrollLeft = 1e6;
   // tools
   $('tools').hidden = !!G.over; $('overBar').hidden = !G.over;
-  $('botsBtn').textContent = G.pvp || G.online ? 'Menu' : 'Change bot';
+  $('botsBtn').textContent = G.hist && !G.shared ? 'History' : G.pvp || G.online ? 'Menu' : 'Change bot';
+  $('rematchBtn').hidden = !!G.hist;
   $('undoBtn').hidden = !tbOn(G);
   $('undoBtn').disabled = G.pvp ? !G.moves.length : myMoveCount() === 0;
   $('hintBtn').hidden = !!G.online; $('drawBtn').hidden = false;
@@ -1846,8 +1869,8 @@ $('hintBtn').onclick = () => {
 };
 
 $('anal').addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) goTo(+b.dataset.go); });
-$('botsBtn').onclick = showMenu;
-$('back').onclick = e => { if (!$('game').hidden) { e.preventDefault(); cancelBrain(); stopAnalysis(); premove = null; thinking = false; showMenu(); } else if (pzBack()) e.preventDefault(); };
+$('botsBtn').onclick = () => { if (G && G.hist && !G.shared) openHistory(); else showMenu(); };
+$('back').onclick = e => { if (!$('game').hidden) { e.preventDefault(); cancelBrain(); stopAnalysis(); premove = null; thinking = false; if (G && G.hist && !G.shared) openHistory(); else showMenu(); } else if (pzBack()) e.preventDefault(); };
 
 // ---------- live move scrubber ----------
 let scrub = null; // ply being looked at during a live game (null = live)
@@ -2092,7 +2115,8 @@ $('drawBtn').onclick = () => {
 };
 
 // ---------- results + rating ----------
-function finish(st) {
+function finish(st) { finishGame(st); histAdd(); }
+function finishGame(st) {
   if (G.online) {
     stopClock(); thinking = false; premove = null;
     const white = st.result === '1/2-1/2' ? .5 : st.result === '1-0' ? 1 : 0;
@@ -2193,6 +2217,7 @@ function showMenu(keepOverlays) {
   $('rateCard').innerHTML = `<div class="num"><small>YOUR RATING</small>${Math.round(SV.rating)}</div><div class="meta">Peak <b>${Math.round(SV.peak)}</b><br>W <b>${w}</b> · L <b>${l}</b> · D <b>${d}</b></div>`;
   const g = SV.game;
   $('contBtn').hidden = !g;
+  { const n = hist().length; $('histInfo').textContent = n ? `${n} game${n === 1 ? '' : 's'} · replay and share` : 'Replay and share your past games'; }
   if (g) $('contInfo').textContent = `${g.online ? `vs ${g.names[g.me === 1 ? 1 : 0]} (online)` : g.pvp ? `${g.names[0]} vs ${g.names[1]}` : 'vs ' + botById(g.bot).name} · move ${Math.floor(g.moves.length / 2) + 1}`;
   $('colorSeg').innerHTML = [['w', 'White', 6], ['r', 'Random', 0], ['b', 'Black', -6]].map(([k, n, p]) => `<button data-c="${k}" aria-pressed="${SV.color === k}">${p ? pieceSVG(p, '') : ''}${n}</button>`).join('');
   $('tbOpt').setAttribute('aria-checked', !!SV.tb);
@@ -2463,7 +2488,7 @@ const sqN = n => (n.charCodeAt(1) - 49) * 16 + (n.charCodeAt(0) - 97);
 const moveSound = san => sound(san.includes('+') || san.includes('#') ? 'check' : san.includes('x') ? 'cap' : 'move');
 
 // ---------- screens ----------
-const SCREENS = ['menu', 'game', 'puzzle', 'anaSec', 'archSec'];
+const SCREENS = ['menu', 'game', 'puzzle', 'anaSec', 'archSec', 'histSec'];
 function showScreen(id, back) {
   SCREENS.forEach(s => { $(s).hidden = s !== id; });
   $('back').textContent = back;
@@ -2920,6 +2945,7 @@ anBoard.anno = makeAnno($('aboard'), () => AS && AS.flip); penButton($('anPen'),
 function openPuzMenu() { cancelBrain(); PS = null; SV.mode = 'puz'; save(); showMenu(); }
 $('modeSeg').onclick = e => { const b = e.target.closest('[data-m]'); if (!b) return; SV.mode = b.dataset.m; save(); showMenu(); };
 function pzBack() {
+  if (!$('histSec').hidden) { showMenu(); return true; }
   if (!$('anaSec').hidden) { cancelBrain(); if (PS) { showScreen('puzzle', '‹ Puzzles'); pzBoard.draw(); } else openPuzMenu(); return true; }
   if (!$('puzzle').hidden || !$('archSec').hidden) { openPuzMenu(); return true; }
   return false;
@@ -3293,6 +3319,115 @@ $('onlineBtn').onclick = () => openOnline();
 }
 
 // =====================================================================
+// GAME HISTORY + SHARING: every finished game is saved (newest first, up to 300) and can be
+// replayed in the review screen, or shared as a link / PGN.
+// =====================================================================
+const hist = () => (SV.hist = Array.isArray(SV.hist) ? SV.hist : []);
+const playerName = () => SV.onlineName || lbName() || 'You';
+function histAdd() {
+  if (!G || !G.over || G.over.saved || G.hist || !G.moves.length) return;
+  const kind = G.online ? 'online' : G.pvp ? 'pvp' : 'bot', bot = kind === 'bot' ? botById(G.bot) : null;
+  const names = bot ? (G.me === 1 ? [playerName(), bot.name] : [bot.name, playerName()]) : G.names.slice();
+  const rec = { id: Date.now().toString(36), at: Date.now(), kind, bot: bot ? bot.id : null, elo: bot ? bot.elo : null, names, me: kind === 'pvp' ? 0 : G.me,
+    moves: G.moves.join(' '), result: G.over.result, reason: G.over.reason, delta: G.over.rated ? G.over.delta : null };
+  const H = hist(); H.unshift(rec); if (H.length > 300) H.length = 300;
+  G.over.saved = true; G.histRec = rec; save();
+}
+// result from your side: 1 win, 0 loss, .5 draw, null for same-phone games (no "you")
+const histScore = h => { if (h.kind === 'pvp' || !h.me) return null; const w = h.result === '1-0' ? 1 : h.result === '0-1' ? 0 : .5; return h.me === 1 ? w : 1 - w; };
+const WHY = { checkmate: 'checkmate', stalemate: 'stalemate', resignation: 'resignation', repetition: 'repetition', '50-move rule': '50-move rule', 'insufficient material': 'insufficient material', time: 'time', agreement: 'agreement' };
+let histFilter = 'all';
+function openHistory() {
+  cancelBrain(); stopAnalysis(); stopClock(); premove = null; thinking = false; onlineDetach();
+  showScreen('histSec', '‹ Chess');
+  drawHistory();
+}
+function drawHistory() {
+  const H = hist(), F = { all: 'All', bot: 'Bots', pvp: 'Same phone', online: 'Online' };
+  const list = H.filter(h => histFilter === 'all' || h.kind === histFilter);
+  const sc = list.map(histScore).filter(x => x != null), w = sc.filter(x => x === 1).length, l = sc.filter(x => x === 0).length, d = sc.filter(x => x === .5).length;
+  const row = (h, i) => {
+    const s = histScore(h), n = h.moves ? Math.ceil(h.moves.split(' ').length / 2) : 0;
+    const winner = h.result === '1-0' ? 0 : h.result === '0-1' ? 1 : -1;
+    const tag = s === 1 ? ['W', 'var(--accent)'] : s === 0 ? ['L', 'var(--bad)'] : s === .5 || winner < 0 ? ['D', '#9a978f'] : [winner === 0 ? '1-0' : '0-1', '#7b5cd6'];
+    const opp = h.kind === 'pvp' ? `${esc(h.names[0])} vs ${esc(h.names[1])}` : `vs ${esc(h.names[h.me === 1 ? 1 : 0])}${h.elo ? ` <span class="el">${h.elo}</span>` : ''}${h.kind === 'online' ? ' <span class="el">online</span>' : ''}`;
+    const when = new Date(h.at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    const dl = h.delta != null ? `<span class="dl ${h.delta >= 0 ? 'up' : 'down'}">${h.delta >= 0 ? '+' : ''}${h.delta}</span>` : '';
+    return `<button class="hgame" data-h="${H.indexOf(h)}"><span class="res" style="background:${tag[1]}">${tag[0]}</span><span class="hw"><b>${opp}</b><small>${when} · ${n} move${n === 1 ? '' : 's'}${WHY[h.reason] ? ' · ' + WHY[h.reason] : ''}</small></span>${dl}<i>›</i></button>`;
+  };
+  $('histBody').innerHTML = `<h2 style="margin-top:4px">Game history</h2>
+    <div class="chips hfil">${Object.entries(F).map(([k, n]) => `<button data-hf="${k}" aria-pressed="${histFilter === k}">${n}</button>`).join('')}</div>
+    ${sc.length ? `<div class="hstat"><div><b>${w}</b>Wins</div><div><b>${l}</b>Losses</div><div><b>${d}</b>Draws</div><div><b>${Math.round(w / sc.length * 100)}%</b>Win rate</div></div>` : ''}
+    <div class="hlist">${list.length ? list.map(row).join('') : `<p class="tnote" style="text-align:center;padding:24px 0">${H.length ? 'No games here yet.' : 'Finish a game and it shows up here.'}</p>`}</div>`;
+}
+$('histBody').addEventListener('click', e => {
+  const f = e.target.closest('[data-hf]'); if (f) { histFilter = f.dataset.hf; drawHistory(); return; }
+  const g = e.target.closest('[data-h]'); if (g) openHistGame(hist()[+g.dataset.h]);
+});
+$('histBtn').onclick = () => openHistory();
+// replay a saved (or shared) game in the review screen
+function openHistGame(h, shared) {
+  if (!h) return;
+  const moves = h.moves ? h.moves.split(' ') : [];
+  const w = h.result === '1-0' ? 1 : h.result === '0-1' ? 0 : .5;
+  const asBot = h.kind === 'bot' && !shared && botById(h.bot);
+  G = asBot ? { hist: h, bot: h.bot, me: h.me, moves, takebacks: 0, hints: 0 }
+    : { hist: h, shared: !!shared, pvp: true, names: h.names.slice(), moves, takebacks: 0, hints: 0 };
+  G.over = { result: h.result, reason: h.reason, score: asBot ? (h.me === 1 ? w : 1 - w) : w, delta: h.delta || 0, rated: false, saved: true };
+  HINT = null;
+  $('menu').hidden = true; SCREENS.forEach(s => { $(s).hidden = s !== 'game'; });
+  startGame();
+  if (!asBot) { flipped = h.kind !== 'pvp' && h.me === -1; }
+  $('back').textContent = shared ? '‹ Chess' : '‹ History';
+  view = G.moves.length; startAnalysis(); render();
+  window.scrollTo(0, 0);
+}
+// ---------- sharing ----------
+const b64url = s => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const unb64url = s => decodeURIComponent(escape(atob(s.replace(/-/g, '+').replace(/_/g, '/'))));
+const gameLink = h => location.origin + location.pathname + '?g=' + b64url(JSON.stringify({ n: h.names, m: h.moves, r: h.result, w: h.reason, a: h.at, k: h.kind, e: h.elo || 0 }));
+function gamePGN(h) {
+  const X = MX(); X.load(E.START); const out = [];
+  (h.moves ? h.moves.split(' ') : []).forEach((u, i) => { const m = X.fromUci(u); if (!m) return; if (i % 2 === 0) out.push(`${i / 2 + 1}.`); out.push(X.san(m)); X.make(m); });
+  const d = new Date(h.at), ds = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+  const tags = [['Event', h.kind === 'bot' ? 'Pocket Arcade vs bot' : h.kind === 'online' ? 'Pocket Arcade online' : 'Pocket Arcade'], ['Site', location.origin + location.pathname], ['Date', ds], ['White', h.names[0]], ['Black', h.names[1]], ['Result', h.result], ['Termination', h.reason || '']];
+  return tags.map(([k, v]) => `[${k} "${String(v).replace(/"/g, "'")}"]`).join('\n') + '\n\n' + out.join(' ') + ' ' + h.result;
+}
+function openShare(h) {
+  const link = gameLink(h), pgn = gamePGN(h);
+  const o = document.createElement('div'); o.className = 'ov';
+  o.innerHTML = `<div class="card pvpset"><h3 style="font-size:21px">Share this game</h3><p>${esc(h.names[0])} vs ${esc(h.names[1])} · ${h.result}</p>
+    <div class="row"><button class="btn" data-a="link">Copy link</button><button class="btn alt" data-a="pgn">Copy PGN</button></div>
+    ${navigator.share ? '<button class="btn alt" data-a="share" style="width:100%;margin-top:8px">Share...</button>' : ''}
+    <small class="note">The link opens a replay of the game. PGN is the standard chess format other apps (like chess.com or Lichess) can import.</small>
+    <div class="row" style="margin-top:12px"><button class="btn alt" data-a="close">Close</button></div></div>`;
+  document.body.append(o);
+  const copy = async (t, msg) => { try { await navigator.clipboard.writeText(t); toast(msg); } catch (e) { toast("Couldn't copy"); } };
+  o.onclick = async e => {
+    const a = e.target.closest('[data-a]'), k = a && a.dataset.a;
+    if (k === 'link') copy(link, 'Link copied');
+    else if (k === 'pgn') copy(pgn, 'PGN copied');
+    else if (k === 'share') { try { await navigator.share({ title: 'Chess game', text: `${h.names[0]} vs ${h.names[1]} (${h.result})`, url: link }); } catch (x) { } }
+    else if (k === 'close' || e.target === o) o.remove();
+  };
+}
+$('shareBtn').onclick = () => { const h = G && (G.hist || G.histRec); if (h) openShare(h); };
+// opened from a shared link (?g=...)
+{
+  const q = new URLSearchParams(location.search).get('g');
+  if (q) {
+    history.replaceState(null, '', location.pathname);
+    try {
+      const d = JSON.parse(unb64url(q));
+      const h = { names: d.n, moves: d.m, result: d.r, reason: d.w, at: d.a || Date.now(), kind: d.k || 'pvp', elo: d.e || null, me: 0 };
+      if (!Array.isArray(h.names) || typeof h.moves !== 'string') throw 0;
+      const X = MX(); X.load(E.START); for (const u of h.moves.split(' ')) { const m = u && X.fromUci(u); if (!m) throw 0; X.make(m); } // only legal games
+      setTimeout(() => { openHistGame(h, true); toast(`Shared game: ${h.names[0]} vs ${h.names[1]}`); }, 100);
+    } catch (e) { toast("That game link doesn't work"); }
+  }
+}
+
+// =====================================================================
 // CUSTOM COLORS (board squares + accent), color wheel or hex code
 // =====================================================================
 const UI_PRESETS = [
@@ -3657,7 +3792,7 @@ function openColors() {
 $('colorBtn').onclick = openColors;
 initFB();
 
-window.__chess = { fb, pushBoard, openColors, cycleSetup, openPuzzle, pzNotes, pzGoal, get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
+window.__chess = { fb, pushBoard, openColors, cycleSetup, hist, gameLink, gamePGN, openPuzzle, pzNotes, pzGoal, get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
 showMenu();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('./sw.js').catch(() => { });
 })();

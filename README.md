@@ -33,6 +33,9 @@ match /chessOnline/{code} {
 ### Leaderboard
 The **Leaderboard** tab (next to Play bots and Puzzles) switches between chess and puzzle ratings, and shows your place and how many points you are behind the player above you.
 
+### Game history
+Every finished chess game (bots, same phone, online) is saved on your device, newest first, up to 300. **Game history** on the Chess menu lists them with filters and your wins, losses, draws and win rate. Tap one to replay it with move ratings. **Share** (after any game, or on a replay) copies a link that opens a replay of the game, or the PGN for chess.com / Lichess.
+
 ### Puzzle explanations
 Each puzzle starts with what the opponent just played and a goal that doesn't give the answer away ("Calculate a way to win material", "Find checkmate in 2", "Find the move that saves the game"). A wrong move plays out the opponent's best answer on the board with an explanation ("You take the pawn, but Black takes back with Qxd7, so you lose your queen for it"), then puts the board back. Correct moves and the opponent's replies get a short note, the Solution button explains each move as it plays, and the result card has a **How it works** walkthrough of the whole line.
 
