@@ -3507,12 +3507,13 @@ function renderLearnMenu() {
     <div class="seg" id="learnSeg" style="margin-top:12px"><button data-ls="w" aria-pressed="${learnSide === 'w'}">${pieceSVG(6, '')}As White</button><button data-ls="b" aria-pressed="${learnSide === 'b'}">${pieceSVG(-6, '')}As Black</button></div>
     <div class="oplist">${list.map(o => { const st = S[o.id] || {}; return `<div class="opcard"><div class="oh"><b>${esc(o.name)}</b><span class="eco">${o.eco}</span>${starsHTML(st.stars || 0)}</div>
       <p>${esc(o.about)}</p><div class="oacts"><button class="chip2" data-learn="${o.id}">Learn</button><button class="chip2 on" data-prac="${o.id}">Practice</button>${st.plays ? `<small>${st.plays} run${st.plays === 1 ? '' : 's'}</small>` : ''}</div></div>`; }).join('')}</div>
-    <p class="tnote" style="text-align:center">Endgame practice is coming here next.</p>`;
+    ${endgamesHTML()}`;
 }
 $('learnMenu').addEventListener('click', e => {
   const s = e.target.closest('[data-ls]'); if (s) { learnSide = s.dataset.ls; renderLearnMenu(); return; }
   const l = e.target.closest('[data-learn]'); if (l) { openTrainer(l.dataset.learn, 'learn'); return; }
-  const p = e.target.closest('[data-prac]'); if (p) openTrainer(p.dataset.prac, 'practice');
+  const p = e.target.closest('[data-prac]'); if (p) { openTrainer(p.dataset.prac, 'practice'); return; }
+  const en = e.target.closest('[data-end]'); if (en) openEnd(en.dataset.end);
 });
 const trBoard = makeBoard($('tboard'), {
   get eng() { return T; },
@@ -3555,6 +3556,7 @@ function trStep() {
   trBoard.draw(); trStatus('turn');
 }
 function trMove(m) {
+  if (TR.kind === 'end') { endMove(m); return; }
   const s = TR, san = T.san(m);
   if (sanOf(san) === sanOf(s.line[s.step])) {
     T.make(m); s.last = [T.from(m), T.to(m)]; s.okSq = [T.to(m)]; s.hintSq = []; s.noSq = []; s.step++;
@@ -3603,9 +3605,144 @@ function trDone() {
     <div class="row"><button class="btn alt" data-tr="again">${s.mode === 'learn' ? 'Learn again' : 'Practice again'}</button><button class="btn" data-tr="${s.mode === 'learn' ? 'prac' : 'next'}">${s.mode === 'learn' ? 'Practice' : 'Next: ' + esc(nx.name)}</button></div></div>`;
   r.onclick = e => { const b = e.target.closest('[data-tr]'); if (!b) return; const k = b.dataset.tr; openTrainer(k === 'next' ? nx.id : s.op.id, k === 'again' ? s.mode : k === 'prac' ? 'practice' : 'practice'); };
 }
-$('trHint').onclick = () => { const s = TR; if (!s || s.done || T.side !== s.color) return; const exp = T.legalMoves().find(x => sanOf(T.san(x)) === sanOf(s.line[s.step])); if (exp) { s.hintSq = [T.from(exp), T.to(exp)]; if (s.mode === 'practice') s.mistakes++; trBoard.draw(); trStatus('turn'); if (s.mode === 'practice') toast('Hint used: this run won’t earn a star'); } };
-$('trRestart').onclick = () => TR && openTrainer(TR.op.id, TR.mode);
-$('trSwitch').onclick = () => TR && openTrainer(TR.op.id, TR.mode === 'learn' ? 'practice' : 'learn');
+$('trHint').onclick = () => { if (TR && TR.kind === 'end') { endHint(); return; } const s = TR; if (!s || s.done || T.side !== s.color) return; const exp = T.legalMoves().find(x => sanOf(T.san(x)) === sanOf(s.line[s.step])); if (exp) { s.hintSq = [T.from(exp), T.to(exp)]; if (s.mode === 'practice') s.mistakes++; trBoard.draw(); trStatus('turn'); if (s.mode === 'practice') toast('Hint used: this run won’t earn a star'); } };
+$('trRestart').onclick = () => TR && (TR.kind === 'end' ? openEnd(TR.e.id) : openTrainer(TR.op.id, TR.mode));
+$('trSwitch').onclick = () => TR && (TR.kind === 'end' ? endTips() : openTrainer(TR.op.id, TR.mode === 'learn' ? 'practice' : 'learn'));
+
+// ---------- Endgame practice (Learn tab): beat the full-strength engine in classic endgames ----------
+const END_LINES = [
+  { id: 'kqk', name: 'Queen checkmate', goal: 'mate', fen: '8/8/8/4k3/8/8/8/4K2Q w - - 0 1', par: [10, 14],
+    about: 'Checkmate the lone king with your queen and king.',
+    tips: 'Box the king in with your queen, staying a knight’s move away from it. Shrink the box until the king is on the edge. Then walk your king over and mate. Watch out for stalemate: always leave their king a square to move to until the mating move.' },
+  { id: 'twork', name: 'Two-rook ladder', goal: 'mate', fen: '8/8/8/3k4/8/8/8/R3K2R w - - 0 1', par: [6, 9],
+    about: 'Mate with two rooks. You don’t even need your king.',
+    tips: 'One rook cuts the king off along a rank or file, the other checks on the next one. Keep swapping roles like climbing a ladder until the king is on the edge. If their king walks up to a rook, move that rook far away along the same line.' },
+  { id: 'krk', name: 'Rook checkmate', goal: 'mate', fen: '8/8/8/4k3/8/8/8/R3K3 w - - 0 1', par: [18, 26],
+    about: 'The most important basic checkmate.',
+    tips: 'Use the rook to cut the king into a box and bring your king up. When the kings face each other with one square between them, check with the rook to push their king back a row. If they don’t face each other, make a waiting move with the rook. Repeat until the king is on the edge, then mate.' },
+  { id: 'kbbk', name: 'Two-bishop checkmate', goal: 'mate', fen: '8/8/8/4k3/8/8/8/2B1KB2 w - - 0 1', par: [22, 32],
+    about: 'Harder: the bishops have to work side by side.',
+    tips: 'Put the bishops next to each other in the center so they make a wall the king can’t cross. Bring your king up and slowly shrink the space. The king has to be driven into a corner, where the bishops and your king mate it together.' },
+  { id: 'kpk', name: 'King and pawn: win', goal: 'promote', fen: '8/8/4k3/8/8/4K3/4P3/8 w - - 0 1', par: [10, 14],
+    about: 'Make a new queen. The king leads the way, not the pawn.',
+    tips: 'Walk your king in front of the pawn first. The key squares are two squares in front of the pawn (here d4, e4 and f4): if your king reaches one, the pawn will queen. Use the opposition (kings facing each other with one square between, the other side to move) to push their king aside, then bring the pawn up.' },
+  { id: 'kpkdraw', name: 'King and pawn: hold the draw', goal: 'draw', fen: '8/8/4k3/8/4P3/4K3/8/8 b - - 0 1', survive: 20,
+    about: 'You’re Black. Don’t let the pawn become a queen.',
+    tips: 'Stay right in front of the pawn. When White’s king steps forward, step in front of it so the kings face each other with one square between (the opposition). If the pawn reaches the 7th rank with your king in front of it, White can only stalemate you or lose the pawn.' },
+  { id: 'lucena', name: 'Lucena: build a bridge', goal: 'promote', fen: '1K1k4/1P6/8/8/8/8/r7/2R5 w - - 0 1', par: [10, 15],
+    about: 'The most famous winning rook endgame.',
+    tips: 'First check their king away from the pawn with Rd1+. Then lift your rook to the 4th rank. Walk your king out; when Black checks it from the side or behind, block the check with your rook on the 4th rank. That’s the bridge, and the pawn queens.' },
+  { id: 'philidor', name: 'Philidor: hold the draw', goal: 'draw', fen: '4k3/R7/7r/4P3/4K3/8/8/8 b - - 0 1', survive: 25,
+    about: 'You’re Black. The textbook way to draw a rook endgame a pawn down.',
+    tips: 'Keep your rook on your 6th rank (third from your side) so White’s king can’t come forward. As soon as the pawn steps onto that rank, swing your rook to the far end and check the king from behind until White gives up.' },
+];
+const ENDS = () => (SV.end = SV.end && typeof SV.end === 'object' ? SV.end : {});
+const goalText = e => e.goal === 'mate' ? 'Checkmate the king.' : e.goal === 'promote' ? 'Promote your pawn to a queen.' : `Hold the draw for ${e.survive} moves.`;
+function endgamesHTML() {
+  const S = ENDS();
+  return `<h2 style="margin-top:22px">Endgames</h2>
+    <div class="pcard"><div class="meta">Play the classic endgames against the bot at full strength. Faster wins earn more stars. Each one has <b>Tips</b> that explain the technique.</div></div>
+    <div class="oplist">${END_LINES.map(e => { const st = S[e.id] || {}; const side = e.fen.split(' ')[1] === 'w' ? 'White' : 'Black';
+      return `<div class="opcard"><div class="oh"><b>${esc(e.name)}</b><span class="eco">${side}</span>${starsHTML(st.stars || 0)}</div><p>${esc(e.about)}</p>
+        <div class="oacts"><button class="chip2 on" data-end="${e.id}">Play</button>${st.best ? `<small>Best: ${e.goal === 'draw' ? 'held' : st.best + ' moves'}</small>` : ''}</div></div>`; }).join('')}</div>`;
+}
+const matOf = (X, c) => { let n = 0; for (let s = 0; s < 120; s++) { if (s & 0x88) { s += 7; continue; } const p = X.board[s]; if (p && (p > 0) === (c > 0) && Math.abs(p) !== 6) n += PV[Math.abs(p)]; } return n; };
+function openEnd(id) {
+  const e = END_LINES.find(x => x.id === id); if (!e) return;
+  cancelBrain(); stopAnalysis(); stopClock(); onlineDetach();
+  T.load(e.fen);
+  TR = { kind: 'end', e, color: T.side, op: { side: T.side === 1 ? 'w' : 'b' }, mine: 0, hints: 0, busy: false, done: false, last: [], hintSq: [], okSq: [], noSq: [], theirs: '', mat: matOf(T, T.side) };
+  showScreen('trainSec', '‹ Learn');
+  $('trName').textContent = e.name; $('trMode').textContent = 'Tips';
+  $('trResult').hidden = true; $('trTools').hidden = false;
+  trBoard.select(-1); trBoard.draw(); endStatus('turn');
+}
+function endStatus(k, msg) {
+  const s = TR, e = s.e, el = $('trStat'), them = s.color === 1 ? 'Black' : 'White';
+  const ic = (bg, t) => `<span class="ic" style="background:${bg}">${t}</span>`;
+  const pc = `<span class="ic" style="background:${s.color === 1 ? '#fafaf7' : '#2c2b29'};box-shadow:inset 0 0 0 2px var(--line)"></span>`;
+  el.className = 'pzstat';
+  $('trProg').textContent = e.goal === 'draw' ? `Move ${s.mine} of ${e.survive}` : `Moves: ${s.mine}`;
+  const par = e.par ? ` 3 stars in ${e.par[0]} moves or fewer.` : '';
+  el.innerHTML = k === 'think' ? `${ic('#9a978f', '…')}<div>${them} is thinking...<small>${s.theirs ? `` : ''}${esc(goalText(e))}</small></div>`
+    : `${pc}<div>${s.mine ? 'Your move' : esc(goalText(e))}<small>${s.theirs ? `${them} played ${s.theirs}. ` : esc(e.about) + ' '}${s.mine ? esc(goalText(e)) : par.trim()}</small></div>`;
+}
+function endMove(m) {
+  const s = TR, san = T.san(m), to = T.to(m), promo = T.promo(m);
+  T.make(m); s.mine++; s.last = [T.from(m), to]; s.hintSq = []; moveSound(san); trBoard.draw();
+  if (endCheck('you', promo, to)) return;
+  s.busy = true; endStatus('think');
+  setTimeout(() => {
+    if (TR !== s) return;
+    const r = T.think({ time: 450, depth: 40, noise: 0, random: 0, full: true });
+    if (!r.move) { s.busy = false; return; }
+    const rs = T.san(r.move), rpro = T.promo(r.move), rto = T.to(r.move);
+    s.lastTaken = T.board[rto] || (T.flag(r.move) & 2 ? 1 : 0);
+    trBoard.anim = { from: T.from(r.move), to: rto };
+    T.make(r.move); s.last = [T.from(r.move), rto]; s.theirs = rs; moveSound(rs); trBoard.draw();
+    if (endCheck('them', rpro, rto)) return;
+    s.busy = false; endStatus('turn');
+  }, 260);
+}
+// did the endgame just end? returns true when it did
+function endCheck(who, promo, to) {
+  const s = TR, e = s.e, st = T.status(), them = s.color === 1 ? 'Black' : 'White';
+  const took = Math.abs(s.lastTaken || 0);
+  const lost = e.goal !== 'draw' && who === 'them' && matOf(T, s.color) < s.mat && (e.goal === 'mate' || took === 1 || took === 5); // in pawn endgames only the pawn or new queen matters
+  if (st && st.reason === 'checkmate') return T.side === s.color ? endOver(false, 'You got checkmated.') : endOver(true, 'Checkmate!');
+  if (lost) {
+    const cap = PN[Math.abs(s.lastTaken || 0)] || (e.goal === 'promote' ? 'pawn' : 'piece');
+    return endOver(false, `${them} took your ${cap}. You need it to win.`);
+  }
+  if (st) {
+    if (e.goal === 'draw') return endOver(true, `Draw by ${st.reason}. You held it!`);
+    const why = { stalemate: 'Stalemate! Their king had no legal moves but wasn’t in check, so it’s a draw. Always leave it a square until the mating move.', 'insufficient material': 'There isn’t enough material left to checkmate, so it’s a draw.', repetition: 'Draw by repetition: the same position came up three times.', '50-move rule': 'Draw by the 50-move rule: no capture or pawn move for 50 moves.' }[st.reason] || `It’s a draw (${st.reason}).`;
+    return endOver(false, why);
+  }
+  if (e.goal !== 'draw' && who === 'you' && promo) {
+    const safe = !T.legalMoves().some(x => T.to(x) === to);
+    if (e.goal === 'promote' && safe) return endOver(true, `New ${PN[promo]}! It’s safe and the game is won.`);
+    s.mat = matOf(T, s.color); // keep going; losing the new queen now counts as losing material
+  }
+  if (e.goal === 'draw') {
+    if (who === 'them' && promo) return endOver(false, `${them} made a new ${PN[promo]}. Stay in front of the pawn next time.`);
+    if (who === 'them' && s.mine >= e.survive) return endOver(true, `You held for ${e.survive} moves. That’s a draw!`);
+  }
+  return false;
+}
+function endOver(won, msg) {
+  const s = TR, e = s.e; s.done = true; s.busy = false; s.hintSq = []; trBoard.draw();
+  const S = ENDS(), st = S[e.id] || (S[e.id] = { stars: 0, plays: 0 });
+  st.plays++;
+  let stars = 0;
+  if (won) {
+    stars = e.par ? (s.mine <= e.par[0] ? 3 : s.mine <= e.par[1] ? 2 : 1) : 3;
+    stars = Math.max(1, stars - Math.min(2, s.hints));
+    st.stars = Math.max(st.stars || 0, stars);
+    if (e.goal !== 'draw') st.best = st.best ? Math.min(st.best, s.mine) : s.mine; else st.best = st.best || 1;
+  }
+  save(); sound(won ? 'win' : 'lose');
+  $('trStat').className = 'pzstat ' + (won ? 'good' : 'bad');
+  $('trStat').innerHTML = `<span class="ic" style="background:${won ? '#81b64c' : '#d63a2f'}">${won ? '✓' : '✕'}</span><div>${won ? 'You did it!' : 'Not this time'}<small>${esc(msg)}${won && e.goal !== 'draw' ? ` ${s.mine} move${s.mine === 1 ? '' : 's'}.` : ''}${won && s.hints ? ` Hints used: ${s.hints}.` : ''}</small></div>`;
+  $('trTools').hidden = true;
+  const i = END_LINES.indexOf(e), nx = END_LINES[(i + 1) % END_LINES.length], r = $('trResult');
+  r.hidden = false;
+  r.innerHTML = `<div class="res"><div class="oh"><b>${esc(e.name)}</b>${starsHTML(won ? stars : 0)}</div>${won && e.par && stars < 3 ? `<p class="tnote" style="margin:6px 0 0">3 stars: ${e.par[0]} moves or fewer${s.hints ? ', no hints' : ''}.</p>` : ''}
+    <div class="row"><button class="btn alt" data-er="again">Try again</button><button class="btn" data-er="next">Next: ${esc(nx.name)}</button></div></div>`;
+  r.onclick = ev => { const b = ev.target.closest('[data-er]'); if (b) openEnd(b.dataset.er === 'next' ? nx.id : e.id); };
+  return true;
+}
+function endTips() {
+  const e = TR.e, o = document.createElement('div'); o.className = 'ov';
+  o.innerHTML = `<div class="card"><h3 style="font-size:21px">${esc(e.name)}</h3><p style="text-align:left">${esc(e.tips)}</p><div class="row"><button class="btn" data-a="ok">Got it</button></div></div>`;
+  document.body.append(o); o.onclick = ev => { if (ev.target === o || ev.target.closest('[data-a]')) o.remove(); };
+}
+function endHint() {
+  const s = TR; if (!s || s.done || s.busy || T.side !== s.color) return;
+  const r = T.think({ time: 900, depth: 40, noise: 0, random: 0, full: true }); if (!r.move) return;
+  s.hints++; s.hintSq = [T.from(r.move), T.to(r.move)]; trBoard.select(T.from(r.move)); trBoard.draw();
+  toast(s.hints === 1 ? 'Hint used: one less star' : `Hints used: ${s.hints}`);
+}
 
 // =====================================================================
 // CUSTOM COLORS (board squares + accent), color wheel or hex code
@@ -3972,7 +4109,7 @@ function openColors() {
 $('colorBtn').onclick = openColors;
 initFB();
 
-window.__chess = { fb, pushBoard, openColors, cycleSetup, openingAt, loadOpenings, openTrainer, OPEN_LINES, get TR() { return TR; }, T, hist, gameLink, gamePGN, openPuzzle, pzNotes, pzGoal, get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
+window.__chess = { fb, pushBoard, openColors, cycleSetup, openEnd, END_LINES, openingAt, loadOpenings, openTrainer, OPEN_LINES, get TR() { return TR; }, T, hist, gameLink, gamePGN, openPuzzle, pzNotes, pzGoal, get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
 showMenu();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('./sw.js').catch(() => { });
 })();

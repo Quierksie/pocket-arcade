@@ -38,6 +38,9 @@ The opening's name (from Lichess's free CC0 list of about 3,500 openings, built 
 
 The **Learn** tab has an openings trainer with 16 main lines (8 as White, 8 as Black, in `tools/openings/lines.js`; `node tools/openings/check-lines.js` checks them). **Learn** shows each of your moves with an arrow and why it's played; **Practice** makes you play the line from memory. A clean practice run earns a star, and 3 stars means mastered.
 
+### Endgame practice
+The Learn tab also has 8 endgames to play against the full-strength engine: queen, two-rook, rook and two-bishop checkmates; king and pawn (win, and hold the draw as Black); the Lucena (build a bridge) and the Philidor (hold the draw as Black). Each has **Tips** explaining the technique. Wins earn 1 to 3 stars by move count (hints cost a star). Stalemating, losing the piece you need, or letting the pawn queen ends the attempt with an explanation. `node tools/endgames/check.js` checks the starting positions.
+
 ### Game history
 Every finished chess game (bots, same phone, online) is saved on your device, newest first, up to 300. **Game history** on the Chess menu lists them with filters and your wins, losses, draws and win rate. Tap one to replay it with move ratings. **Share** (after any game, or on a replay) copies a link that opens a replay of the game, or the PGN for chess.com / Lichess.
 
