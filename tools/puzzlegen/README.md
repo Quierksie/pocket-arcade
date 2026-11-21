@@ -9,3 +9,7 @@ Runs automatically twice a day through GitHub Actions (`.github/workflows/puzzle
 The fifth field of each puzzle is the date it was added. The daily puzzle for a date only uses puzzles added before that date, so a day's puzzle never changes.
 
 `themes.js` adds pin, skewer, discovered attack and quiet move tags (each only when the line later wins the piece involved). `gen.js` uses it for new puzzles; `node retag.js --write` adds the tags to puzzles already in `puzzles.json` without removing any.
+
+**Hard mode:** `node gen.js out.jsonl 40 hard` checks lines deeper (Stockfish depth 18), allows mates up to 8 and lines up to 8 moves, looks for mistakes that still look fine to a 2-move-deep search, and keeps only puzzles with 3+ moves to find or 2-movers that `rate.js` puts at 1600+. In a local test it made about one puzzle per minute per process, rated roughly 1250 to 2000. The workflow runs two normal and two hard generators.
+
+Both modes: when a long line reaches a spot with more than one good move and the solver is already clearly winning (+3), the puzzle now ends after the solver's previous move instead of being thrown away (only after at least 2 moves to find).

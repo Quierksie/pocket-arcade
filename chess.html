@@ -718,6 +718,10 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
 .mineline { font-size: 13.5px; margin: 0 0 10px; }
 .anal .mineb { margin-top: 8px; width: 100%; }
 #pzMine[disabled] { opacity: .6; cursor: default; }
+
+.diffseg { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; margin-top: 8px; padding: 3px; border-radius: 10px; background: var(--panel2); }
+.diffseg button { border: 0; border-radius: 7px; padding: 7px 2px; background: transparent; color: var(--soft); font-size: 12px; font-weight: 800; cursor: pointer; }
+.diffseg button[aria-pressed=true] { background: var(--accent); color: #fff; }
 </style>
 </head>
 <body>
@@ -2665,10 +2669,13 @@ PZ.rush = Object.assign({ b3: 0, b5: 0, runs: 0, last: null }, PZ.rush || {});
 const rushBest = () => Math.max(PZ.rush.b3 || 0, PZ.rush.b5 || 0);
 if (!SV.mode) SV.mode = 'play';
 
+// five levels like chess.com's puzzle difficulty setting (Easiest to Hardest), picked relative to your rating
 const DIFFS = {
-  std: { name: 'Standard', off: 0, gain: 1, loss: 1, note: 'Manageable puzzles near your rating.' },
-  hard: { name: 'Hard', off: 150, gain: 1.2, loss: 0.8, note: 'Tougher puzzles. Bigger gains, smaller losses.' },
-  xhard: { name: 'Extra Hard', off: 300, gain: 1.4, loss: 0.6, note: 'Much tougher puzzles. Biggest gains, smallest losses.' },
+  easiest: { name: 'Easiest', off: -300, gain: 1, loss: 1, note: 'Well below your rating. Good for warming up or building confidence.' },
+  easier: { name: 'Easier', off: -150, gain: 1, loss: 1, note: 'A bit below your rating. Easier wins, smaller gains.' },
+  std: { name: 'Normal', off: 0, gain: 1, loss: 1, note: 'Puzzles near your rating.' },
+  hard: { name: 'Harder', off: 150, gain: 1.2, loss: 0.8, note: 'Tougher puzzles. Bigger gains, smaller losses.' },
+  xhard: { name: 'Hardest', off: 300, gain: 1.4, loss: 0.6, note: 'Much tougher puzzles. Biggest gains, smallest losses.' },
 };
 const TIERS = [['Wood', '#a0703c'], ['Stone', '#8d8f94'], ['Bronze', '#cd7f32'], ['Silver', '#a9b3c1'], ['Crystal', '#45bfe0'], ['Elite', '#9b6bff'], ['Champion', '#ff5d73'], ['Legend', '#e8b923']];
 const THEME_NAMES = { mate: 'Checkmate', mateIn1: 'Mate in 1', mateIn2: 'Mate in 2', mateIn3: 'Mate in 3', mateIn4: 'Mate in 4', mateIn5: 'Mate in 5', fork: 'Fork', hangingPiece: 'Hanging piece', sacrifice: 'Sacrifice', promotion: 'Promotion', discoveredAttack: 'Discovered attack', doubleCheck: 'Double check', backRankMate: 'Back rank mate', smotheredMate: 'Smothered mate', oneMove: 'One move', short: 'Short', long: 'Long', veryLong: 'Very long', opening: 'Opening', middlegame: 'Middlegame', endgame: 'Endgame', advantage: 'Advantage', crushing: 'Crushing', enPassant: 'En passant', castling: 'Castling', pin: 'Pin', skewer: 'Skewer', quietMove: 'Quiet move' };
@@ -2908,6 +2915,7 @@ function renderPuzMenu() {
       ${hist ? `<div class="hist">${hist}</div>` : ''}
       ${PZ.lost ? `<button class="bigbtn redeem" id="pzRedeem"><div><b>Redemption puzzle</b><small>Win back your ${PZ.lost.streak} streak with a harder puzzle</small></div><span class="go">${FLAME}${PZ.lost.streak}</span></button>` : ''}
       <button class="bigbtn" id="pzPlay"><div><b>Rated puzzles</b><small>${d.name} · ${PZ.streak > 1 ? `${PZ.streak} in a row` : 'matched to your rating'}</small></div><span class="go">Solve</span></button>
+      <div class="diffseg" id="pzDiffSeg" role="group" aria-label="Puzzle difficulty">${Object.entries(DIFFS).map(([k, x]) => `<button data-dk="${k}" aria-pressed="${(DIFFS[PZ.diff] ? PZ.diff : 'std') === k}">${x.name}</button>`).join('')}</div>
     </div>
     <div class="pcard">
       <div class="top"><div><div class="lbl">Daily puzzle</div><b style="font-size:17px">${DAY_NAMES[new Date().getDay()]} · ${today() >= EXTREME_FROM ? '<span style="color:#ff5d5d">Extreme</span>' : DAY_DIFF[new Date().getDay()]}</b></div>
@@ -2935,6 +2943,7 @@ function renderPuzMenu() {
       <div class="quest">Daily quest: 3 accurate puzzles <span class="dots">${[0, 1, 2].map(i => `<i class="${q.n > i ? 'on' : ''}"></i>`).join('')}</span>${q.done ? '<span class="up">+50 done</span>' : ''}</div>
     </div>`;
   $('pzGear').onclick = openPzSettings;
+  $('pzDiffSeg').onclick = e => { const b = e.target.closest('[data-dk]'); if (!b) return; PZ.diff = b.dataset.dk; save(); renderPuzMenu(); toast(`${DIFFS[PZ.diff].name}: ${DIFFS[PZ.diff].note}`); };
   $('pzPlay').onclick = () => startRated();
   if ($('pzRedeem')) $('pzRedeem').onclick = () => startRedeem();
   $('pzDaily').onclick = () => startDaily(today());
@@ -2949,7 +2958,7 @@ function renderPuzMenu() {
 }
 function openPzSettings() {
   const o = document.createElement('div'); o.className = 'ov';
-  o.innerHTML = `<div class="card"><h3 style="font-size:21px">Puzzle difficulty</h3><div class="radio">${Object.entries(DIFFS).map(([k, d]) => `<button data-k="${k}" aria-pressed="${PZ.diff === k}"><b>${d.name}${k === 'std' ? ' (default)' : ''}</b><small>${d.note}</small></button>`).join('')}</div><p style="font-size:13px">Using a hint counts as a miss and costs rating points.</p><button class="btn" data-a="ok">Done</button></div>`;
+  o.innerHTML = `<div class="card"><h3 style="font-size:21px">Puzzle difficulty</h3><div class="radio">${Object.entries(DIFFS).map(([k, d]) => `<button data-k="${k}" aria-pressed="${PZ.diff === k}"><b>${d.name}${k === 'std' ? ' (default)' : ''}</b><small>${d.note}</small></button>`).join('')}</div><p style="font-size:13px">Applies to rated puzzles and theme practice. Using a hint counts as a miss and costs rating points.</p><button class="btn" data-a="ok">Done</button></div>`;
   document.body.append(o);
   o.onclick = e => {
     const b = e.target.closest('[data-k]');
@@ -3385,7 +3394,7 @@ async function startTheme(k) {
   try { await loadPuzzles(); } catch (e) { toast('Could not load puzzles. Check your connection.'); return; }
   countThemes();
   const T = THEMES.find(t => t.k === k); if (!T || !T.n) { toast('No puzzles for that theme yet'); return; }
-  TH = { k, target: PZ.rating - 100, seen: new Set() };
+  TH = { k, target: PZ.rating - 100 + (DIFFS[PZ.diff] || DIFFS.std).off, seen: new Set() };
   themeNext();
 }
 function themeNext() {
@@ -4968,7 +4977,7 @@ function openColors() {
 $('colorBtn').onclick = openColors;
 initFB();
 
-window.__chess = { openHistGame, harvestMine, get AN() { return AN; }, moveInfo, isMine: i => isMine(i), get rush() { return RUSH; }, startVsBot, get scrub() { return scrub; }, fb, pushBoard, openColors, cycleSetup, openSettings, syncShell, ACH, checkAch, openEnd, END_LINES, openingAt, loadOpenings, openTrainer, OPEN_LINES, get TR() { return TR; }, T, hist, gameLink, gamePGN, openPuzzle, pzNotes, pzGoal, get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
+window.__chess = { pickRated: () => pickRated(), openHistGame, harvestMine, get AN() { return AN; }, moveInfo, isMine: i => isMine(i), get rush() { return RUSH; }, startVsBot, get scrub() { return scrub; }, fb, pushBoard, openColors, cycleSetup, openSettings, syncShell, ACH, checkAch, openEnd, END_LINES, openingAt, loadOpenings, openTrainer, OPEN_LINES, get TR() { return TR; }, T, hist, gameLink, gamePGN, openPuzzle, pzNotes, pzGoal, get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
 showMenu();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('./sw.js').catch(() => { });
 })();

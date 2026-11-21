@@ -37,6 +37,9 @@ match /leaderboard/{uid} {
 }
 ```
 
+### Puzzle difficulty
+Under **Rated puzzles** there's a five-step difficulty switch, the same idea as chess.com's puzzle difficulty setting: **Easiest** (about 300 below your rating), **Easier** (150 below), **Normal** (near your rating, the default), **Harder** (150 above, bigger gains and smaller losses) and **Hardest** (300 above). It also sets where theme practice starts. The gear on the rating card opens the same choice with a short description of each.
+
 ### Puzzles from your games
 When the review of a game against a bot or an online friend finishes, each of your mistakes, blunders and misses that had one clearly best answer (at least 2 pawns better than anything else, or the only mate) becomes a puzzle. A background worker extends the line with the opponent's best reply and your next move for as long as that move is still the only good one. The Analysis tab shows "N puzzles from your mistakes · Solve", and the Puzzles tab has a **From your games** card with what's left to solve and your recent ones. Results say what you played in the game and what was best. Up to 4 puzzles per game, 150 kept. Unrated; the Learn from it and Mistake fixer achievements count clean solves. Opening an old bot game from History also checks it for puzzles.
 

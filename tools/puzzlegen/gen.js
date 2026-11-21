@@ -9,6 +9,11 @@ const TE = ENGINE(); // separate board for tagging pins, skewers and the like
 const OUT = process.argv[2] || 'out.jsonl';
 const MINUTES = +(process.argv[3] || 60);
 const END = Date.now() + MINUTES * 60000;
+// "hard" mode: only keeps combinations with 3+ moves to find (or mates in 3 to 8), checks them deeper,
+// and looks for mistakes that still look fine to a 3-move-deep search, so the answer is harder to see.
+const HARD = process.argv[4] === 'hard';
+const SOLVE_MAX = HARD ? 8 : 5, MATE_MAX = HARD ? 8 : 5, D_BEST = HARD ? 18 : 16, D_REPLY = HARD ? 16 : 14, MIN_SOLVE = HARD ? 2 : 1;
+const rate = require('./rate.js');
 const V = [0, 1, 3, 3, 5, 9, 0];
 
 const wc = r => r.mate != null ? (r.mate > 0 ? 1 : -1) : 2 / (1 + Math.exp(-0.00368208 * r.cp)) - 1;
@@ -50,19 +55,27 @@ async function buildLine(sf, E, startPly) {
   const line = [], diffs = [];
   let mateMode = false, made = 0;
   try {
-    for (let k = 0; k < 5; k++) {
+    for (let k = 0; k < SOLVE_MAX; k++) {
       const legal = E.legalMoves();
-      const r = await sf.analyse(E.fen(), { depth: 16, multipv: 2 });
+      const r = await sf.analyse(E.fen(), { depth: D_BEST, multipv: 2 });
       const best = r[0], second = r[1];
       if (!best) return null;
       if (k === 0) {
-        if (best.mate != null) { if (best.mate <= 0 || best.mate > 5) return null; mateMode = true; }
+        if (best.mate != null) { if (best.mate <= 0 || best.mate > MATE_MAX || best.mate < MIN_SOLVE) return null; mateMode = true; }
         else if (best.cp < 250) return null;
       }
       if (mateMode && (best.mate == null || best.mate <= 0)) return null;
       if (second && legal.length > 1) {
         if (second.mate != null && second.mate > 0) { if (!(mateMode && best.mate === 1)) return null; } // alternative mates only allowed on the final move
-        if (!mateMode && wc(best) - wc(second) < 0.38) return null;
+        if (!mateMode && wc(best) - wc(second) < 0.38) {
+          // more than one good move here. If we're already clearly winning, end the puzzle after our last move
+          // (drop the reply we just added) instead of throwing the whole line away.
+          if (k > 1 && best.cp != null && best.cp >= 300 && line.filter(x => !x.opp).length >= Math.max(2, MIN_SOLVE)) {
+            const last = line.pop(); E.unmake(); made--;
+            if (last && last.opp) return { line, diffs, mate: false, solver, start, made, gain: material(E, solver) - start, crushing: true };
+          }
+          return null;
+        }
         if (mateMode && second.mate == null && wc(second) > 0.75 && k === 0) return null;
       }
       const m = E.fromUci(best.move); if (!m) return null;
@@ -75,13 +88,16 @@ async function buildLine(sf, E, startPly) {
       const st = E.status();
       if (st && st.reason === 'checkmate') return { line, diffs, mate: true, solver, start, made };
       if (st) return null;
-      if (mateMode) { const rr = await sf.analyse(E.fen(), { depth: 14, multipv: 1 }); const om = E.fromUci(rr[0].move); if (!om) return null; line.push({ uci: rr[0].move, opp: true }); E.make(om); made++; continue; }
-      const rr = await sf.analyse(E.fen(), { depth: 14, multipv: 1 });
+      if (mateMode) { const rr = await sf.analyse(E.fen(), { depth: D_REPLY, multipv: 1 }); const om = E.fromUci(rr[0].move); if (!om) return null; line.push({ uci: rr[0].move, opp: true }); E.make(om); made++; continue; }
+      const rr = await sf.analyse(E.fen(), { depth: D_REPLY, multipv: 1 });
       if (!rr[0]) return null;
       const om = E.fromUci(rr[0].move); if (!om) return null;
       E.make(om); made++;
       const gain = material(E, solver) - start;
-      if (gain >= 2) { E.unmake(); made--; return { line, diffs, mate: false, solver, start, made, gain }; }
+      if (gain >= 2) {
+        if (line.filter(x => !x.opp).length < MIN_SOLVE) return null; // too short for hard mode
+        E.unmake(); made--; return { line, diffs, mate: false, solver, start, made, gain };
+      }
       line.push({ uci: rr[0].move, opp: true });
     }
     return null;
@@ -148,13 +164,13 @@ function themesFor(E, p) {
 }
 
 // moves that look fine to a shallow search (depth 1 + captures), best first
-function shallowTop(E, n) {
+function shallowTop(E, n, depth = 1) {
   const out = [];
   for (const m of E.legalMoves()) {
     E.make(m);
     let sc;
     if (E.status()) sc = E.inCheck() ? 99999 : 0;
-    else { const r = E.think({ time: 2000, depth: 1, noise: 0, random: 0 }); sc = r.score == null ? 0 : -r.score; }
+    else { const r = E.think({ time: 4000, depth, noise: 0, random: 0 }); sc = r.score == null ? 0 : -r.score; }
     E.unmake();
     out.push({ m, sc });
   }
@@ -186,6 +202,8 @@ async function tryPuzzle(sf, E, seen, ply, blunderUci) {
   rec.moves = [blunderUci, ...p.line.map(x => x.uci)].join(' ');
   try { rec.themes = [...new Set([...rec.themes, ...tactics(TE, rec.fen, rec.moves)])]; } catch (e) { }
   delete rec.line;
+  // hard mode keeps only long ones (3+ moves to find) or ones that rate as hard anyway (quiet or deep 2-movers)
+  if (HARD && sol.length < 3) { try { if (rate(TE, rec.fen, rec.moves, rec.themes).rating < 1600) return null; } catch (e) { return null; } }
   return rec;
 }
 
@@ -212,9 +230,9 @@ async function tryPuzzle(sf, E, seen, ply, blunderUci) {
         }
       }
       // 2) plausible-looking moves here that would be blunders
-      if (ev && ply >= 8 && Math.abs(cpOf(ev)) <= 200 && rnd() < 0.7) {
+      if (ev && ply >= 8 && Math.abs(cpOf(ev)) <= 200 && rnd() < (HARD ? 0.9 : 0.7)) {
         let tries = 0;
-        for (const m of shallowTop(E, 6)) {
+        for (const m of shallowTop(E, 6, HARD ? 2 : 1)) {
           const u = E.uci(m);
           if (u === ev.move) continue;
           E.make(m);

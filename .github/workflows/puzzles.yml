@@ -29,7 +29,9 @@ jobs:
           COUNT=$(node -e "console.log(require('../../puzzles.json').p.length)")
           echo "Puzzles now: $COUNT"
           if [ "$COUNT" -ge 15000 ]; then echo "Reached the 15,000 puzzle cap"; exit 0; fi
-          for i in 1 2 3; do node gen.js out$i.jsonl 40 > log$i.txt 2>&1 & done
+          # two normal generators plus two "hard" ones (3+ move combinations, or 2-movers that rate 1600+)
+          for i in 1 2; do node gen.js out$i.jsonl 40 > log$i.txt 2>&1 & done
+          for i in 3 4; do node gen.js out$i.jsonl 40 hard > log$i.txt 2>&1 & done
           wait
           tail -n 1 log*.txt
           node merge.js out*.jsonl
