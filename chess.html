@@ -3633,6 +3633,7 @@ const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;'
 const loadScript = src => new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = rej; document.head.appendChild(el); });
 function lbName() {
   if (SV.lbName) return SV.lbName;
+  try { const pf = JSON.parse(localStorage.getItem('pocketArcade.profile') || '{}'); if (pf.name) return pf.name; } catch (e) { } // the arcade profile name
   try { const s = JSON.parse(localStorage.getItem('pocketArcade.sudoku.v1') || '{}'); if (s.lbName) return s.lbName; } catch (e) { }
   return '';
 }
@@ -4978,7 +4979,7 @@ function openColors() {
 $('colorBtn').onclick = openColors;
 initFB();
 
-window.__chess = { pickRated: () => pickRated(), openHistGame, harvestMine, get AN() { return AN; }, moveInfo, isMine: i => isMine(i), get rush() { return RUSH; }, startVsBot, get scrub() { return scrub; }, fb, pushBoard, openColors, cycleSetup, openSettings, syncShell, ACH, checkAch, openEnd, END_LINES, openingAt, loadOpenings, openTrainer, OPEN_LINES, get TR() { return TR; }, T, hist, gameLink, gamePGN, openPuzzle, pzNotes, pzGoal, get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
+window.__chess = { lbName: () => lbName(), pickRated: () => pickRated(), openHistGame, harvestMine, get AN() { return AN; }, moveInfo, isMine: i => isMine(i), get rush() { return RUSH; }, startVsBot, get scrub() { return scrub; }, fb, pushBoard, openColors, cycleSetup, openSettings, syncShell, ACH, checkAch, openEnd, END_LINES, openingAt, loadOpenings, openTrainer, OPEN_LINES, get TR() { return TR; }, T, hist, gameLink, gamePGN, openPuzzle, pzNotes, pzGoal, get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
 showMenu();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('./sw.js').catch(() => { });
 })();

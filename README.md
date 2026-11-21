@@ -4,6 +4,12 @@ Free browser games built for your phone.
 
 **Play:** https://quierksie.github.io/pocket-arcade/
 
+## Profile
+The **profile** button at the top of the arcade opens your profile: a pixel avatar (12 characters, 8 background colors), your name, the month you started, totals (games played, achievements, chess rating) and stats from every game (Deep Dig, Chess, Sudoku, Card Shop, Tidy Time), each with a Play link. The name is used on the Chess and Sudoku leaderboards unless you picked a different name inside the game. The profile is stored in `pocketArcade.profile` and also travels inside the Deep Dig save, so it syncs to your account when you're signed in, and wiping Deep Dig doesn't erase it.
+
+## Offline
+After your first visit the service worker (`sw.js`) keeps a copy of every game, the puzzles and the opening names, so the whole arcade opens and plays without internet. Online, it always checks for a newer version first. Signing in, cloud saves, leaderboards and online chess need a connection; your progress keeps saving on the device in the meantime.
+
 ## Deep Dig
 Tap to mine, sell ores, upgrade your gear and drill toward the planet core.
 

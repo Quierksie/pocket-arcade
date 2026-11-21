@@ -249,6 +249,44 @@ a.cab { color: inherit; text-decoration: none; box-sizing: border-box; }
 .skinprev { width: 72px; height: 72px; image-rendering: pixelated; background: #120e0b; border-radius: 4px; }
 @media (prefers-reduced-motion: reduce) { .ability.ready { animation: none; } }
 
+
+/* ---------- Profile ---------- */
+.mebtn { display: grid; grid-template-columns: 52px 1fr auto; gap: 12px; align-items: center; padding: 10px 12px; background: var(--panel); border: 2px solid var(--line); border-radius: 6px; text-align: left; cursor: pointer; }
+.mebtn:hover { border-color: var(--gold); }
+.mebtn canvas, .pfav canvas, .avpick canvas { image-rendering: pixelated; border-radius: 6px; display: block; }
+.mebtn canvas { width: 52px; height: 52px; }
+.mebtn b { display: block; font-size: 16px; } .mebtn small { color: var(--muted); }
+.mebtn .go { font-size: 24px; color: var(--gold); }
+#profile { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.pfhead { display: flex; align-items: center; gap: 12px; padding: 14px 16px 6px; }
+.pfhead .px { color: var(--gold); font-size: 13px; }
+.pfbody { flex: 1; overflow-y: auto; padding: 8px 16px 32px; display: flex; flex-direction: column; gap: 12px; }
+.pfcard { background: var(--panel); border: 2px solid var(--line); border-radius: 6px; padding: 14px; }
+.pfme { display: grid; grid-template-columns: 96px 1fr; gap: 14px; align-items: center; }
+.pfav { position: relative; border: 0; padding: 0; background: none; cursor: pointer; }
+.pfav canvas { width: 96px; height: 96px; }
+.pfav span { position: absolute; right: -4px; bottom: -4px; background: var(--gold); color: #000; font-size: 11px; font-weight: 700; border-radius: 4px; padding: 2px 5px; }
+.pfme h2 { margin: 0 0 4px; font-size: 20px; overflow-wrap: anywhere; }
+.pfme p { margin: 0 0 8px; color: var(--muted); font-size: 13px; line-height: 1.4; }
+.pfme .lnk { background: none; border: 1px solid var(--line); border-radius: 4px; padding: 5px 9px; font-size: 13px; cursor: pointer; color: var(--ink); }
+.pftot { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.pftot div { background: var(--panel-2); border-radius: 6px; padding: 10px 6px; text-align: center; }
+.pftot b { display: block; font-family: var(--display); font-size: 14px; color: var(--gold); margin-bottom: 6px; }
+.pftot small { color: var(--muted); font-size: 12px; }
+.pfgame h3 { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; font-family: var(--display); font-size: 11px; letter-spacing: .04em; }
+.pfgame h3 canvas { width: 32px; height: 32px; image-rendering: pixelated; }
+.pfgame h3 a, .pfgame h3 button { margin-left: auto; font-family: var(--body); font-size: 12px; color: var(--gold); text-decoration: none; background: none; border: 0; cursor: pointer; }
+.pfrows { display: grid; grid-template-columns: 1fr; gap: 2px; }
+.pfrows div { display: flex; justify-content: space-between; gap: 8px; font-size: 13.5px; border-bottom: 1px solid var(--line); padding: 4px 0; }
+.pfrows span { color: var(--muted); } .pfrows b { font-weight: 500; text-align: right; }
+.pfnone { color: var(--muted); font-size: 13.5px; margin: 0; }
+.avgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+.avgrid button, .colgrid button { border: 2px solid var(--line); border-radius: 6px; padding: 4px; background: var(--panel-2); cursor: pointer; }
+.avgrid button[aria-pressed=true], .colgrid button[aria-pressed=true] { border-color: var(--gold); }
+.avgrid canvas { width: 100%; aspect-ratio: 1; image-rendering: pixelated; display: block; }
+.colgrid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+.colgrid button { aspect-ratio: 1; padding: 0; }
+#pfName { width: 100%; padding: 10px; font-size: 16px; border-radius: 6px; border: 2px solid var(--line); background: var(--panel-2); color: var(--ink); }
 </style>
 </head>
 <body>
@@ -260,6 +298,7 @@ a.cab { color: inherit; text-decoration: none; box-sizing: border-box; }
       <h1>POCKET<br>ARCADE</h1>
       <p>Free games built for your phone. Tap a cabinet to play. New games get added to this page over time.</p>
     </div>
+    <button class="mebtn" id="meBtn" type="button"><canvas width="8" height="8" id="meAv"></canvas><div><b id="meName">Player</b><small id="meSub">Your profile and stats</small></div><span class="go">›</span></button>
     <div class="acct" id="acct-arcade"></div>
     <div class="cabinets">
       <button class="cab" id="cab-dig" type="button">
@@ -304,6 +343,12 @@ a.cab { color: inherit; text-decoration: none; box-sizing: border-box; }
       </a>
     </div>
   </main>
+
+  <!-- ===== PROFILE ===== -->
+  <div id="profile" hidden>
+    <header class="pfhead"><button class="back" id="pfBack" type="button">‹ Arcade</button><span class="px">PROFILE</span></header>
+    <div class="pfbody" id="pfBody"></div>
+  </div>
 
   <!-- ===== DEEP DIG ===== -->
   <div id="dig" hidden>
@@ -1645,6 +1690,7 @@ async function pushCloud() {
 function adoptCloud(d) {
   const sound = S.sound;
   S = normalize(d.state);
+  if (d.state.profile) adoptProfile(d.state.profile); S.profile = PF;
   S.sound = sound; S.cloudStamp = d.updatedAt; cloud.lastSync = d.updatedAt; save();
   $('cab-best').textContent = (S.best > 0 ? `Best: ${S.best} m` : '') + (S.stars ? ` · ★${S.stars}` : '');
   if (running) { spawnBlock(); renderUpgrades('build'); setTab(tab); markDirty(); offlineProgress(); }
@@ -1822,14 +1868,14 @@ function signOutAcct() {
 
 // ---------- routing ----------
 function startGame() {
-  $('arcade').hidden = true; $('dig').hidden = false; markPlayed('cab-dig');
+  $('arcade').hidden = true; $('profile').hidden = true; $('dig').hidden = false; markPlayed('cab-dig');
   resize(); spawnBlock(); offlineProgress(); renderUpgrades('build'); updateMute(); setTab(tab);
   if (!running) { running = true; lastT = 0; requestAnimationFrame(loop); }
   maybeWarnBackup();
 }
 function showArcade() {
   if (running) { running = false; save(); if (cloud.state === 'on') pushCloud(); }
-  $('dig').hidden = true; $('arcade').hidden = false; sortCabs();
+  $('dig').hidden = true; $('profile').hidden = true; $('arcade').hidden = false; sortCabs(); drawMe();
   $('cab-best').textContent = (S.best > 0 ? `Best: ${S.best} m` : '') + (S.stars ? ` · ★${S.stars}` : '');
 }
 // Last played game goes to the top of the arcade.
@@ -1843,7 +1889,122 @@ function sortCabs() {
 }
 document.querySelector('.cabinets').addEventListener('click', e => { const c = e.target.closest('.cab'); if (c && c.id !== 'cab-dig') markPlayed(c.id); });
 window.addEventListener('pageshow', sortCabs);
-function route() { if (location.hash === '#deep-dig') startGame(); else showArcade(); }
+
+// ---------- Profile: one name and pixel avatar for the whole arcade, plus stats from every game ----------
+// Stored in its own key so wiping Deep Dig doesn't erase it; also mirrored into the Deep Dig save (S.profile)
+// so it rides along with the cloud save when you're signed in.
+const PROFILE_KEY = 'pocketArcade.profile';
+const AVATARS = {
+  cat: { map: ['B......B', 'BB....BB', 'BBBBBBBB', 'BEBBBBEB', 'BBBNNBBB', 'BBPBBPBB', '.BBBBBB.', '..BBBB..'], pal: { B: '#f0a13a', E: '#1b1b1b', N: '#ff8fa3', P: '#c46f1d' } },
+  robot: { map: ['...AA...', '.GGGGGG.', 'GGEGGEGG', 'GGEGGEGG', 'GGGGGGGG', 'GGMMMMGG', '.GGGGGG.', '.G....G.'], pal: { A: '#ff5d5d', G: '#a7b6c2', E: '#38e0ff', M: '#4a5560' } },
+  slime: { map: ['........', '...SS...', '..SSSS..', '.SSsSSS.', '.SESSES.', 'SSSSSSSS', 'SSSMMSSS', 'SSSSSSSS'], pal: { S: '#5ee08a', s: '#c9ffd9', E: '#123b22', M: '#2c8a4f' } },
+  ghost: { map: ['..WWWW..', '.WWWWWW.', 'WWEWWEWW', 'WWEWWEWW', 'WWWWWWWW', 'WWWOOWWW', 'WWWWWWWW', 'W.WW.WW.'], pal: { W: '#eef2ff', E: '#2b2d42', O: '#9aa2c9' } },
+  knight: { map: ['...RR...', '.HHHHHH.', 'HHHHHHHH', 'HDDDDDDH', 'HHHHHHHH', 'HHDHHDHH', '.HHHHHH.', '..HHHH..'], pal: { R: '#e23b3b', H: '#c9d3dc', D: '#2a2f36' } },
+  frog: { map: ['.GG..GG.', 'GEGGGGEG', 'GGGGGGGG', 'GGGGGGGG', 'GMMMMMMG', 'GGGGGGGG', '.LLLLLL.', '..L..L..'], pal: { G: '#59c44e', E: '#111', M: '#c0392b', L: '#3e8e36' } },
+  alien: { map: ['A......A', '.A....A.', '..GGGG..', '.GGGGGG.', 'GEEGGEEG', 'GEEGGEEG', '.GGGGGG.', '..GMMG..'], pal: { A: '#b6ff5c', G: '#8be04e', E: '#0d0d0d', M: '#3b6e1f' } },
+  bear: { map: ['BB....BB', 'BbBBBBbB', 'BBBBBBBB', 'BEBBBBEB', 'BBBMMBBB', 'BBMNNMBB', '.BBMMBB.', '..BBBB..'], pal: { B: '#8a5a35', b: '#c98f5f', E: '#111', M: '#d9b38c', N: '#2b1a10' } },
+  shroom: { map: ['..RRRR..', '.RWRRWR.', 'RRRRRRRR', 'RWRRRRWR', '..SSSS..', '..SESE..', '..SSSS..', '..SSSS..'], pal: { R: '#e0413a', W: '#fff', S: '#f1e3c8', E: '#333' } },
+  dragon: { map: ['H....H..', 'HH..HH..', '.DDDDDD.', 'DDEDDDDD', 'DDDDDDDF', 'DDDDNNDF', '.DDDDDD.', '..D..D..'], pal: { H: '#f5c518', D: '#7a4fd6', E: '#ffe066', N: '#3b2370', F: '#ff8a3d' } },
+  duck: { map: ['..YYYY..', '.YYYYYY.', '.YEYYYY.', '.YYYYOOO', '.YYYYOOO', 'YYYYYYY.', 'YYYYYYY.', '.YYYYY..'], pal: { Y: '#ffd93d', E: '#111', O: '#ff8c1a' } },
+  pixel: { map: ['.KKKKKK.', 'KSSSSSSK', 'KSESSESK', 'KSSSSSSK', 'KSMSSMSK', 'KSSMMSSK', 'KSSSSSSK', '.KKKKKK.'], pal: { K: '#3a2a1a', S: '#ffd08a', E: '#222', M: '#a0522d' } },
+};
+const AV_BG = ['#2a221b', '#1f3a5f', '#3b1f4a', '#1f4a33', '#5a2a1f', '#4a4a1f', '#2b2b2b', '#0f2f3a'];
+function loadProfile() {
+  let p = null; try { p = JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null'); } catch (e) { }
+  if (!p) {
+    let name = '';
+    try { name = JSON.parse(localStorage.getItem('pocketArcade.chess.v1') || '{}').lbName || JSON.parse(localStorage.getItem('pocketArcade.sudoku.v1') || '{}').lbName || ''; } catch (e) { }
+    p = { name, av: 'cat', bg: 0, since: Date.now(), at: 0 };
+    try { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); } catch (e) { } // remember when you started
+  }
+  if (!AVATARS[p.av]) p.av = 'cat';
+  return p;
+}
+let PF = loadProfile();
+if (S.profile && (S.profile.at || 0) > (PF.at || 0) && AVATARS[S.profile.av]) { PF = S.profile; try { localStorage.setItem(PROFILE_KEY, JSON.stringify(PF)); } catch (e) { } } else S.profile = PF;
+function saveProfile() {
+  PF.at = Date.now();
+  try { localStorage.setItem(PROFILE_KEY, JSON.stringify(PF)); } catch (e) { }
+  S.profile = PF; save(); if (cloud.state === 'on') pushCloud();
+  drawMe();
+}
+// a newer profile came in with the cloud save
+function adoptProfile(p) { if (p && p.at > (PF.at || 0) && AVATARS[p.av]) { PF = p; try { localStorage.setItem(PROFILE_KEY, JSON.stringify(PF)); } catch (e) { } drawMe(); if (!$('profile').hidden) renderProfile(); } }
+function drawAvatar(cv, av = PF.av, bg = PF.bg) {
+  const c = cv.getContext('2d'); c.fillStyle = AV_BG[bg] || AV_BG[0]; c.fillRect(0, 0, 8, 8);
+  const A = AVATARS[av] || AVATARS.cat; drawMap(c, A.map, A.pal);
+}
+const pfName = () => PF.name || 'Player';
+function readSave(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
+function drawMe() { drawAvatar($('meAv')); $('meName').textContent = pfName(); }
+
+function gameStats() {
+  const out = [], chess = readSave('pocketArcade.chess.v1'), sud = readSave('pocketArcade.sudoku.v1'), cards = readSave('pocketArcade.cardshop.v2'), tidy = readSave('pocketArcade.tidy.v1');
+  let trophies = Object.keys(S.ach || {}).length, played = 0;
+  // Deep Dig
+  const dug = S.mined > 0;
+  out.push({ id: 'dig', name: 'DEEP DIG', href: '#deep-dig', thumb: 'thumb-dig', rows: dug ? [['Best depth', S.best + ' m'], ['Blocks mined', fmt(S.mined)], ['Coins earned', fmt(S.earned)], ['Chests found', fmt(S.chests)], ['Prestiges', fmt(S.prestiges || 0)], ['Achievements', `${Object.keys(S.ach || {}).length} / ${ACH.length}`], ['Play time', fmtTime(S.time || 0)], ['Gems earned', fmt(S.totalGems || 0)]] : null });
+  if (dug) played++;
+  // Chess
+  if (chess && (chess.games || (chess.pz && (chess.pz.solved || chess.pz.failed)))) {
+    played++;
+    const rec = Object.values(chess.rec || {}), w = rec.reduce((a, r) => a + (r.w || 0), 0), l = rec.reduce((a, r) => a + (r.l || 0), 0), d = rec.reduce((a, r) => a + (r.d || 0), 0);
+    const pz = chess.pz || {}, rush = pz.rush || {}, ach = Object.keys(chess.ach || {}).length; trophies += ach;
+    out.push({ id: 'chess', name: 'CHESS', href: './chess.html', thumb: 'thumb-chess', rows: [['Rating', `${Math.round(chess.rating || 150)} (peak ${Math.round(chess.peak || chess.rating || 150)})`], ['Vs bots', `${w}W ${l}L ${d}D`], ['Puzzle rating', `${Math.round(pz.rating || 400)} (peak ${Math.round(pz.peak || pz.rating || 400)})`], ['Puzzles solved', fmt(pz.solved || 0)], ['Puzzle Rush best', Math.max(rush.b3 || 0, rush.b5 || 0)], ['Achievements', ach], ['Games played', fmt(chess.games || 0)], ['Mistakes fixed', fmt(chess.mineFixed || 0)]] });
+  } else out.push({ id: 'chess', name: 'CHESS', href: './chess.html', thumb: 'thumb-chess', rows: null });
+  // Sudoku
+  const sw = sud ? Object.values(sud.wins || {}).reduce((a, b) => a + b, 0) : 0;
+  const mmss = t => t ? `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}` : '–';
+  if (sw) played++;
+  out.push({ id: 'sudoku', name: 'SUDOKU', href: './sudoku.html', thumb: 'thumb-sudoku', rows: sw ? [['Solved', sw], ...['easy', 'medium', 'hard', 'expert'].map(k => [k[0].toUpperCase() + k.slice(1), `${(sud.wins || {})[k] || 0} · best ${mmss((sud.best || {})[k])}`])] : null });
+  // Card Shop
+  const own = cards ? Object.values(cards.own || {}).filter(o => o.n + o.f + o.s > 0).length : 0, cst = (cards && cards.stats) || {};
+  if (cards && cst.packs) { played++; trophies += Object.keys(cards.ach || {}).length; }
+  out.push({ id: 'cards', name: 'CARD SHOP', href: './card-shop.html', thumb: 'thumb-cards', rows: cards && cst.packs ? [['Cards collected', `${own} / 36`], ['Packs opened', fmt(cst.packs || 0)], ['Foils', fmt(cst.foils || 0)], ['Shinies', fmt(cst.shinies || 0)], ['Coins earned', fmt(cst.earned || 0)], ['Achievements', Object.keys(cards.ach || {}).length]] : null });
+  // Tidy Time
+  let tn = 0, ts = 0; for (const k in ((tidy && tidy.best) || {})) { const b = tidy.best[k]; const v = Math.max(b.relaxed || 0, b.timed || 0); if (v) { tn++; ts += v; } }
+  if (tn) played++;
+  out.push({ id: 'tidy', name: 'TIDY TIME', href: './tidy.html', thumb: 'thumb-tidy', rows: tn ? [['Levels cleared', tn], ['Stars', '★' + ts]] : null });
+  return { games: out, trophies, played, chessRating: chess && chess.games ? Math.round(chess.rating || 150) : 0 };
+}
+function renderProfile() {
+  const st = gameStats();
+  const since = new Date(PF.since || Date.now()).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+  $('pfBody').innerHTML = `
+    <div class="pfcard pfme"><button class="pfav" id="pfAv" type="button" aria-label="Change avatar"><canvas width="8" height="8" id="pfAvCv"></canvas><span>EDIT</span></button>
+      <div><h2 id="pfNameTxt"></h2><p>Playing since ${since}. Your name shows on leaderboards unless you picked a different one inside a game.</p><button class="lnk" id="pfEdit" type="button">Change name</button></div></div>
+    <div class="pftot"><div><b>${st.played}</b><small>games played</small></div><div><b>${st.trophies}</b><small>achievements</small></div><div><b>${st.chessRating || '–'}</b><small>chess rating</small></div></div>
+    ${st.games.map(g => `<div class="pfcard pfgame"><h3><canvas width="16" height="16" data-th="${g.thumb}"></canvas>${g.name}<a href="${g.href}">PLAY ›</a></h3>${g.rows ? `<div class="pfrows">${g.rows.map(([k, v]) => `<div><span>${k}</span><b>${esc(String(v))}</b></div>`).join('')}</div>` : '<p class="pfnone">Not played yet.</p>'}</div>`).join('')}`;
+  $('pfNameTxt').textContent = pfName();
+  drawAvatar($('pfAvCv'));
+  $('pfBody').querySelectorAll('[data-th]').forEach(c => c.getContext('2d').drawImage($(c.dataset.th), 0, 0));
+  $('pfAv').onclick = pickAvatar;
+  $('pfEdit').onclick = editName;
+  $('pfBody').querySelector('a[href="#deep-dig"]').onclick = e => { e.preventDefault(); audio(); location.hash = 'deep-dig'; };
+}
+function pickAvatar() {
+  let av = PF.av, bg = PF.bg;
+  modal('Pick your avatar', `<div class="avgrid" id="avGrid">${Object.keys(AVATARS).map(k => `<button type="button" data-av="${k}" aria-label="${k}" aria-pressed="${k === av}"><canvas width="8" height="8"></canvas></button>`).join('')}</div>
+    <div class="colgrid" id="colGrid">${AV_BG.map((c, i) => `<button type="button" data-bg="${i}" aria-label="Background ${i + 1}" aria-pressed="${i === bg}" style="background:${c}"></button>`).join('')}</div>`,
+    [{ label: 'Cancel' }, { label: 'Save', cls: 'primary', fn: () => { PF.av = av; PF.bg = bg; saveProfile(); renderProfile(); } }]);
+  const draw = () => document.querySelectorAll('#avGrid [data-av]').forEach(b => { drawAvatar(b.firstChild, b.dataset.av, bg); b.setAttribute('aria-pressed', b.dataset.av === av); });
+  draw();
+  $('avGrid').onclick = e => { const b = e.target.closest('[data-av]'); if (b) { av = b.dataset.av; draw(); } };
+  $('colGrid').onclick = e => { const b = e.target.closest('[data-bg]'); if (!b) return; bg = +b.dataset.bg; document.querySelectorAll('#colGrid [data-bg]').forEach(x => x.setAttribute('aria-pressed', +x.dataset.bg === bg)); draw(); };
+}
+function editName() {
+  modal('Your name', `<input id="pfName" maxlength="16" autocomplete="nickname" value="${esc(PF.name || '')}" placeholder="Player"><p class="hint" style="margin:8px 0 0">Up to 16 letters. Keep it friendly, other players can see it.</p>`,
+    [{ label: 'Cancel' }, { label: 'Save', cls: 'primary', fn: () => { PF.name = $('pfName').value.replace(/[<>]/g, '').trim().slice(0, 16); saveProfile(); renderProfile(); } }]);
+  setTimeout(() => $('pfName').focus(), 50);
+}
+function showProfile() {
+  if (running) { running = false; save(); if (cloud.state === 'on') pushCloud(); }
+  $('dig').hidden = true; $('arcade').hidden = true; $('profile').hidden = false;
+  renderProfile();
+}
+$('meBtn').addEventListener('click', () => { location.hash = 'profile'; });
+$('pfBack').addEventListener('click', () => { location.hash = ''; showArcade(); });
+function route() { if (location.hash === '#deep-dig') startGame(); else if (location.hash === '#profile') showProfile(); else showArcade(); }
 $('cab-dig').addEventListener('click', () => { audio(); if (location.hash === '#deep-dig') startGame(); else location.hash = 'deep-dig'; });
 $('back').addEventListener('click', () => { if (location.hash) location.hash = ''; showArcade(); });
 window.addEventListener('hashchange', route);
