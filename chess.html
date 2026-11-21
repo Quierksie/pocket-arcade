@@ -2670,14 +2670,25 @@ const rushBest = () => Math.max(PZ.rush.b3 || 0, PZ.rush.b5 || 0);
 if (!SV.mode) SV.mode = 'play';
 
 // five levels like chess.com's puzzle difficulty setting (Easiest to Hardest), picked relative to your rating.
-// No bonus multipliers: the rating math already gives more for beating a harder puzzle and costs less for missing one.
+// x = stakes. Harder levels: a miss costs x times a Normal miss (more than Normal), and a solve pays enough
+// that your rating still stays accurate over time (fair odds for how rarely those get solved), capped at 8x a Normal win.
+// Easier levels: the usual rating change, scaled down by x both ways.
 const DIFFS = {
-  easiest: { name: 'Easiest', off: -300, gain: 1, loss: 1, note: 'Well below your rating. Good for warming up or building confidence.' },
-  easier: { name: 'Easier', off: -150, gain: 1, loss: 1, note: 'A bit below your rating. Smaller gains, bigger losses, since they\'re easier.' },
-  std: { name: 'Normal', off: 0, gain: 1, loss: 1, note: 'Puzzles near your rating.' },
-  hard: { name: 'Harder', off: 150, gain: 1, loss: 1, note: 'A bit above your rating. Solving one is worth more points, since it\'s harder.' },
-  xhard: { name: 'Hardest', off: 300, gain: 1, loss: 1, note: 'Well above your rating. Big gains when you solve one, small losses when you miss.' },
+  easiest: { name: 'Easiest', off: -300, x: 0.6, note: 'Well below your rating. Low stakes: small wins, small losses.' },
+  easier: { name: 'Easier', off: -150, x: 0.8, note: 'A bit below your rating. Lower stakes.' },
+  std: { name: 'Normal', off: 0, x: 1, note: 'Puzzles near your rating. Normal stakes.' },
+  hard: { name: 'Harder', off: 150, x: 1.25, note: 'Above your rating. Higher stakes: more points for a solve, more lost for a miss.' },
+  xhard: { name: 'Hardest', off: 300, x: 1.5, note: 'Well above your rating. Highest stakes: biggest wins and bigger losses.' },
 };
+// rating change for solving (ok) or missing a puzzle rated pr at difficulty k
+function pzDelta(k, pr, ok) {
+  const d = DIFFS[k] || DIFFS.std, R = PZ.rating, ch = (opp, sc) => glicko(R, PZ.rd, PZ.vol, opp, sc).r - R;
+  if (d.off <= 0) { const v = Math.round(ch(pr, ok ? 1 : 0) * d.x); return ok ? Math.max(1, v) : v; }
+  const normLoss = -ch(R, 0) * d.x, normWin = ch(R, 1), E = 1 / (1 + Math.pow(10, (pr - R) / 400));
+  return ok ? Math.max(1, Math.round(Math.min(normLoss * (1 - E) / E, normWin * 8, 250))) : -Math.round(normLoss);
+}
+// roughly what a solve / a miss would do to your rating at a level (for the button)
+function stakes(k) { const pr = PZ.rating + (DIFFS[k] || DIFFS.std).off; return [pzDelta(k, pr, true), Math.abs(pzDelta(k, pr, false))]; }
 const TIERS = [['Wood', '#a0703c'], ['Stone', '#8d8f94'], ['Bronze', '#cd7f32'], ['Silver', '#a9b3c1'], ['Crystal', '#45bfe0'], ['Elite', '#9b6bff'], ['Champion', '#ff5d73'], ['Legend', '#e8b923']];
 const THEME_NAMES = { mate: 'Checkmate', mateIn1: 'Mate in 1', mateIn2: 'Mate in 2', mateIn3: 'Mate in 3', mateIn4: 'Mate in 4', mateIn5: 'Mate in 5', fork: 'Fork', hangingPiece: 'Hanging piece', sacrifice: 'Sacrifice', promotion: 'Promotion', discoveredAttack: 'Discovered attack', doubleCheck: 'Double check', backRankMate: 'Back rank mate', smotheredMate: 'Smothered mate', oneMove: 'One move', short: 'Short', long: 'Long', veryLong: 'Very long', opening: 'Opening', middlegame: 'Middlegame', endgame: 'Endgame', advantage: 'Advantage', crushing: 'Crushing', enPassant: 'En passant', castling: 'Castling', pin: 'Pin', skewer: 'Skewer', quietMove: 'Quiet move' };
 const FLAME = '<svg class="flame" viewBox="0 0 24 24" fill="#ff8a3d"><path d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 0-3-1-6 1-9.5z"/></svg>';
@@ -2719,9 +2730,7 @@ function glicko(r, rd, vol, opp, score) {
 function rateResult(p, ok) {
   const d = DIFFS[PZ.diff] || DIFFS.std;
   const g = glicko(PZ.rating, PZ.rd, PZ.vol, p.rating, ok ? 1 : 0);
-  let delta = g.r - PZ.rating;
-  delta = Math.round(delta * (delta > 0 ? d.gain : d.loss));
-  if (ok && delta < 1) delta = 1;
+  const delta = pzDelta(DIFFS[PZ.diff] ? PZ.diff : 'std', p.rating, ok);
   PZ.rating = Math.max(100, PZ.rating + delta);
   PZ.rd = Math.max(50, g.rd); PZ.vol = g.vol;
   PZ.peak = Math.max(PZ.peak, PZ.rating);
@@ -2915,7 +2924,7 @@ function renderPuzMenu() {
         <button class="gear" id="pzGear" aria-label="Puzzle settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div>
       ${hist ? `<div class="hist">${hist}</div>` : ''}
       ${PZ.lost ? `<button class="bigbtn redeem" id="pzRedeem"><div><b>Redemption puzzle</b><small>Win back your ${PZ.lost.streak} streak with a harder puzzle</small></div><span class="go">${FLAME}${PZ.lost.streak}</span></button>` : ''}
-      <button class="bigbtn" id="pzPlay"><div><b>Rated puzzles</b><small>${d.name} · ${PZ.streak > 1 ? `${PZ.streak} in a row` : 'matched to your rating'}</small></div><span class="go">Solve</span></button>
+      <button class="bigbtn" id="pzPlay"><div><b>Rated puzzles</b><small>${d.name} · ${(([w, l]) => `solve about +${w}, miss about −${l}`)(stakes(DIFFS[PZ.diff] ? PZ.diff : 'std'))}${PZ.streak > 1 ? ` · ${PZ.streak} in a row` : ''}</small></div><span class="go">Solve</span></button>
       <div class="diffseg" id="pzDiffSeg" role="group" aria-label="Puzzle difficulty">${Object.entries(DIFFS).map(([k, x]) => `<button data-dk="${k}" aria-pressed="${(DIFFS[PZ.diff] ? PZ.diff : 'std') === k}">${x.name}</button>`).join('')}</div>
     </div>
     <div class="pcard">
@@ -4979,7 +4988,7 @@ function openColors() {
 $('colorBtn').onclick = openColors;
 initFB();
 
-window.__chess = { lbName: () => lbName(), pickRated: () => pickRated(), openHistGame, harvestMine, get AN() { return AN; }, moveInfo, isMine: i => isMine(i), get rush() { return RUSH; }, startVsBot, get scrub() { return scrub; }, fb, pushBoard, openColors, cycleSetup, openSettings, syncShell, ACH, checkAch, openEnd, END_LINES, openingAt, loadOpenings, openTrainer, OPEN_LINES, get TR() { return TR; }, T, hist, gameLink, gamePGN, openPuzzle, pzNotes, pzGoal, get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
+window.__chess = { stakes: k => stakes(k), lbName: () => lbName(), pickRated: () => pickRated(), openHistGame, harvestMine, get AN() { return AN; }, moveInfo, isMine: i => isMine(i), get rush() { return RUSH; }, startVsBot, get scrub() { return scrub; }, fb, pushBoard, openColors, cycleSetup, openSettings, syncShell, ACH, checkAch, openEnd, END_LINES, openingAt, loadOpenings, openTrainer, OPEN_LINES, get TR() { return TR; }, T, hist, gameLink, gamePGN, openPuzzle, pzNotes, pzGoal, get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
 showMenu();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('./sw.js').catch(() => { });
 })();
