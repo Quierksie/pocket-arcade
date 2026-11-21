@@ -37,6 +37,9 @@ match /leaderboard/{uid} {
 }
 ```
 
+### Puzzle Rush
+On the Puzzles tab, **Puzzle Rush** gives you 3 or 5 minutes to solve as many puzzles as you can. They start easy (about 400) and get harder with every solve, short puzzles first. A wrong move is a strike, shows you the right move, and moves on to the next puzzle. Three strikes or running out of time ends the run (leaving the screen ends it too). The end card shows your score, your best, and every puzzle you saw; tap one to try it again with hints and the solution. Your best 3-minute and 5-minute scores are saved, go on the **Rush** leaderboard, and unlock the Rush 10/20/30 achievements. Rush doesn't change your puzzle rating.
+
 ### Leaderboard
 The **Leaderboard** tab (next to Play bots and Puzzles) switches between chess and puzzle ratings, and shows your place and how many points you are behind the player above you.
 

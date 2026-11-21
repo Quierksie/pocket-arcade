@@ -677,6 +677,26 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
 .gomodal .row .btn { min-height: 42px; }
 .ov.onboard { position: absolute; background: rgba(10,10,8,.45); padding: 12px; }
 @media (min-width: 768px) { body[data-screen=game] #game > .stage { position: relative; } }
+
+/* Puzzle Rush */
+.rushtag { color: var(--gold); margin-right: 8px; }
+.strikes i { font-style: normal; display: inline-grid; place-items: center; width: 22px; height: 22px; margin-right: 3px; border-radius: 6px; background: var(--panel2); color: var(--soft); font-size: 12px; font-weight: 900; }
+.strikes i.on { background: var(--bad); color: #fff; }
+.rscore { display: inline-grid; place-items: center; min-width: 34px; height: 30px; padding: 0 8px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 18px; font-weight: 900; margin-right: 8px; }
+.rclock { display: inline-grid; place-items: center; min-width: 70px; height: 30px; border-radius: 8px; background: var(--panel2); color: var(--ink); font-size: 18px; font-weight: 900; font-variant-numeric: tabular-nums; }
+.rclock.low { background: var(--bad); color: #fff; }
+.rushbtns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.rushbtns .bigbtn { margin: 0; }
+.rushcard { position: relative; width: min(380px, 100%); text-align: center; }
+.rushcard .gx { position: absolute; top: 8px; right: 8px; width: 34px; height: 34px; border: 0; border-radius: 8px; background: transparent; color: var(--soft); font-size: 18px; cursor: pointer; }
+.rushcard .lbl { font-weight: 800; color: var(--soft); }
+.rushcard .rbig { font-size: 64px; font-weight: 900; line-height: 1.1; color: var(--ink); }
+.rushcard .gsub { color: var(--soft); margin: 0 0 12px; }
+.rushcard .gsub .up { color: var(--accent); }
+.rlist { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; max-height: 168px; overflow: auto; margin-bottom: 6px; }
+.rlist button { display: flex; flex-direction: column; align-items: center; width: 46px; padding: 4px 0; border: 0; border-radius: 8px; font-size: 11px; font-weight: 800; color: #fff; cursor: pointer; }
+.rlist button span { font-size: 14px; }
+.rlist .ok { background: var(--accent); } .rlist .no { background: var(--bad); }
 </style>
 </head>
 <body>
@@ -742,6 +762,7 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
       <button class="tool" id="pzRetry"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>Retry</button>
       <button class="tool" id="pzSol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Solution</button>
       <button class="tool" id="pzNext"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Next</button>
+      <button class="tool" id="pzEnd" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>End run</button>
       <button class="tool" id="pzPen" title="Draw arrows and highlights"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20 18 6M18 6h-6M18 6v6"/></svg>Arrows</button>
     </div>
     <div id="pzResult" hidden></div>
@@ -2613,9 +2634,11 @@ window.addEventListener('resize', () => { if (G && !$('game').hidden) render(); 
 // =====================================================================
 // PUZZLES: rated puzzles, daily puzzle + archive, Puzzle Journey, analysis board
 // =====================================================================
-const PZ0 = { rating: 400, rd: 230, vol: 0.06, peak: 400, solved: 0, failed: 0, streak: 0, best: 0, diff: 'std', tried: [], hist: [], pts: 0, record: 0, quest: { day: '', n: 0, done: false }, daily: {}, bestDaily: 0 };
+const PZ0 = { rating: 400, rd: 230, vol: 0.06, peak: 400, solved: 0, failed: 0, streak: 0, best: 0, diff: 'std', tried: [], hist: [], pts: 0, record: 0, quest: { day: '', n: 0, done: false }, daily: {}, bestDaily: 0, rush: null };
 SV.pz = Object.assign({}, PZ0, SV.pz || {});
 const PZ = SV.pz;
+PZ.rush = Object.assign({ b3: 0, b5: 0, runs: 0, last: null }, PZ.rush || {});
+const rushBest = () => Math.max(PZ.rush.b3 || 0, PZ.rush.b5 || 0);
 if (!SV.mode) SV.mode = 'play';
 
 const DIFFS = {
@@ -2868,6 +2891,13 @@ function renderPuzMenu() {
       <button class="bigbtn ${rec && rec.at ? 'done' : 'daily'}" id="pzDaily"><div><b>${rec && rec.at ? 'Solved today' : 'Today\'s puzzle'}</b><small>${rec && rec.at ? 'Come back tomorrow for a new one' : 'Solve within 48 hours to keep your streak'}</small></div><span class="go">${rec && rec.at ? 'View' : 'Play'}</span></button>
       <div class="rowbtns"><button id="pzArchive">Archive</button></div>
     </div>
+    <div class="pcard rushpc">
+      <div class="top"><div><div class="lbl">Puzzle Rush</div><b style="font-size:17px">⚡ Beat the clock</b></div>
+        <div class="meta" style="margin-left:auto;text-align:right">Best 3 min <b>${PZ.rush.b3}</b><br>Best 5 min <b>${PZ.rush.b5}</b></div></div>
+      <p class="meta" style="margin:6px 0 10px">Puzzles start easy and get harder. 3 wrong moves and you're out.</p>
+      <div class="rushbtns"><button class="bigbtn" data-rush="3"><div><b>3 min</b></div><span class="go">Go</span></button><button class="bigbtn" data-rush="5"><div><b>5 min</b></div><span class="go">Go</span></button></div>
+      ${PZ.rush.last ? `<div class="rowbtns"><button id="pzRushLast">Last run: ${PZ.rush.last.score} · Review</button></div>` : ''}
+    </div>
     <div class="pcard" id="pzJourney" role="button">
       <div class="lbl" style="margin-bottom:8px">Puzzle Journey</div>
       <div class="tier"><div class="bd" style="background:${TIERS[j.t][1]}">${j.prestige ? 'P' : TIERS[j.t][0][0]}</div>
@@ -2880,6 +2910,8 @@ function renderPuzMenu() {
   $('pzDaily').onclick = () => startDaily(today());
   $('pzArchive').onclick = () => openArchive();
   $('pzJourney').onclick = openJourney;
+  host.querySelectorAll('[data-rush]').forEach(b => { b.onclick = () => startRush(+b.dataset.rush); });
+  if ($('pzRushLast')) $('pzRushLast').onclick = rushResults;
 }
 function openPzSettings() {
   const o = document.createElement('div'); o.className = 'ov';
@@ -3015,10 +3047,11 @@ function openPuzzle(p, o) {
   pzHeader();
   pzStatus('wait');
   pzBoard.select(-1); pzBoard.draw();
-  setTimeout(() => { if (PS && PS.p === p) { pzPlayOpp(); PS.t0 = Date.now(); } }, 650);
+  setTimeout(() => { if (PS && PS.p === p) { pzPlayOpp(); PS.t0 = Date.now(); } }, o.mode === 'rush' ? 320 : 650);
 }
 function pzHeader() {
   const s = PS, dl = s.delta != null ? `<span class="dl ${s.delta >= 0 ? 'up' : 'down'}">${s.delta >= 0 ? '+' : ''}${s.delta}</span>` : '';
+  if (s.mode === 'rush' || s.mode === 'review') { rushHeader(); return; }
   if (s.mode === 'rated') $('pzMode').innerHTML = s.redeem ? `Rated · <span style="color:#ff6a2e">Redemption</span>` : `Rated · ${(DIFFS[PZ.diff] || DIFFS.std).name}${s.retry ? ' · Retry' : ''}`;
   else $('pzMode').innerHTML = `Daily · ${parseYmd(s.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`;
   $('pzRate').innerHTML = s.mode === 'rated' ? `<b>${Math.round(PZ.rating)}</b>${dl}` : `${FLAME} <b>${dailyStreak()}</b>`;
@@ -3044,6 +3077,7 @@ function pzStatus(k, extra) {
       if (s.step <= 1) return `${pc}<div>${side} to move<small>${o ? `${oppSide} played ${o.san}. ` : ''}${s.goal || 'Find the best move.'}</small></div>`;
       return `${pc}<div>${oppSide} answered ${o ? o.san : ''}<small>${o && o.why ? esc(o.why) + ' ' : ''}Your move: keep going.</small></div>`; })(),
     good: `${ic('#81b64c', '✓')}<div>${extra || 'Best move!'}<small>${s.why ? esc(s.why) : 'Keep going'}</small></div>`,
+    strike: `${ic('#d63a2f', '✕')}<div>Strike ${RUSH ? RUSH.strikes : ''} of 3<small>${extra || ''}</small></div>`,
     bad: `${ic('#d63a2f', '✕')}<div>Incorrect<small>${s.wrongWhy ? esc(s.wrongWhy) + ' ' : ''}${s.mode === 'rated' && !s.retry ? 'That counts as a miss, but you can keep trying.' : 'Try again, or tap Solution.'}</small></div>`,
     solved: `${ic('#81b64c', '★')}<div>${s.mistakes || s.hints ? 'Solved' : s.redeemed ? 'Streak redeemed!' : 'Solved perfectly!'}<small>${extra || ''}</small></div>`,
     shown: `${ic('#9a978f', '•')}<div>${extra ? 'Solution' : 'Solution shown'}<small>${extra || 'Try the next one'}</small></div>`,
@@ -3053,6 +3087,10 @@ function pzStatus(k, extra) {
   $('pzSol').disabled = s.done || k === 'wait';
   $('pzRetry').hidden = !(s.mistakes || s.done);
   $('pzNext').hidden = !(s.done || (s.mode === 'rated' && (s.mistakes || s.hints)));
+  const rush = s.mode === 'rush';
+  $('pzEnd').hidden = !rush;
+  if (rush) ['pzHint', 'pzSol', 'pzRetry', 'pzNext'].forEach(id => { $(id).hidden = true; });
+  else $('pzHint').hidden = $('pzSol').hidden = false;
 }
 function pzPlayOpp() {
   const s = PS; if (!s || s.step >= s.p.moves.length) return;
@@ -3083,6 +3121,7 @@ function pzMove(m) {
     return;
   }
   // wrong
+  if (s.mode === 'rush') { rushMiss(m, exp); return; }
   s.mistakes++;
   s.noSq = [P.from(m), P.to(m)]; s.busy = true;
   pzBoard.draw(); sound('lose');
@@ -3117,6 +3156,7 @@ function pzRate(ok) {
   save(); pzHeader();
 }
 function pzFinish(ok) {
+  if (PS.mode === 'rush') { rushSolved(); return; }
   const s = PS; s.done = true; s.busy = true; s.time = Math.round((Date.now() - s.t0) / 1000);
   const accurate = ok && !s.mistakes && !s.hints && !s.showSol;
   let pts = [];
@@ -3164,7 +3204,7 @@ function pzResult(pts, accurate) {
   $('rsRetry').onclick = () => openPuzzle(p, { mode: s.mode, date: s.date, retry: true });
   if ($('rsNext')) $('rsNext').onclick = () => startRated();
   if ($('rsRedeem')) $('rsRedeem').onclick = () => startRedeem();
-  if ($('rsBack')) $('rsBack').onclick = () => s.date === today() ? openPuzMenu() : openArchive(s.date.slice(0, 7));
+  if ($('rsBack')) $('rsBack').onclick = () => s.mode === 'review' ? rushBackToResults() : s.date === today() ? openPuzMenu() : openArchive(s.date.slice(0, 7));
 }
 $('pzHint').onclick = () => {
   const s = PS; if (!s || s.done || s.busy) return;
@@ -3192,7 +3232,108 @@ $('pzSol').onclick = () => {
   stepOne();
 };
 $('pzRetry').onclick = () => { if (PS) openPuzzle(PS.p, { mode: PS.mode, date: PS.date, retry: true }); };
-$('pzNext').onclick = () => { if (!PS) return; if (PS.mode === 'rated') startRated(); else openPuzMenu(); };
+$('pzNext').onclick = () => { if (!PS) return; if (PS.mode === 'rated') startRated(); else if (PS.mode === 'review') rushBackToResults(); else openPuzMenu(); };
+$('pzEnd').onclick = () => { if (RUSH && !RUSH.done) rushOver('ended'); };
+
+// ---------- Puzzle Rush: solve as many as you can in 3 or 5 minutes; 3 wrong moves and you're out ----------
+let RUSH = null, rushTimer = 0;
+function pickRush() {
+  const target = 400 + RUSH.score * (RUSH.min === 3 ? 70 : 55) + (Math.random() - .5) * 80;
+  let best = null, bd = Infinity;
+  for (const p of PUZ) {
+    if (p.off || RUSH.used.has(p.id)) continue;
+    const long = p.moves.length > (RUSH.score < 8 ? 4 : RUSH.score < 16 ? 6 : 10) ? 400 : 0; // short ones first
+    const dd = Math.abs(p.rating - target) + long + Math.random() * 60;
+    if (dd < bd) { bd = dd; best = p; }
+  }
+  return best;
+}
+async function startRush(min) {
+  try { await loadPuzzles(); } catch (e) { toast('Could not load puzzles. Check your connection.'); return; }
+  cancelBrain();
+  RUSH = { min, score: 0, strikes: 0, list: [], used: new Set(), end: Date.now() + min * 60000, done: false };
+  clearInterval(rushTimer); rushTimer = setInterval(rushTick, 200);
+  rushNext();
+}
+function rushNext() {
+  if (!RUSH || RUSH.done) return;
+  const p = pickRush();
+  if (!p) { rushOver('all'); return; }
+  RUSH.used.add(p.id);
+  openPuzzle(p, { mode: 'rush' });
+}
+function rushTick() {
+  if (!RUSH || RUSH.done) { clearInterval(rushTimer); return; }
+  if ($('puzzle').hidden && $('anaSec').hidden) { rushOver('left'); return; } // left the screen: the run ends
+  if (Date.now() >= RUSH.end) { rushOver('time'); return; }
+  rushHeader();
+}
+const mmss = ms => { const t = Math.max(0, Math.ceil(ms / 1000)); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`; };
+function rushHeader() {
+  if (PS && PS.mode === 'review') { $('pzMode').innerHTML = 'Puzzle Rush · Review'; $('pzRate').innerHTML = `<b>${PS.p.rating}</b>`; return; }
+  if (!RUSH) return;
+  const left = RUSH.end - Date.now();
+  $('pzMode').innerHTML = `<span class="rushtag">⚡ Rush ${RUSH.min} min</span><span class="strikes">${[0, 1, 2].map(i => `<i class="${i < RUSH.strikes ? 'on' : ''}">✕</i>`).join('')}</span>`;
+  $('pzRate').innerHTML = `<span class="rscore">${RUSH.score}</span><span class="rclock${left < 10000 ? ' low' : ''}">${mmss(left)}</span>`;
+}
+function rushSolved() {
+  const s = PS; s.done = true; s.busy = true;
+  RUSH.score++; RUSH.list.push({ id: s.p.id, r: s.p.rating, ok: true });
+  sound('win'); s.why = '';
+  pzStatus('good', ['Correct!', 'Nice!', 'Got it!', 'Solved!'][Math.floor(Math.random() * 4)]);
+  rushHeader();
+  setTimeout(() => { if (PS === s) rushNext(); }, 380);
+}
+function rushMiss(m, exp) {
+  const s = PS; s.done = true; s.busy = true; s.mistakes++;
+  RUSH.strikes++; RUSH.list.push({ id: s.p.id, r: s.p.rating, ok: false });
+  s.noSq = [P.from(m), P.to(m)];
+  pzBoard.draw(); sound('lose');
+  let right = '';
+  try { P.unmake(); const em = P.fromUci(exp); right = em ? P.san(em) : ''; s.noSq = []; s.hintSq = [sqN(exp.slice(0, 2)), sqN(exp.slice(2, 4))]; } catch (e) { }
+  pzStatus('strike', right ? `The move was ${right}.` : '');
+  rushHeader();
+  setTimeout(() => { if (PS !== s) return; pzBoard.draw(); }, 350);
+  setTimeout(() => { if (PS !== s || !RUSH || RUSH.done) return; if (RUSH.strikes >= 3) rushOver('strikes'); else rushNext(); }, 1300);
+}
+function rushOver(why) {
+  if (!RUSH || RUSH.done) return;
+  RUSH.done = true; RUSH.why = why; clearInterval(rushTimer);
+  if (PS && PS.mode === 'rush') { PS.done = true; PS.busy = true; }
+  const k = RUSH.min === 3 ? 'b3' : 'b5', prev = PZ.rush[k] || 0;
+  RUSH.prev = prev; RUSH.newBest = RUSH.score > prev && RUSH.score > 0;
+  if (RUSH.newBest) PZ.rush[k] = RUSH.score;
+  PZ.rush.runs++;
+  PZ.rush.last = { min: RUSH.min, score: RUSH.score, why, best: PZ.rush[k], newBest: RUSH.newBest, list: RUSH.list };
+  save(); if (RUSH.newBest) setTimeout(pushBoard, 50);
+  if (why === 'left') return;
+  sound(RUSH.newBest ? 'win' : 'move');
+  rushHeader();
+  setTimeout(rushResults, why === 'strikes' ? 200 : 500);
+}
+// the end-of-run card; also reopened after reviewing one of its puzzles
+function rushResults() {
+  const L = PZ.rush.last; if (!L) return;
+  document.querySelectorAll('.ov').forEach(o => o.remove());
+  const reason = { time: 'Time’s up', strikes: '3 strikes', ended: 'Run ended', all: 'You solved every puzzle!' }[L.why] || '';
+  const o = document.createElement('div'); o.className = 'ov rushov';
+  o.innerHTML = `<div class="card rushcard"><button class="gx" data-a="close" aria-label="Close">✕</button>
+    <div class="lbl">Puzzle Rush · ${L.min} min</div>
+    <div class="rbig">${L.score}</div>
+    <p class="gsub">${reason}${L.newBest ? ' · <b class="up">New best!</b>' : ` · Best ${L.best}`}</p>
+    ${L.list.length ? `<div class="rlist">${L.list.map((x, i) => `<button class="${x.ok ? 'ok' : 'no'}" data-i="${i}" title="Puzzle ${i + 1}: ${x.r}"><span>${x.ok ? '✓' : '✕'}</span>${x.r}</button>`).join('')}</div><p style="font-size:12.5px;margin:2px 0 10px">Tap a puzzle to look at it again.</p>` : ''}
+    <div class="row"><button class="btn alt" data-a="done">Done</button><button class="btn" data-a="again">Play again</button></div></div>`;
+  document.body.append(o);
+  o.onclick = e => {
+    const b = e.target.closest('[data-i],[data-a]');
+    if (!b) { if (e.target === o) o.remove(); return; }
+    if (b.dataset.i != null) { const x = L.list[+b.dataset.i]; o.remove(); RUSH = null; openPuzzle(PUZ[x.id], { mode: 'review' }); return; }
+    const a = b.dataset.a; o.remove();
+    if (a === 'again') startRush(L.min);
+    else if (a === 'done') { RUSH = null; openPuzMenu(); }
+  };
+}
+function rushBackToResults() { openPuzMenu(); rushResults(); }
 
 // ---------- archive ----------
 let calMonth = null;
@@ -3307,7 +3448,7 @@ function pzBack() {
 // LEADERBOARDS (chess rating + puzzle rating) on the arcade's Firebase accounts
 // =====================================================================
 const FB_CONFIG = {"apiKey": "AIzaSyDKdZ2RGPp45SrXGtpse9-kBpcJOQ9gVoQ", "authDomain": "pocket-arcade-9bcbf.firebaseapp.com", "projectId": "pocket-arcade-9bcbf", "storageBucket": "pocket-arcade-9bcbf.firebasestorage.app", "messagingSenderId": "187036226775", "appId": "1:187036226775:web:6628259ce35cfabd668c92"};
-const fb = { state: 'loading', user: null, db: null, rows: { chess: [], puz: [] }, err: '' };
+const fb = { state: 'loading', user: null, db: null, rows: { chess: [], puz: [], rush: [] }, err: '' };
 const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const loadScript = src => new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = rej; document.head.appendChild(el); });
 function lbName() {
@@ -3327,7 +3468,7 @@ async function initFB() {
 }
 async function loadBoards() {
   if (!fb.db) return;
-  for (const [k, field] of [['chess', 'chessRating'], ['puz', 'puzzleRating']]) {
+  for (const [k, field] of [['chess', 'chessRating'], ['puz', 'puzzleRating'], ['rush', 'rushBest']]) {
     try { const q = await fb.db.collection('leaderboard').orderBy(field, 'desc').limit(50).get(); fb.rows[k] = q.docs.map(d => Object.assign({ id: d.id }, d.data())); fb.err = ''; }
     catch (e) { fb.err = (e && e.code) || 'error'; }
   }
@@ -3340,47 +3481,52 @@ async function pushBoard() {
   const d = { name, updated: firebase.firestore.FieldValue.serverTimestamp() };
   if (SV.games > 0) { d.chessRating = Math.round(SV.rating); d.chessPeak = Math.round(SV.peak); d.chessGames = SV.games; }
   if (PZ.solved + PZ.failed > 0) { d.puzzleRating = Math.round(PZ.rating); d.puzzlePeak = Math.round(PZ.peak); d.puzzlesSolved = PZ.solved; }
-  if (d.chessRating == null && d.puzzleRating == null) return;
+  if (rushBest() > 0) { d.rushBest = rushBest(); d.rush3 = PZ.rush.b3 || 0; d.rush5 = PZ.rush.b5 || 0; }
+  if (d.chessRating == null && d.puzzleRating == null && d.rushBest == null) return;
   try { await fb.db.collection('leaderboard').doc(fb.user.uid).set(d, { merge: true }); fb.err = ''; clearTimeout(pushT); pushT = setTimeout(loadBoards, 400); }
   catch (e) { fb.err = (e && e.code) || 'error'; renderBoards(); }
 }
+// what each leaderboard ranks, and how to describe it
+const LBK = {
+  chess: { tab: 'Chess', what: 'chess rating', val: r => r.chessRating, sub: r => `${r.chessGames || 0} games · peak ${r.chessPeak || r.chessRating}`, played: () => SV.games > 0, need: 'Finish a rated game', mine: () => Math.round(SV.rating), meta: () => `Peak <b>${Math.round(SV.peak)}</b><br><b>${SV.games}</b> games`, unit: 'point' },
+  puz: { tab: 'Puzzles', what: 'puzzle rating', val: r => r.puzzleRating, sub: r => `${r.puzzlesSolved || 0} solved · peak ${r.puzzlePeak || r.puzzleRating}`, played: () => PZ.solved + PZ.failed > 0, need: 'Finish a rated puzzle', mine: () => Math.round(PZ.rating), meta: () => `Peak <b>${Math.round(PZ.peak)}</b><br><b>${PZ.solved}</b> solved`, unit: 'point' },
+  rush: { tab: 'Rush', what: 'Puzzle Rush best', val: r => r.rushBest, sub: r => `3 min: ${r.rush3 || 0} · 5 min: ${r.rush5 || 0}`, played: () => rushBest() > 0, need: 'Score in Puzzle Rush', mine: () => rushBest(), meta: () => `3 min <b>${PZ.rush.b3}</b><br>5 min <b>${PZ.rush.b5}</b>`, unit: 'puzzle' },
+};
 function boardHTML(k) {
-  const isChess = k === 'chess';
+  const K = LBK[k];
   if (fb.state === 'loading') return '<div class="msg">Loading...</div>';
   if (fb.state === 'offline') return '<div class="msg">The leaderboard needs an internet connection.</div>';
-  if (fb.err === 'permission-denied') return '<div class="msg">The leaderboard couldn\'t be reached. Your rating is saved and will show up once it can.</div>';
+  if (fb.err === 'permission-denied') return '<div class="msg">The leaderboard couldn\'t be reached. Your score is saved and will show up once it can.</div>';
   let top = '';
-  const played = isChess ? SV.games > 0 : PZ.solved + PZ.failed > 0;
-  if (!fb.user) top = '<div class="msg"><a href="./">Sign in on the Arcade page</a> to put your rating on the leaderboard.</div>';
+  if (!fb.user) top = '<div class="msg"><a href="./">Sign in on the Arcade page</a> to put your score on the leaderboard.</div>';
   else if (!lbName()) top = '<div class="msg">Pick a name to join the leaderboard. <button class="lnk" data-lbname>Choose name</button></div>';
-  else if (!played) top = `<div class="msg">${isChess ? 'Finish a rated game' : 'Finish a rated puzzle'} to get on the board, ${esc(lbName())}.</div>`;
+  else if (!K.played()) top = `<div class="msg">${K.need} to get on the board, ${esc(lbName())}.</div>`;
   const rows = fb.rows[k].map((r, i) => {
     const me = fb.user && r.id === fb.user.uid;
-    const sub = isChess ? `${r.chessGames || 0} games · peak ${r.chessPeak || r.chessRating}` : `${r.puzzlesSolved || 0} solved · peak ${r.puzzlePeak || r.puzzleRating}`;
-    return `<div class="r ${me ? 'me' : ''}"><span class="rk">#${i + 1}</span><span class="nm">${esc(r.name)}${me ? ' (you)' : ''}<small>${sub}</small></span><span>${isChess ? r.chessRating : r.puzzleRating}</span></div>`;
+    return `<div class="r ${me ? 'me' : ''}"><span class="rk">#${i + 1}</span><span class="nm">${esc(r.name)}${me ? ' (you)' : ''}<small>${K.sub(r)}</small></span><span>${K.val(r)}</span></div>`;
   }).join('');
   return top + (rows || (fb.err ? '<div class="msg">Couldn\'t load the leaderboard right now.</div>' : '<div class="msg">No one is on this board yet. Be the first!</div>')) + (fb.user && lbName() ? `<div class="msg" style="padding:10px"><button class="lnk" data-lbname>Change name</button></div>` : '');
 }
-// ---------- Leaderboard tab: Chess / Puzzles switch, your spot, then the full board ----------
-const lbKind = () => SV.lbTab === 'puz' ? 'puz' : 'chess';
+// ---------- Leaderboard tab: Chess / Puzzles / Rush switch, your spot, then the full board ----------
+const lbKind = () => LBK[SV.lbTab] ? SV.lbTab : 'chess';
 function renderLbMenu() {
   const k = lbKind();
-  $('lbMenu').innerHTML = `<div class="seg lbseg" role="group" aria-label="Which leaderboard" id="lbSeg"><button data-lb="chess" aria-pressed="${k === 'chess'}">Chess rating</button><button data-lb="puz" aria-pressed="${k === 'puz'}">Puzzle rating</button></div>
+  $('lbMenu').innerHTML = `<div class="seg lbseg" role="group" aria-label="Which leaderboard" id="lbSeg">${Object.entries(LBK).map(([id, K]) => `<button data-lb="${id}" aria-pressed="${k === id}">${K.tab}</button>`).join('')}</div>
     <div class="pcard lbme" id="lbMe"></div>
     <h2>Top players</h2>
     <div class="lb" id="lbList"></div>`;
   $('lbSeg').onclick = e => { const b = e.target.closest('[data-lb]'); if (!b || b.dataset.lb === k) return; SV.lbTab = b.dataset.lb; save(); renderLbMenu(); };
   renderBoards();
 }
-// your rating, your place, and how far behind the next person you are
+// your score, your place, and how far behind the next person you are
 function lbMeHTML(k) {
-  const isChess = k === 'chess', mine = Math.round(isChess ? SV.rating : PZ.rating), peak = Math.round(isChess ? SV.peak : PZ.peak);
-  const rows = fb.rows[k], i = fb.user ? rows.findIndex(r => r.id === fb.user.uid) : -1, val = r => isChess ? r.chessRating : r.puzzleRating;
+  const K = LBK[k], rows = fb.rows[k], i = fb.user ? rows.findIndex(r => r.id === fb.user.uid) : -1, val = K.val;
+  const u = n => `${n} ${K.unit}${n === 1 ? '' : 's'}`;
   let line = '';
-  if (i === 0) line = rows.length > 1 ? `You're <b>#1</b>, ${val(rows[0]) - val(rows[1])} points ahead of ${esc(rows[1].name)}.` : `You're <b>#1</b>.`;
-  else if (i > 0) { const up = rows[i - 1], gap = val(up) - val(rows[i]); line = `You're <b>#${i + 1}</b>. ${gap > 0 ? `${gap} point${gap === 1 ? '' : 's'} behind` : 'Tied with'} ${esc(up.name)} at #${i}.`; }
-  else if (fb.user && lbName()) line = isChess ? (SV.games > 0 ? 'Not in the top 50 yet.' : 'Finish a rated game to get on the board.') : (PZ.solved + PZ.failed > 0 ? 'Not in the top 50 yet.' : 'Finish a rated puzzle to get on the board.');
-  return `<div class="top"><div><div class="lbl">Your ${isChess ? 'chess' : 'puzzle'} rating</div><b class="big">${mine}</b></div><div class="meta" style="margin-left:auto;text-align:right">Peak <b>${peak}</b><br>${isChess ? `<b>${SV.games}</b> games` : `<b>${PZ.solved}</b> solved`}</div></div>${line ? `<div class="meta" style="margin-top:8px">${line}</div>` : ''}`;
+  if (i === 0) line = rows.length > 1 ? `You're <b>#1</b>, ${u(val(rows[0]) - val(rows[1]))} ahead of ${esc(rows[1].name)}.` : `You're <b>#1</b>.`;
+  else if (i > 0) { const up = rows[i - 1], gap = val(up) - val(rows[i]); line = `You're <b>#${i + 1}</b>. ${gap > 0 ? `${u(gap)} behind` : 'Tied with'} ${esc(up.name)} at #${i}.`; }
+  else if (fb.user && lbName()) line = K.played() ? 'Not in the top 50 yet.' : `${K.need} to get on the board.`;
+  return `<div class="top"><div><div class="lbl">Your ${K.what}</div><b class="big">${K.mine()}</b></div><div class="meta" style="margin-left:auto;text-align:right">${K.meta()}</div></div>${line ? `<div class="meta" style="margin-top:8px">${line}</div>` : ''}`;
 }
 function renderBoards() {
   const k = lbKind(), list = $('lbList'), me = $('lbMe');
@@ -4109,6 +4255,9 @@ const ACH = [
   ['pzr2000', 'Puzzles', '📊', 'Puzzle 2000', 'Reach a 2000 puzzle rating.', 3, () => [PZ.peak || 0, 2000]],
   ['daily3', 'Puzzles', '📅', 'Habit', 'Solve the daily puzzle 3 days in a row.', 1, () => [PZ.bestDaily || 0, 3]],
   ['daily7', 'Puzzles', '📅', 'Week streak', 'Solve the daily puzzle 7 days in a row.', 2, () => [PZ.bestDaily || 0, 7]],
+  ['rush10', 'Puzzles', '⚡', 'Rush 10', 'Score 10 in Puzzle Rush.', 1, () => [rushBest(), 10]],
+  ['rush20', 'Puzzles', '⚡', 'Rush 20', 'Score 20 in Puzzle Rush.', 2, () => [rushBest(), 20]],
+  ['rush30', 'Puzzles', '⚡', 'Rush 30', 'Score 30 in Puzzle Rush.', 3, () => [rushBest(), 30]],
   ['daily30', 'Puzzles', '📅', 'Month streak', 'Solve the daily puzzle 30 days in a row.', 3, () => [PZ.bestDaily || 0, 30]],
   ['bronze', 'Puzzles', '🥉', 'Bronze journey', 'Reach Bronze in Puzzle Journey.', 1, () => [tierNow() >= 2 ? 1 : 0, 1]],
   ['crystal', 'Puzzles', '💎', 'Crystal journey', 'Reach Crystal in Puzzle Journey.', 3, () => [tierNow() >= 4 ? 1 : 0, 1]],
@@ -4645,7 +4794,7 @@ function openColors() {
 $('colorBtn').onclick = openColors;
 initFB();
 
-window.__chess = { startVsBot, get scrub() { return scrub; }, fb, pushBoard, openColors, cycleSetup, openSettings, syncShell, ACH, checkAch, openEnd, END_LINES, openingAt, loadOpenings, openTrainer, OPEN_LINES, get TR() { return TR; }, T, hist, gameLink, gamePGN, openPuzzle, pzNotes, pzGoal, get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
+window.__chess = { get rush() { return RUSH; }, startVsBot, get scrub() { return scrub; }, fb, pushBoard, openColors, cycleSetup, openSettings, syncShell, ACH, checkAch, openEnd, END_LINES, openingAt, loadOpenings, openTrainer, OPEN_LINES, get TR() { return TR; }, T, hist, gameLink, gamePGN, openPuzzle, pzNotes, pzGoal, get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
 showMenu();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('./sw.js').catch(() => { });
 })();
