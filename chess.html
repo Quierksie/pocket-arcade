@@ -2669,13 +2669,14 @@ PZ.rush = Object.assign({ b3: 0, b5: 0, runs: 0, last: null }, PZ.rush || {});
 const rushBest = () => Math.max(PZ.rush.b3 || 0, PZ.rush.b5 || 0);
 if (!SV.mode) SV.mode = 'play';
 
-// five levels like chess.com's puzzle difficulty setting (Easiest to Hardest), picked relative to your rating
+// five levels like chess.com's puzzle difficulty setting (Easiest to Hardest), picked relative to your rating.
+// No bonus multipliers: the rating math already gives more for beating a harder puzzle and costs less for missing one.
 const DIFFS = {
   easiest: { name: 'Easiest', off: -300, gain: 1, loss: 1, note: 'Well below your rating. Good for warming up or building confidence.' },
-  easier: { name: 'Easier', off: -150, gain: 1, loss: 1, note: 'A bit below your rating. Easier wins, smaller gains.' },
+  easier: { name: 'Easier', off: -150, gain: 1, loss: 1, note: 'A bit below your rating. Smaller gains, bigger losses, since they\'re easier.' },
   std: { name: 'Normal', off: 0, gain: 1, loss: 1, note: 'Puzzles near your rating.' },
-  hard: { name: 'Harder', off: 150, gain: 1.2, loss: 0.8, note: 'Tougher puzzles. Bigger gains, smaller losses.' },
-  xhard: { name: 'Hardest', off: 300, gain: 1.4, loss: 0.6, note: 'Much tougher puzzles. Biggest gains, smallest losses.' },
+  hard: { name: 'Harder', off: 150, gain: 1, loss: 1, note: 'A bit above your rating. Solving one is worth more points, since it\'s harder.' },
+  xhard: { name: 'Hardest', off: 300, gain: 1, loss: 1, note: 'Well above your rating. Big gains when you solve one, small losses when you miss.' },
 };
 const TIERS = [['Wood', '#a0703c'], ['Stone', '#8d8f94'], ['Bronze', '#cd7f32'], ['Silver', '#a9b3c1'], ['Crystal', '#45bfe0'], ['Elite', '#9b6bff'], ['Champion', '#ff5d73'], ['Legend', '#e8b923']];
 const THEME_NAMES = { mate: 'Checkmate', mateIn1: 'Mate in 1', mateIn2: 'Mate in 2', mateIn3: 'Mate in 3', mateIn4: 'Mate in 4', mateIn5: 'Mate in 5', fork: 'Fork', hangingPiece: 'Hanging piece', sacrifice: 'Sacrifice', promotion: 'Promotion', discoveredAttack: 'Discovered attack', doubleCheck: 'Double check', backRankMate: 'Back rank mate', smotheredMate: 'Smothered mate', oneMove: 'One move', short: 'Short', long: 'Long', veryLong: 'Very long', opening: 'Opening', middlegame: 'Middlegame', endgame: 'Endgame', advantage: 'Advantage', crushing: 'Crushing', enPassant: 'En passant', castling: 'Castling', pin: 'Pin', skewer: 'Skewer', quietMove: 'Quiet move' };
