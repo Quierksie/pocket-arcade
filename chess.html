@@ -708,6 +708,16 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
 .tgrid small { font-size: 11.5px; color: var(--soft); font-weight: 700; }
 .chip2.tlink { border: 0; cursor: pointer; }
 .chip2.tlink:hover { background: var(--accent); color: #fff; }
+
+/* puzzles from your games */
+.minelist { display: grid; gap: 4px; margin-top: 8px; }
+.minelist button { display: grid; grid-template-columns: 22px 1fr; column-gap: 6px; align-items: center; text-align: left; padding: 6px 8px; border: 0; border-radius: 8px; background: var(--panel2); color: var(--ink); cursor: pointer; }
+.minelist button span { grid-row: 1 / 3; text-align: center; font-weight: 900; color: var(--soft); }
+.minelist button.ok span { color: var(--accent); }
+.minelist b { font-size: 13px; } .minelist small { font-size: 11.5px; color: var(--soft); font-weight: 700; }
+.mineline { font-size: 13.5px; margin: 0 0 10px; }
+.anal .mineb { margin-top: 8px; width: 100%; }
+#pzMine[disabled] { opacity: .6; cursor: default; }
 </style>
 </head>
 <body>
@@ -1636,7 +1646,7 @@ function render() {
   $('undoBtn').disabled = G.pvp ? !G.moves.length : myMoveCount() === 0;
   $('hintBtn').hidden = !!G.online; $('drawBtn').hidden = false;
   renderHintBox(); renderOpening();
-  $('resignLbl').textContent = !G.over && G.moves.length <= 1 ? 'Abort' : 'Resign';
+  if ($('resignLbl')) $('resignLbl').textContent = !G.over && G.moves.length <= 1 ? 'Abort' : 'Resign'; // missing while 'Confirm resign?' is showing
   const cool = G.drawAt != null && G.moves.length - G.drawAt < 6;
   $('drawBtn').disabled = !!G.drawPending || cool || (!G.pvp && !G.online && (thinking || E.side !== G.me)) || G.moves.length < 2;
   $('transport').hidden = !G.moves.length;
@@ -1932,7 +1942,7 @@ function startAnalysis() {
   try {
     analyst = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
     const a = AN;
-    analyst.onmessage = e => { if (AN !== a) return; const d = e.data; if (d.done) { AN.done = true; stopAnalysis(); } else AN.res[d.i] = d.r; if (G && G.over && !$('game').hidden) render(); };
+    analyst.onmessage = e => { if (AN !== a) return; const d = e.data; if (d.done) { AN.done = true; stopAnalysis(); try { harvestMine(); } catch (err) { } } else AN.res[d.i] = d.r; if (G && G.over && !$('game').hidden) render(); };
     analyst.postMessage({ fen: E.START, moves: AN.moves, opts: { time: 200, depth: 8, noise: 0, random: 0 } });
   } catch (e) { AN.failed = true; }
 }
@@ -2044,6 +2054,7 @@ function renderAnalysis(n) {
     const avg = a => { const v = a === mine ? ga[meIdx] : ga[1 - meIdx]; return v == null ? '-' : v.toFixed(1); };
     el.innerHTML = `<div class="acc"><div>${G.pvp ? esc(G.names[0]) : 'Your accuracy'}<b>${avg(mine)}</b></div><div>${G.pvp ? esc(G.names[1]) : bot.name}<b>${avg(theirs)}</b></div></div>
       <div class="cnt">${['brilliant', 'great', 'best', 'excellent', 'good', 'book', 'inaccuracy', 'mistake', 'miss', 'blunder'].filter(k => cnt[k] || ['best', 'inaccuracy', 'mistake', 'blunder'].includes(k)).map(k => `<span title="${CLS[k].n}"><i style="background:${CLS[k].c}">${CLS[k].s}</i>${cnt[k] || 0}</span>`).join('')}</div>${nxBtn}`;
+    el.insertAdjacentHTML('beforeend', mineBtn());
     return;
   }
   const i = n - 1, f = moveInfo(i);
@@ -2051,7 +2062,7 @@ function renderAnalysis(n) {
   const who = G.pvp ? esc(G.names[i % 2]) : isMine(i) ? 'You' : bot.name;
   const bad = ['inaccuracy', 'mistake', 'miss', 'blunder'].includes(f.k);
   el.innerHTML = `<div class="ln"><span class="ic" style="background:${CLS[f.k].c}">${CLS[f.k].s}</span><span>${who}: <b>${sans[i]}</b> is ${CLS[f.k].n}</span><span class="ev">${evalText(n)}</span></div>` +
-    (bad && f.bestSan ? `<div class="ln"><span class="ic" style="background:${CLS.best.c}">★</span><span>Better was <b>${f.bestSan}</b> (shown in blue)</span></div>` : '') + nxBtn;
+    (bad && f.bestSan ? `<div class="ln"><span class="ic" style="background:${CLS.best.c}">★</span><span>Better was <b>${f.bestSan}</b> (shown in blue)</span></div>` : '') + nxBtn + mineBtn();
 }
 // ---------- Hint coach: the best move, why, and how the other likely moves compare ----------
 // Looks at every legal move (and the opponent's best answer to each) in a background worker,
@@ -2199,7 +2210,7 @@ $('hintBtn').onclick = () => {
   w.postMessage({ id, fen: E.START, moves: G.moves.slice() });
 };
 
-$('anal').addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) goTo(+b.dataset.go); });
+$('anal').addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) goTo(+b.dataset.go); if (e.target.closest('[data-mine]') && G.minePz) startMine(G.minePz[0]); });
 $('botsBtn').onclick = () => { if (G && G.hist && !G.shared) openHistory(); else showMenu(); };
 $('back').onclick = e => { if (!$('game').hidden) { e.preventDefault(); cancelBrain(); stopAnalysis(); premove = null; thinking = false; if (G && G.hist && !G.shared) openHistory(); else showMenu(); } else if (pzBack()) e.preventDefault(); };
 
@@ -2648,7 +2659,8 @@ window.addEventListener('resize', () => { if (G && !$('game').hidden) render(); 
 const PZ0 = { rating: 400, rd: 230, vol: 0.06, peak: 400, solved: 0, failed: 0, streak: 0, best: 0, diff: 'std', tried: [], hist: [], pts: 0, record: 0, quest: { day: '', n: 0, done: false }, daily: {}, bestDaily: 0, rush: null };
 SV.pz = Object.assign({}, PZ0, SV.pz || {});
 const PZ = SV.pz;
-PZ.th = PZ.th || {}; // themed practice: { fork: { s: solved clean, f: missed } }
+PZ.th = PZ.th || {};
+if (!Array.isArray(SV.mine)) SV.mine = []; // puzzles made from your own mistakes, newest first // themed practice: { fork: { s: solved clean, f: missed } }
 PZ.rush = Object.assign({ b3: 0, b5: 0, runs: 0, last: null }, PZ.rush || {});
 const rushBest = () => Math.max(PZ.rush.b3 || 0, PZ.rush.b5 || 0);
 if (!SV.mode) SV.mode = 'play';
@@ -2910,6 +2922,7 @@ function renderPuzMenu() {
       <div class="rushbtns"><button class="bigbtn" data-rush="3"><div><b>3 min</b></div><span class="go">Go</span></button><button class="bigbtn" data-rush="5"><div><b>5 min</b></div><span class="go">Go</span></button></div>
       ${PZ.rush.last ? `<div class="rowbtns"><button id="pzRushLast">Last run: ${PZ.rush.last.score} · Review</button></div>` : ''}
     </div>
+    <div class="pcard minepc" id="pzMineCard">${mineCard()}</div>
     <div class="pcard themepc">
       <div class="top"><div><div class="lbl">Practice by theme</div><b style="font-size:17px">Pick a tactic to train</b></div></div>
       <p class="meta" style="margin:6px 0 4px">Unrated. Hints and solutions are free. Gets harder as you go.</p>
@@ -2929,6 +2942,7 @@ function renderPuzMenu() {
   $('pzJourney').onclick = openJourney;
   host.querySelectorAll('[data-rush]').forEach(b => { b.onclick = () => startRush(+b.dataset.rush); });
   if ($('pzRushLast')) $('pzRushLast').onclick = rushResults;
+  $('pzMineCard').onclick = e => { const b = e.target.closest('[data-mid]'); if (b) { const r = SV.mine.find(x => x.id === b.dataset.mid); if (r) { MINE_CUR = r.id; openPuzzle(r, { mode: 'mine', retry: !!r.solved }); } return; } if (e.target.closest('#pzMine')) startMine(); };
   $('pzThemes').onclick = e => { const b = e.target.closest('[data-tk]'); if (b) startTheme(b.dataset.tk); };
   if (!PUZ) loadPuzzles().then(() => { countThemes(); if ($('pzThemes')) $('pzThemes').innerHTML = themeGrid(); }).catch(() => { });
   else if (!THEMES[0].n) { countThemes(); $('pzThemes').innerHTML = themeGrid(); }
@@ -3072,6 +3086,7 @@ function openPuzzle(p, o) {
 function pzHeader() {
   const s = PS, dl = s.delta != null ? `<span class="dl ${s.delta >= 0 ? 'up' : 'down'}">${s.delta >= 0 ? '+' : ''}${s.delta}</span>` : '';
   if (s.mode === 'rush' || s.mode === 'review') { rushHeader(); return; }
+  if (s.mode === 'mine') { const f = s.p.from || {}, left = SV.mine.filter(x => !x.solved).length; $('pzMode').innerHTML = `Your game${f.vs ? ' vs ' + esc(f.vs) : ''} · move ${Math.floor((f.ply || 0) / 2) + 1}`; $('pzRate').innerHTML = `<b>${left}</b> left`; return; }
   if (s.mode === 'theme') { const T = THEMES.find(t => t.k === TH.k), st = PZ.th[TH.k] || {}; $("pzMode").innerHTML = `${T.name} · Practice`; $('pzRate').innerHTML = `<b>${st.s || 0}</b> solved`; return; }
   if (s.mode === 'rated') $('pzMode').innerHTML = s.redeem ? `Rated · <span style="color:#ff6a2e">Redemption</span>` : `Rated · ${(DIFFS[PZ.diff] || DIFFS.std).name}${s.retry ? ' · Retry' : ''}`;
   else $('pzMode').innerHTML = `Daily · ${parseYmd(s.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`;
@@ -3107,7 +3122,7 @@ function pzStatus(k, extra) {
   $('pzHint').disabled = s.done || k === 'wait';
   $('pzSol').disabled = s.done || k === 'wait';
   $('pzRetry').hidden = !(s.mistakes || s.done);
-  $('pzNext').hidden = !(s.done || ((s.mode === 'rated' || s.mode === 'theme') && (s.mistakes || s.hints)));
+  $('pzNext').hidden = !(s.done || ((s.mode === 'rated' || s.mode === 'theme' || s.mode === 'mine') && (s.mistakes || s.hints)));
   const rush = s.mode === 'rush';
   $('pzEnd').hidden = !rush;
   if (rush) ['pzHint', 'pzSol', 'pzRetry', 'pzNext'].forEach(id => { $(id).hidden = true; });
@@ -3199,6 +3214,7 @@ function pzFinish(ok) {
       if (after.t !== before.t || after.l !== before.l || after.prestige !== before.prestige) setTimeout(() => toast(`Level up! ${tierLabel(after)}`), 600);
     }
   }
+  if (s.mode === 'mine' && !s.retry) { const r = SV.mine.find(x => x.id === s.p.id); if (r) { r.tries = (r.tries || 0) + 1; if (accurate && !r.solved) { r.solved = Date.now(); SV.mineFixed = (SV.mineFixed || 0) + 1; } } }
   if (s.mode === 'theme' && !s.retry && TH) { const st = PZ.th[TH.k] || (PZ.th[TH.k] = { s: 0, f: 0 }); if (accurate) { st.s++; TH.target += 60; } else { st.f++; TH.target -= 60; } }
   if (s.mode === 'daily' && ok && !s.showSol) {
     const r = PZ.daily[s.date] || (PZ.daily[s.date] = { id: s.p.id });
@@ -3215,16 +3231,17 @@ function pzResult(pts, accurate) {
   const total = pts.reduce((a, b) => a + b[1], 0), j = journey(PZ.pts);
   el.innerHTML = `<div class="res">
     <h3>${s.showSol ? 'Puzzle missed' : accurate ? 'Solved!' : 'Solved with help'}${s.delta != null && s.mode === 'rated' ? `<span class="dl ${s.delta >= 0 ? 'up' : 'down'}">${s.delta >= 0 ? '+' : ''}${s.delta}</span>` : ''}</h3>
+    ${s.mode === 'mine' && p.from ? `<p class="mineline">In the game you played <b>${esc(p.from.played)}</b>${p.from.k ? ` (${CLS[p.from.k] ? CLS[p.from.k].n : p.from.k})` : ''}. The best move was <b>${esc(p.from.best)}</b>.</p>` : ''}
     <div class="grid"><div>Puzzle rating<b>${p.rating}</b></div><div>Pass rate (est.)<b>${passRate(p)}%</b></div><div>Target time<b>${tt}s</b></div><div>Your time<b class="${!s.showSol && s.time <= tt ? 'up' : ''}">${s.showSol ? '-' : s.time + 's'}</b></div></div>
     <div class="themes">${p.themes.map(t => THEMES.some(x => x.k === t && x.n >= 8) ? `<button class="chip2 tlink" data-theme="${t}" title="Practice ${THEME_NAMES[t] || t} puzzles">${THEME_NAMES[t] || t} ›</button>` : `<span class="chip2">${THEME_NAMES[t] || t}</span>`).join('')}</div>
     ${s.notes && s.notes.length ? `<div class="howto"><div class="lbl">How it works</div>${s.notes.map((n, i) => `<div class="hw ${n.who}"><span class="ic">${i === 0 ? '?' : n.who === 'you' ? '★' : '•'}</span><div><b>${i === 0 ? (s.color === 1 ? 'Black' : 'White') + ' played' : n.who === 'you' ? 'You' : (s.color === 1 ? 'Black' : 'White')} ${n.san}</b>${n.why ? `<small>${esc(n.why)}</small>` : ''}</div></div>`).join('')}</div>` : ''}
     ${pts.length ? `<div class="pts">${pts.map(([n, v]) => `<div>${n}<b>+${v}</b></div>`).join('')}<div class="tot">Puzzle points<b>+${total}</b></div><div>${tierLabel(j)}<span>${j.into}/${j.need}</span></div></div>` : ''}
     ${s.mode === 'rated' && PZ.lost && !s.redeem ? `<button class="bigbtn redeem" id="rsRedeem"><div><b>Redemption puzzle</b><small>Solve a harder one perfectly to win back your ${PZ.lost.streak} streak</small></div><span class="go">${FLAME}${PZ.lost.streak}</span></button>` : ''}
-    <div class="row"><button class="btn alt" id="rsAna">Analysis</button><button class="btn alt" id="rsRetry">Retry</button>${s.mode === 'rated' || s.mode === 'theme' ? '<button class="btn" id="rsNext">Next puzzle</button>' : '<button class="btn" id="rsBack">Done</button>'}</div></div>`;
+    <div class="row"><button class="btn alt" id="rsAna">Analysis</button><button class="btn alt" id="rsRetry">Retry</button>${s.mode === 'rated' || s.mode === 'theme' || s.mode === 'mine' ? '<button class="btn" id="rsNext">Next puzzle</button>' : '<button class="btn" id="rsBack">Done</button>'}</div></div>`;
   el.hidden = false; $('pzTools').hidden = true;
   $('rsAna').onclick = () => openAnalysis(p);
   $('rsRetry').onclick = () => openPuzzle(p, { mode: s.mode, date: s.date, retry: true });
-  if ($('rsNext')) $('rsNext').onclick = () => s.mode === 'theme' ? themeNext() : startRated();
+  if ($('rsNext')) $('rsNext').onclick = () => s.mode === 'theme' ? themeNext() : s.mode === 'mine' ? mineNext() : startRated();
   el.querySelectorAll('[data-theme]').forEach(b => { b.onclick = () => startTheme(b.dataset.theme); });
   if ($('rsRedeem')) $('rsRedeem').onclick = () => startRedeem();
   if ($('rsBack')) $('rsBack').onclick = () => s.mode === 'review' ? rushBackToResults() : s.date === today() ? openPuzMenu() : openArchive(s.date.slice(0, 7));
@@ -3255,8 +3272,91 @@ $('pzSol').onclick = () => {
   stepOne();
 };
 $('pzRetry').onclick = () => { if (PS) openPuzzle(PS.p, { mode: PS.mode, date: PS.date, retry: true }); };
-$('pzNext').onclick = () => { if (!PS) return; if (PS.mode === 'rated') startRated(); else if (PS.mode === 'theme') themeNext(); else if (PS.mode === 'review') rushBackToResults(); else openPuzMenu(); };
+$('pzNext').onclick = () => { if (!PS) return; if (PS.mode === 'rated') startRated(); else if (PS.mode === 'theme') themeNext(); else if (PS.mode === 'mine') mineNext(); else if (PS.mode === 'review') rushBackToResults(); else openPuzMenu(); };
 $('pzEnd').onclick = () => { if (RUSH && !RUSH.done) rushOver('ended'); };
+
+// ---------- Puzzles from your own games: after the review finishes, each of your mistakes that had one clearly best answer becomes a puzzle ----------
+let lineWorker = null;
+function mineBtn() {
+  if (!G || !G.minePz) return '';
+  if (G.minePz.length) return `<button class="nx mineb" data-mine>🧩 ${G.minePz.length} puzzle${G.minePz.length > 1 ? 's' : ''} from your mistakes · Solve ›</button>`;
+  return G.mineBusy ? '<div class="ln" style="font-size:12.5px;margin-top:8px">Making puzzles from your mistakes...</div>' : '';
+}
+function harvestMine() {
+  if (!G || G.pvp || !AN || !AN.done || AN.moves.length !== G.moves.length) return;
+  const g = G, cands = [];
+  for (let i = 1; i < g.moves.length; i++) {
+    if (!isMine(i)) continue;
+    const f = moveInfo(i), a = AN.res[i];
+    if (!f || !a || !a.best || a.n < 2 || a.best === g.moves[i] || !['mistake', 'blunder', 'miss'].includes(f.k)) continue;
+    const unique = a.s2 == null || (a.score > 90000 && a.s2 < 90000) || a.score - a.s2 >= 200;
+    if (!unique || a.score < -150) continue;
+    cands.push({ i, best: a.best, bs: a.bs, k: f.k, score: a.score, drop: winPct(posScore(i)) - winPct(-posScore(i + 1)) });
+  }
+  cands.sort((x, y) => y.drop - x.drop); cands.length = Math.min(cands.length, 4);
+  g.minePz = []; if (!cands.length) return;
+  g.mineBusy = true;
+  // finish each line in a background worker: the opponent's best reply, then your next move while it's still the only good one
+  const src = ENGINE.toString() + '\nconst E = ENGINE();\nonmessage = e => { for (const c of e.data.cands) { E.load(E.START); for (const u of e.data.moves.slice(0, c.i)) E.make(E.fromUci(u));\n' +
+    'const line = [c.best]; E.make(E.fromUci(c.best)); let mate = false;\n' +
+    'for (let k = 0; k < 2; k++) { let st = E.status(); if (st) { mate = st.reason === "checkmate"; break; }\n' +
+    ' const o = E.think({ time: 220, depth: 8, noise: 0, random: 0 }); if (!o.move) break; E.make(o.move); if (E.status()) { E.unmake(); break; }\n' +
+    ' const t = E.think({ time: 260, depth: 8, noise: 0, random: 0 }); if (!t.move) { E.unmake(); break; }\n' +
+    ' const t2 = E.think({ time: 160, depth: 8, noise: 0, random: 0, exclude: t.move, full: true });\n' +
+    ' const sc = t.score || 0, s2 = t2.move ? (t2.score || 0) : -1e9; if (!((sc > 90000 && s2 < 90000) || sc - s2 >= 250)) { E.unmake(); break; }\n' +
+    ' line.push(E.uci(o.move), E.uci(t.move)); E.make(t.move); }\n' +
+    'const st = E.status(); if (st && st.reason === "checkmate") mate = true; postMessage({ i: c.i, line, mate }); }\npostMessage({ done: true }); };';
+  try {
+    if (lineWorker) lineWorker.terminate();
+    lineWorker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+    const byI = Object.fromEntries(cands.map(c => [c.i, c]));
+    lineWorker.onmessage = e => {
+      const d = e.data;
+      if (d.done) { lineWorker.terminate(); lineWorker = null; g.mineBusy = false; save(); if (G === g && G.over && !$('game').hidden) render(); if (!$('menu').hidden) showMenu(); return; }
+      const c = byI[d.i], rec = mineRecord(g, c, d.line, d.mate);
+      if (!rec) return;
+      const old = SV.mine.find(x => x.key === rec.key);
+      if (old) { if (!g.minePz.includes(old.id)) g.minePz.push(old.id); return; }
+      SV.mine.unshift(rec); if (SV.mine.length > 150) SV.mine.length = 150;
+      g.minePz.push(rec.id);
+    };
+    lineWorker.postMessage({ moves: g.moves.slice(), cands: cands.map(c => ({ i: c.i, best: c.best })) });
+  } catch (e) { g.mineBusy = false; }
+}
+function mineRecord(g, c, line, mate) {
+  const X = MX(); X.load(X.START);
+  for (let j = 0; j < c.i - 1; j++) X.make(X.fromUci(g.moves[j]));
+  const fen = X.fen(), moves = [g.moves[c.i - 1], ...line];
+  // make sure every move replays
+  for (const u of moves) { const m = X.fromUci(u); if (!m) return null; X.make(m); }
+  const n = Math.ceil(line.length / 2), sansAt = () => { const Y = MX(); Y.load(Y.START); for (let j = 0; j < c.i; j++) Y.make(Y.fromUci(g.moves[j])); return Y.san(Y.fromUci(g.moves[c.i])); };
+  const themes = ['myGame', n === 1 ? 'oneMove' : n === 2 ? 'short' : 'long'];
+  if (mate) themes.push('mate', 'mateIn' + n); else if (c.score < 150) themes.push('equality');
+  const vs = g.online ? oppName() : g.hist ? (g.hist.names || [])[g.me === 1 ? 1 : 0] : (botById(g.bot) || {}).name;
+  return {
+    id: 'm' + Date.now().toString(36) + c.i, key: fen.split(' ').slice(0, 4).join(' ') + '|' + moves[1],
+    fen, moves, rating: Math.max(400, Math.min(2400, Math.round(SV.rating / 50) * 50 + 120 * (n - 1))), themes,
+    from: { vs: vs || 'a bot', ply: c.i, played: sansAt(), best: c.bs || c.best, k: c.k, at: Date.now() }, tries: 0, solved: 0,
+  };
+}
+let MINE_CUR = null;
+function startMine(firstId) {
+  const r = (firstId && SV.mine.find(x => x.id === firstId && !x.solved)) || SV.mine.find(x => !x.solved) || (firstId && SV.mine.find(x => x.id === firstId));
+  if (!r) { toast('No puzzles from your games yet. Play a game and they show up after the review.'); return; }
+  MINE_CUR = r.id; cancelBrain(); stopAnalysis();
+  openPuzzle(r, { mode: 'mine' });
+}
+function mineNext() {
+  const list = SV.mine.filter(x => !x.solved && x.id !== MINE_CUR);
+  if (!list.length) { toast('You fixed all your mistakes. Nice!'); openPuzMenu(); return; }
+  startMine(list[0].id);
+}
+function mineCard() {
+  const left = SV.mine.filter(x => !x.solved).length, fixed = SV.mine.length - left;
+  const recent = SV.mine.slice(0, 4).map(r => `<button data-mid="${r.id}" class="${r.solved ? 'ok' : ''}"><span>${r.solved ? '✓' : '•'}</span><b>vs ${esc(r.from.vs)}</b><small>move ${Math.floor(r.from.ply / 2) + 1} · you played ${esc(r.from.played)}</small></button>`).join('');
+  return `<div class="top"><div><div class="lbl">From your games</div><b style="font-size:17px">Fix your mistakes</b></div><div class="meta" style="margin-left:auto;text-align:right"><b>${left}</b> to solve<br><b>${fixed}</b> fixed</div></div>
+    ${SV.mine.length ? `<button class="bigbtn" id="pzMine" ${left ? '' : 'disabled'}><div><b>${left ? 'Solve your mistakes' : 'All fixed!'}</b><small>${left ? 'Find the move you missed' : 'New ones appear after your next game'}</small></div><span class="go">${left ? 'Go' : '✓'}</span></button><div class="minelist">${recent}</div>` : '<p class="meta" style="margin:6px 0 0">After a game against a bot or a friend online, the review turns your mistakes into puzzles here, when there was one clearly best move.</p>'}`;
+}
 
 // ---------- Themed practice: pick a tactic (fork, pin, mate in 2...) and get puzzles of that kind near your level ----------
 // Unrated. Gets a bit harder after each clean solve and easier after a miss.
@@ -4325,6 +4425,8 @@ const ACH = [
   ['pzr2000', 'Puzzles', '📊', 'Puzzle 2000', 'Reach a 2000 puzzle rating.', 3, () => [PZ.peak || 0, 2000]],
   ['daily3', 'Puzzles', '📅', 'Habit', 'Solve the daily puzzle 3 days in a row.', 1, () => [PZ.bestDaily || 0, 3]],
   ['daily7', 'Puzzles', '📅', 'Week streak', 'Solve the daily puzzle 7 days in a row.', 2, () => [PZ.bestDaily || 0, 7]],
+  ['mine1', 'Puzzles', '🔁', 'Learn from it', 'Solve a puzzle made from your own mistake.', 1, () => [SV.mineFixed || 0, 1]],
+  ['mine10', 'Puzzles', '🛠️', 'Mistake fixer', 'Solve 10 puzzles made from your own mistakes.', 2, () => [SV.mineFixed || 0, 10]],
   ['themes25', 'Puzzles', '🎯', 'Theme trainer', 'Solve 25 themed practice puzzles cleanly.', 1, () => [Object.values(PZ.th).reduce((a, t) => a + (t.s || 0), 0), 25]],
   ['themes5', 'Puzzles', '🧩', 'Well-rounded', 'Cleanly solve a puzzle in 8 different themes.', 2, () => [Object.values(PZ.th).filter(t => t.s > 0).length, 8]],
   ['rush10', 'Puzzles', '⚡', 'Rush 10', 'Score 10 in Puzzle Rush.', 1, () => [rushBest(), 10]],
@@ -4866,7 +4968,7 @@ function openColors() {
 $('colorBtn').onclick = openColors;
 initFB();
 
-window.__chess = { get rush() { return RUSH; }, startVsBot, get scrub() { return scrub; }, fb, pushBoard, openColors, cycleSetup, openSettings, syncShell, ACH, checkAch, openEnd, END_LINES, openingAt, loadOpenings, openTrainer, OPEN_LINES, get TR() { return TR; }, T, hist, gameLink, gamePGN, openPuzzle, pzNotes, pzGoal, get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
+window.__chess = { openHistGame, harvestMine, get AN() { return AN; }, moveInfo, isMine: i => isMine(i), get rush() { return RUSH; }, startVsBot, get scrub() { return scrub; }, fb, pushBoard, openColors, cycleSetup, openSettings, syncShell, ACH, checkAch, openEnd, END_LINES, openingAt, loadOpenings, openTrainer, OPEN_LINES, get TR() { return TR; }, T, hist, gameLink, gamePGN, openPuzzle, pzNotes, pzGoal, get G() { return G; }, get PS() { return PS; }, get PUZ() { return PUZ; }, P, A, startRated, startDaily, openArchive, journey, glicko, dailyPuzzle, E, SV: () => SV, newGame, play: u => play(E.fromUci(u), true), BOTS };
 showMenu();
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('./sw.js').catch(() => { });
 })();

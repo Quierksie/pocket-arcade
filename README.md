@@ -37,6 +37,9 @@ match /leaderboard/{uid} {
 }
 ```
 
+### Puzzles from your games
+When the review of a game against a bot or an online friend finishes, each of your mistakes, blunders and misses that had one clearly best answer (at least 2 pawns better than anything else, or the only mate) becomes a puzzle. A background worker extends the line with the opponent's best reply and your next move for as long as that move is still the only good one. The Analysis tab shows "N puzzles from your mistakes · Solve", and the Puzzles tab has a **From your games** card with what's left to solve and your recent ones. Results say what you played in the game and what was best. Up to 4 puzzles per game, 150 kept. Unrated; the Learn from it and Mistake fixer achievements count clean solves. Opening an old bot game from History also checks it for puzzles.
+
 ### Practice by theme
 The Puzzles tab has a **Practice by theme** card: checkmates (mate in 2, 3, 4+, back rank), tactics (fork, pin, skewer, discovered attack, hanging piece, sacrifice, quiet move, promotion), game phase, and puzzle length. Pick one to get puzzles of that kind near your rating; it gets about 60 points harder after each clean solve and easier after a miss. It's unrated, hints and the solution are free, and each tile shows how often you solve that theme cleanly. Theme tags on any puzzle result are buttons that start practice for that theme.
 
