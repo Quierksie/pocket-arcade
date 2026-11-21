@@ -7,3 +7,5 @@ Runs automatically twice a day through GitHub Actions (`.github/workflows/puzzle
 3. `rate.js`: the rating comes from the puzzle itself. More moves to find, a quiet or sacrificing first move, and moves the arcade engine needs to search deeply for all make it harder. A free piece, a cheap piece taking an expensive one, or mate in one makes it easier. One-move puzzles are capped (obvious captures at 950, others at 1450–1700).
 
 The fifth field of each puzzle is the date it was added. The daily puzzle for a date only uses puzzles added before that date, so a day's puzzle never changes.
+
+`themes.js` adds pin, skewer, discovered attack and quiet move tags (each only when the line later wins the piece involved). `gen.js` uses it for new puzzles; `node retag.js --write` adds the tags to puzzles already in `puzzles.json` without removing any.

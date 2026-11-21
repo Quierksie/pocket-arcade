@@ -3,6 +3,8 @@
 const fs = require('fs');
 const SF = require('./sfwrap.js');
 const ENGINE = require('./engine.js');
+const { tactics } = require('./themes.js');
+const TE = ENGINE(); // separate board for tagging pins, skewers and the like
 
 const OUT = process.argv[2] || 'out.jsonl';
 const MINUTES = +(process.argv[3] || 60);
@@ -182,6 +184,7 @@ async function tryPuzzle(sf, E, seen, ply, blunderUci) {
   const sol = p.line.filter(x => !x.opp);
   rec.quietFirst = !sol[0].cap && !sol[0].check;
   rec.moves = [blunderUci, ...p.line.map(x => x.uci)].join(' ');
+  try { rec.themes = [...new Set([...rec.themes, ...tactics(TE, rec.fen, rec.moves)])]; } catch (e) { }
   delete rec.line;
   return rec;
 }

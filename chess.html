@@ -697,6 +697,17 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
 .rlist button { display: flex; flex-direction: column; align-items: center; width: 46px; padding: 4px 0; border: 0; border-radius: 8px; font-size: 11px; font-weight: 800; color: #fff; cursor: pointer; }
 .rlist button span { font-size: 14px; }
 .rlist .ok { background: var(--accent); } .rlist .no { background: var(--bad); }
+
+/* themed practice */
+.tgl { font-size: 11.5px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; color: var(--soft); margin: 10px 0 6px; }
+.tgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 6px; }
+.tgrid button { display: grid; grid-template-columns: 26px 1fr; grid-template-rows: auto auto; column-gap: 6px; align-items: center; text-align: left; padding: 8px 10px; border: 0; border-radius: 10px; background: var(--panel2); color: var(--ink); cursor: pointer; }
+.tgrid button:hover { filter: brightness(1.06); }
+.tgrid .ti { grid-row: 1 / 3; font-size: 18px; text-align: center; font-weight: 900; color: var(--accent); }
+.tgrid b { font-size: 13.5px; line-height: 1.2; }
+.tgrid small { font-size: 11.5px; color: var(--soft); font-weight: 700; }
+.chip2.tlink { border: 0; cursor: pointer; }
+.chip2.tlink:hover { background: var(--accent); color: #fff; }
 </style>
 </head>
 <body>
@@ -2637,6 +2648,7 @@ window.addEventListener('resize', () => { if (G && !$('game').hidden) render(); 
 const PZ0 = { rating: 400, rd: 230, vol: 0.06, peak: 400, solved: 0, failed: 0, streak: 0, best: 0, diff: 'std', tried: [], hist: [], pts: 0, record: 0, quest: { day: '', n: 0, done: false }, daily: {}, bestDaily: 0, rush: null };
 SV.pz = Object.assign({}, PZ0, SV.pz || {});
 const PZ = SV.pz;
+PZ.th = PZ.th || {}; // themed practice: { fork: { s: solved clean, f: missed } }
 PZ.rush = Object.assign({ b3: 0, b5: 0, runs: 0, last: null }, PZ.rush || {});
 const rushBest = () => Math.max(PZ.rush.b3 || 0, PZ.rush.b5 || 0);
 if (!SV.mode) SV.mode = 'play';
@@ -2647,7 +2659,7 @@ const DIFFS = {
   xhard: { name: 'Extra Hard', off: 300, gain: 1.4, loss: 0.6, note: 'Much tougher puzzles. Biggest gains, smallest losses.' },
 };
 const TIERS = [['Wood', '#a0703c'], ['Stone', '#8d8f94'], ['Bronze', '#cd7f32'], ['Silver', '#a9b3c1'], ['Crystal', '#45bfe0'], ['Elite', '#9b6bff'], ['Champion', '#ff5d73'], ['Legend', '#e8b923']];
-const THEME_NAMES = { mate: 'Checkmate', mateIn1: 'Mate in 1', mateIn2: 'Mate in 2', mateIn3: 'Mate in 3', mateIn4: 'Mate in 4', mateIn5: 'Mate in 5', fork: 'Fork', hangingPiece: 'Hanging piece', sacrifice: 'Sacrifice', promotion: 'Promotion', discoveredAttack: 'Discovered attack', doubleCheck: 'Double check', backRankMate: 'Back rank mate', smotheredMate: 'Smothered mate', oneMove: 'One move', short: 'Short', long: 'Long', veryLong: 'Very long', opening: 'Opening', middlegame: 'Middlegame', endgame: 'Endgame', advantage: 'Advantage', crushing: 'Crushing', enPassant: 'En passant', castling: 'Castling' };
+const THEME_NAMES = { mate: 'Checkmate', mateIn1: 'Mate in 1', mateIn2: 'Mate in 2', mateIn3: 'Mate in 3', mateIn4: 'Mate in 4', mateIn5: 'Mate in 5', fork: 'Fork', hangingPiece: 'Hanging piece', sacrifice: 'Sacrifice', promotion: 'Promotion', discoveredAttack: 'Discovered attack', doubleCheck: 'Double check', backRankMate: 'Back rank mate', smotheredMate: 'Smothered mate', oneMove: 'One move', short: 'Short', long: 'Long', veryLong: 'Very long', opening: 'Opening', middlegame: 'Middlegame', endgame: 'Endgame', advantage: 'Advantage', crushing: 'Crushing', enPassant: 'En passant', castling: 'Castling', pin: 'Pin', skewer: 'Skewer', quietMove: 'Quiet move' };
 const FLAME = '<svg class="flame" viewBox="0 0 24 24" fill="#ff8a3d"><path d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 0-3-1-6 1-9.5z"/></svg>';
 
 // ---------- dates ----------
@@ -2898,6 +2910,11 @@ function renderPuzMenu() {
       <div class="rushbtns"><button class="bigbtn" data-rush="3"><div><b>3 min</b></div><span class="go">Go</span></button><button class="bigbtn" data-rush="5"><div><b>5 min</b></div><span class="go">Go</span></button></div>
       ${PZ.rush.last ? `<div class="rowbtns"><button id="pzRushLast">Last run: ${PZ.rush.last.score} · Review</button></div>` : ''}
     </div>
+    <div class="pcard themepc">
+      <div class="top"><div><div class="lbl">Practice by theme</div><b style="font-size:17px">Pick a tactic to train</b></div></div>
+      <p class="meta" style="margin:6px 0 4px">Unrated. Hints and solutions are free. Gets harder as you go.</p>
+      <div id="pzThemes">${themeGrid()}</div>
+    </div>
     <div class="pcard" id="pzJourney" role="button">
       <div class="lbl" style="margin-bottom:8px">Puzzle Journey</div>
       <div class="tier"><div class="bd" style="background:${TIERS[j.t][1]}">${j.prestige ? 'P' : TIERS[j.t][0][0]}</div>
@@ -2912,6 +2929,9 @@ function renderPuzMenu() {
   $('pzJourney').onclick = openJourney;
   host.querySelectorAll('[data-rush]').forEach(b => { b.onclick = () => startRush(+b.dataset.rush); });
   if ($('pzRushLast')) $('pzRushLast').onclick = rushResults;
+  $('pzThemes').onclick = e => { const b = e.target.closest('[data-tk]'); if (b) startTheme(b.dataset.tk); };
+  if (!PUZ) loadPuzzles().then(() => { countThemes(); if ($('pzThemes')) $('pzThemes').innerHTML = themeGrid(); }).catch(() => { });
+  else if (!THEMES[0].n) { countThemes(); $('pzThemes').innerHTML = themeGrid(); }
 }
 function openPzSettings() {
   const o = document.createElement('div'); o.className = 'ov';
@@ -3052,6 +3072,7 @@ function openPuzzle(p, o) {
 function pzHeader() {
   const s = PS, dl = s.delta != null ? `<span class="dl ${s.delta >= 0 ? 'up' : 'down'}">${s.delta >= 0 ? '+' : ''}${s.delta}</span>` : '';
   if (s.mode === 'rush' || s.mode === 'review') { rushHeader(); return; }
+  if (s.mode === 'theme') { const T = THEMES.find(t => t.k === TH.k), st = PZ.th[TH.k] || {}; $("pzMode").innerHTML = `${T.name} · Practice`; $('pzRate').innerHTML = `<b>${st.s || 0}</b> solved`; return; }
   if (s.mode === 'rated') $('pzMode').innerHTML = s.redeem ? `Rated · <span style="color:#ff6a2e">Redemption</span>` : `Rated · ${(DIFFS[PZ.diff] || DIFFS.std).name}${s.retry ? ' · Retry' : ''}`;
   else $('pzMode').innerHTML = `Daily · ${parseYmd(s.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`;
   $('pzRate').innerHTML = s.mode === 'rated' ? `<b>${Math.round(PZ.rating)}</b>${dl}` : `${FLAME} <b>${dailyStreak()}</b>`;
@@ -3086,7 +3107,7 @@ function pzStatus(k, extra) {
   $('pzHint').disabled = s.done || k === 'wait';
   $('pzSol').disabled = s.done || k === 'wait';
   $('pzRetry').hidden = !(s.mistakes || s.done);
-  $('pzNext').hidden = !(s.done || (s.mode === 'rated' && (s.mistakes || s.hints)));
+  $('pzNext').hidden = !(s.done || ((s.mode === 'rated' || s.mode === 'theme') && (s.mistakes || s.hints)));
   const rush = s.mode === 'rush';
   $('pzEnd').hidden = !rush;
   if (rush) ['pzHint', 'pzSol', 'pzRetry', 'pzNext'].forEach(id => { $(id).hidden = true; });
@@ -3178,6 +3199,7 @@ function pzFinish(ok) {
       if (after.t !== before.t || after.l !== before.l || after.prestige !== before.prestige) setTimeout(() => toast(`Level up! ${tierLabel(after)}`), 600);
     }
   }
+  if (s.mode === 'theme' && !s.retry && TH) { const st = PZ.th[TH.k] || (PZ.th[TH.k] = { s: 0, f: 0 }); if (accurate) { st.s++; TH.target += 60; } else { st.f++; TH.target -= 60; } }
   if (s.mode === 'daily' && ok && !s.showSol) {
     const r = PZ.daily[s.date] || (PZ.daily[s.date] = { id: s.p.id });
     if (!r.at && !r.sol) { r.at = Date.now(); r.perfect = accurate; r.time = s.time; }
@@ -3194,15 +3216,16 @@ function pzResult(pts, accurate) {
   el.innerHTML = `<div class="res">
     <h3>${s.showSol ? 'Puzzle missed' : accurate ? 'Solved!' : 'Solved with help'}${s.delta != null && s.mode === 'rated' ? `<span class="dl ${s.delta >= 0 ? 'up' : 'down'}">${s.delta >= 0 ? '+' : ''}${s.delta}</span>` : ''}</h3>
     <div class="grid"><div>Puzzle rating<b>${p.rating}</b></div><div>Pass rate (est.)<b>${passRate(p)}%</b></div><div>Target time<b>${tt}s</b></div><div>Your time<b class="${!s.showSol && s.time <= tt ? 'up' : ''}">${s.showSol ? '-' : s.time + 's'}</b></div></div>
-    <div class="themes">${p.themes.map(t => `<span class="chip2">${THEME_NAMES[t] || t}</span>`).join('')}</div>
+    <div class="themes">${p.themes.map(t => THEMES.some(x => x.k === t && x.n >= 8) ? `<button class="chip2 tlink" data-theme="${t}" title="Practice ${THEME_NAMES[t] || t} puzzles">${THEME_NAMES[t] || t} ›</button>` : `<span class="chip2">${THEME_NAMES[t] || t}</span>`).join('')}</div>
     ${s.notes && s.notes.length ? `<div class="howto"><div class="lbl">How it works</div>${s.notes.map((n, i) => `<div class="hw ${n.who}"><span class="ic">${i === 0 ? '?' : n.who === 'you' ? '★' : '•'}</span><div><b>${i === 0 ? (s.color === 1 ? 'Black' : 'White') + ' played' : n.who === 'you' ? 'You' : (s.color === 1 ? 'Black' : 'White')} ${n.san}</b>${n.why ? `<small>${esc(n.why)}</small>` : ''}</div></div>`).join('')}</div>` : ''}
     ${pts.length ? `<div class="pts">${pts.map(([n, v]) => `<div>${n}<b>+${v}</b></div>`).join('')}<div class="tot">Puzzle points<b>+${total}</b></div><div>${tierLabel(j)}<span>${j.into}/${j.need}</span></div></div>` : ''}
     ${s.mode === 'rated' && PZ.lost && !s.redeem ? `<button class="bigbtn redeem" id="rsRedeem"><div><b>Redemption puzzle</b><small>Solve a harder one perfectly to win back your ${PZ.lost.streak} streak</small></div><span class="go">${FLAME}${PZ.lost.streak}</span></button>` : ''}
-    <div class="row"><button class="btn alt" id="rsAna">Analysis</button><button class="btn alt" id="rsRetry">Retry</button>${s.mode === 'rated' ? '<button class="btn" id="rsNext">Next puzzle</button>' : '<button class="btn" id="rsBack">Done</button>'}</div></div>`;
+    <div class="row"><button class="btn alt" id="rsAna">Analysis</button><button class="btn alt" id="rsRetry">Retry</button>${s.mode === 'rated' || s.mode === 'theme' ? '<button class="btn" id="rsNext">Next puzzle</button>' : '<button class="btn" id="rsBack">Done</button>'}</div></div>`;
   el.hidden = false; $('pzTools').hidden = true;
   $('rsAna').onclick = () => openAnalysis(p);
   $('rsRetry').onclick = () => openPuzzle(p, { mode: s.mode, date: s.date, retry: true });
-  if ($('rsNext')) $('rsNext').onclick = () => startRated();
+  if ($('rsNext')) $('rsNext').onclick = () => s.mode === 'theme' ? themeNext() : startRated();
+  el.querySelectorAll('[data-theme]').forEach(b => { b.onclick = () => startTheme(b.dataset.theme); });
   if ($('rsRedeem')) $('rsRedeem').onclick = () => startRedeem();
   if ($('rsBack')) $('rsBack').onclick = () => s.mode === 'review' ? rushBackToResults() : s.date === today() ? openPuzMenu() : openArchive(s.date.slice(0, 7));
 }
@@ -3232,8 +3255,55 @@ $('pzSol').onclick = () => {
   stepOne();
 };
 $('pzRetry').onclick = () => { if (PS) openPuzzle(PS.p, { mode: PS.mode, date: PS.date, retry: true }); };
-$('pzNext').onclick = () => { if (!PS) return; if (PS.mode === 'rated') startRated(); else if (PS.mode === 'review') rushBackToResults(); else openPuzMenu(); };
+$('pzNext').onclick = () => { if (!PS) return; if (PS.mode === 'rated') startRated(); else if (PS.mode === 'theme') themeNext(); else if (PS.mode === 'review') rushBackToResults(); else openPuzMenu(); };
 $('pzEnd').onclick = () => { if (RUSH && !RUSH.done) rushOver('ended'); };
+
+// ---------- Themed practice: pick a tactic (fork, pin, mate in 2...) and get puzzles of that kind near your level ----------
+// Unrated. Gets a bit harder after each clean solve and easier after a miss.
+const THEMES = [
+  ['Checkmates', 'mate1', 'Mate in 1', '♚', p => p.themes.includes('mate') && p.moves.length === 2],
+  ['Checkmates', 'mateIn2', 'Mate in 2', '♚'], ['Checkmates', 'mateIn3', 'Mate in 3', '♚'],
+  ['Checkmates', 'mate4', 'Mate in 4+', '♚', p => p.themes.includes('mateIn4') || p.themes.includes('mateIn5')],
+  ['Checkmates', 'backRankMate', 'Back rank mate', '♜'], ['Checkmates', 'smotheredMate', 'Smothered mate', '♞'],
+  ['Tactics', 'fork', 'Fork', '⑂'], ['Tactics', 'pin', 'Pin', '📌'], ['Tactics', 'skewer', 'Skewer', '🍢'],
+  ['Tactics', 'discoveredAttack', 'Discovered attack', '💥'], ['Tactics', 'doubleCheck', 'Double check', '‼'],
+  ['Tactics', 'hangingPiece', 'Hanging piece', '🎁'], ['Tactics', 'sacrifice', 'Sacrifice', '🔥'],
+  ['Tactics', 'quietMove', 'Quiet move', '🤫'], ['Tactics', 'promotion', 'Promotion', '♛'],
+  ['Game phase', 'opening', 'Opening', '🌱'], ['Game phase', 'middlegame', 'Middlegame', '⚔'], ['Game phase', 'endgame', 'Endgame', '🏁'],
+  ['Length', 'oneMove', 'One move', '1'], ['Length', 'short', 'Two moves', '2'], ['Length', 'long', 'Three moves', '3'], ['Length', 'veryLong', 'Four or more', '4+'],
+].map(([group, k, name, icon, test]) => ({ group, k, name, icon, test: test || (p => p.themes.includes(k)), n: 0 }));
+function countThemes() { for (const T of THEMES) T.n = PUZ.filter(p => !p.off && T.test(p)).length; }
+let TH = null;
+function pickTheme() {
+  const T = THEMES.find(t => t.k === TH.k), want = TH.target + (Math.random() - .5) * 150;
+  let best = null, bd = Infinity;
+  for (const p of PUZ) { if (p.off || TH.seen.has(p.id) || !T.test(p)) continue; const dd = Math.abs(p.rating - want) + Math.random() * 60; if (dd < bd) { bd = dd; best = p; } }
+  if (!best) { TH.seen.clear(); return pickTheme(); }
+  return best;
+}
+async function startTheme(k) {
+  try { await loadPuzzles(); } catch (e) { toast('Could not load puzzles. Check your connection.'); return; }
+  countThemes();
+  const T = THEMES.find(t => t.k === k); if (!T || !T.n) { toast('No puzzles for that theme yet'); return; }
+  TH = { k, target: PZ.rating - 100, seen: new Set() };
+  themeNext();
+}
+function themeNext() {
+  if (!TH) return openPuzMenu();
+  const p = pickTheme(); TH.seen.add(p.id);
+  openPuzzle(p, { mode: 'theme' });
+}
+function themeGrid() {
+  if (!PUZ) return '<div class="meta">Loading themes...</div>';
+  let h = '', g = '';
+  for (const T of THEMES) {
+    if (T.n < 8) continue;
+    if (T.group !== g) { h += `${g ? '</div>' : ''}<div class="tgl">${T.group}</div><div class="tgrid">`; g = T.group; }
+    const st = PZ.th[T.k], tries = st ? st.s + st.f : 0;
+    h += `<button data-tk="${T.k}"><span class="ti">${T.icon}</span><b>${T.name}</b><small>${tries ? `${Math.round(st.s / tries * 100)}% · ${st.s}/${tries}` : `${T.n} puzzles`}</small></button>`;
+  }
+  return h + (g ? '</div>' : '');
+}
 
 // ---------- Puzzle Rush: solve as many as you can in 3 or 5 minutes; 3 wrong moves and you're out ----------
 let RUSH = null, rushTimer = 0;
@@ -4255,6 +4325,8 @@ const ACH = [
   ['pzr2000', 'Puzzles', '📊', 'Puzzle 2000', 'Reach a 2000 puzzle rating.', 3, () => [PZ.peak || 0, 2000]],
   ['daily3', 'Puzzles', '📅', 'Habit', 'Solve the daily puzzle 3 days in a row.', 1, () => [PZ.bestDaily || 0, 3]],
   ['daily7', 'Puzzles', '📅', 'Week streak', 'Solve the daily puzzle 7 days in a row.', 2, () => [PZ.bestDaily || 0, 7]],
+  ['themes25', 'Puzzles', '🎯', 'Theme trainer', 'Solve 25 themed practice puzzles cleanly.', 1, () => [Object.values(PZ.th).reduce((a, t) => a + (t.s || 0), 0), 25]],
+  ['themes5', 'Puzzles', '🧩', 'Well-rounded', 'Cleanly solve a puzzle in 8 different themes.', 2, () => [Object.values(PZ.th).filter(t => t.s > 0).length, 8]],
   ['rush10', 'Puzzles', '⚡', 'Rush 10', 'Score 10 in Puzzle Rush.', 1, () => [rushBest(), 10]],
   ['rush20', 'Puzzles', '⚡', 'Rush 20', 'Score 20 in Puzzle Rush.', 2, () => [rushBest(), 20]],
   ['rush30', 'Puzzles', '⚡', 'Rush 30', 'Score 30 in Puzzle Rush.', 3, () => [rushBest(), 30]],
