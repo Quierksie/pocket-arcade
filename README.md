@@ -15,6 +15,9 @@ The **profile** button at the top of the arcade opens your profile: a pixel avat
 - **Shop:** on the arcade profile. Six more avatars (King, Wizard, Ninja, Panda, Unicorn, Pirate) and frames for your avatar (Bronze, Silver, Gold, Diamond, Rainbow) that other players see next to your name.
 - **Other players' profiles:** tap someone on the Chess leaderboard or in your friends list to see their avatar, ranks and stats (chess record, puzzle rating, Rush best, achievements, and their Sudoku, Card Shop and Deep Dig numbers). These come from each player's public card (`players/{uid}`), which Chess updates while it's open.
 
+## Chess profiles
+Tap your rating card in the Chess lobby (or your card on the leaderboard) to open your profile; tap anyone on the leaderboard or in your friends list to open theirs. A profile shows a banner, avatar and frame, name in your name color, ranks, a short bio, chess and puzzle rating charts, highlights (best win, longest and current streak, win rate, favorite opening, Rush best, best puzzle streak, strongest theme), up to 3 showcased achievements, recent games, your head-to-head record with them, and more stats. **Customize profile** changes your avatar and its background, frame, banner, name color, bio and pinned achievements; locked items show their ticket price and you buy them with two taps. Name colors and avatars also show on the leaderboard and friends list.
+
 ## Offline
 After your first visit the service worker (`sw.js`) keeps a copy of every game, the puzzles and the opening names, so the whole arcade opens and plays without internet. Online, it always checks for a newer version first. Signing in, cloud saves, leaderboards and online chess need a connection; your progress keeps saving on the device in the meantime.
 

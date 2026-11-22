@@ -2198,6 +2198,7 @@ function evalText(n) {
 function nextMistake(from) { for (let i = from; i < G.moves.length; i++) { const f = moveInfo(i); if ((G.pvp || isMine(i)) && f && ['inaccuracy', 'mistake', 'miss', 'blunder'].includes(f.k)) return i; } return -1; }
 function renderAnalysis(n) {
   const el = $('anal'), bot = G.pvp ? BOTS[0] : botById(G.bot);
+  const oppN = G.online ? esc(oppName()) : bot.name; // online games have no bot: use your friend's name
   if (!AN || AN.failed) { el.innerHTML = 'Move analysis is not available on this device.'; return; }
   const total = G.moves.length + 1, got = AN.res.filter(Boolean).length;
   if (!AN.done) { el.innerHTML = `<div class="ln">Analyzing your game...<span class="ev">${Math.floor(got / total * 100)}%</span></div><div class="bar"><i style="width:${got / total * 100}%"></i></div>`; return; }
@@ -2208,14 +2209,14 @@ function renderAnalysis(n) {
     for (let i = 0; i < G.moves.length; i++) { const f = moveInfo(i); if (!f) continue; (isMine(i) ? mine : theirs).push(f.acc); if (isMine(i)) cnt[f.k] = (cnt[f.k] || 0) + 1; }
     const ga = gameAccuracy() || [null, null], meIdx = G.pvp || G.me === 1 ? 0 : 1;
     const avg = a => { const v = a === mine ? ga[meIdx] : ga[1 - meIdx]; return v == null ? '-' : v.toFixed(1); };
-    el.innerHTML = `<div class="acc"><div>${G.pvp ? esc(G.names[0]) : 'Your accuracy'}<b>${avg(mine)}</b></div><div>${G.pvp ? esc(G.names[1]) : bot.name}<b>${avg(theirs)}</b></div></div>
+    el.innerHTML = `<div class="acc"><div>${G.pvp ? esc(G.names[0]) : 'Your accuracy'}<b>${avg(mine)}</b></div><div>${G.pvp ? esc(G.names[1]) : oppN}<b>${avg(theirs)}</b></div></div>
       <div class="cnt">${['brilliant', 'great', 'best', 'excellent', 'good', 'book', 'inaccuracy', 'mistake', 'miss', 'blunder'].filter(k => cnt[k] || ['best', 'inaccuracy', 'mistake', 'blunder'].includes(k)).map(k => `<span title="${CLS[k].n}"><i style="background:${CLS[k].c}">${CLS[k].s}</i>${cnt[k] || 0}</span>`).join('')}</div>${nxBtn}`;
     el.insertAdjacentHTML('beforeend', mineBtn());
     return;
   }
   const i = n - 1, f = moveInfo(i);
   if (!f) { el.innerHTML = ''; return; }
-  const who = G.pvp ? esc(G.names[i % 2]) : isMine(i) ? 'You' : bot.name;
+  const who = G.pvp ? esc(G.names[i % 2]) : isMine(i) ? 'You' : oppN;
   const bad = ['inaccuracy', 'mistake', 'miss', 'blunder'].includes(f.k);
   el.innerHTML = `<div class="ln"><span class="ic" style="background:${CLS[f.k].c}">${CLS[f.k].s}</span><span>${who}: <b>${sans[i]}</b> is ${CLS[f.k].n}</span><span class="ev">${evalText(n)}</span></div>` +
     (bad && f.bestSan ? `<div class="ln"><span class="ic" style="background:${CLS.best.c}">★</span><span>Better was <b>${f.bestSan}</b> (shown in blue)</span></div>` : '') + nxBtn + mineBtn();
