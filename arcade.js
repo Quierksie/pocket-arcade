@@ -40,6 +40,30 @@
     diamond: { name: 'Diamond', cost: 450, css: '#6ee7ff' },
     rainbow: { name: 'Rainbow', cost: 800, css: 'conic-gradient(#ff5d5d, #ffd93d, #5ee08a, #38e0ff, #7a4fd6, #ff5d5d)' },
   };
+  // profile banners (the strip behind your name on your profile)
+  A.BANNERS = {
+    bn_plain: { name: 'Plain', cost: 0, css: 'linear-gradient(135deg, #3a3a3a, #262626)' },
+    bn_forest: { name: 'Forest', cost: 0, css: 'linear-gradient(135deg, #2f6b3a, #1b3d22)' },
+    bn_sea: { name: 'Sea', cost: 0, css: 'linear-gradient(135deg, #1f5f8b, #12344d)' },
+    bn_wine: { name: 'Wine', cost: 0, css: 'linear-gradient(135deg, #7b2232, #42121b)' },
+    bn_sunset: { name: 'Sunset', cost: 80, css: 'linear-gradient(135deg, #ff7a59, #c2367a 55%, #4b1d6b)' },
+    bn_ocean: { name: 'Ocean', cost: 80, css: 'linear-gradient(135deg, #00c6d8, #1f6fd6 55%, #1b2a6b)' },
+    bn_board: { name: 'Chessboard', cost: 120, css: 'repeating-conic-gradient(#769656 0 25%, #eeeed2 0 50%) 0 0 / 28px 28px' },
+    bn_galaxy: { name: 'Galaxy', cost: 200, css: 'radial-gradient(circle at 20% 30%, #ffffff55 0 1px, transparent 2px), radial-gradient(circle at 70% 60%, #ffffff44 0 1px, transparent 2px), radial-gradient(circle at 45% 80%, #ffffff33 0 1px, transparent 2px), linear-gradient(135deg, #2b1055, #7597de)' },
+    bn_gold: { name: 'Royal gold', cost: 300, css: 'linear-gradient(135deg, #f5c518, #b8860b 50%, #6b4b00)' },
+    bn_lava: { name: 'Lava', cost: 300, css: 'linear-gradient(135deg, #ffb347, #ff4d4d 45%, #3a0a0a)' },
+  };
+  // name colors on your profile, the friends list and leaderboards
+  A.NCOLORS = {
+    nc_white: { name: 'Normal', cost: 0, css: 'inherit' },
+    nc_mint: { name: 'Mint', cost: 50, css: '#5ee0a0' },
+    nc_sky: { name: 'Sky', cost: 50, css: '#5ab8ff' },
+    nc_rose: { name: 'Rose', cost: 50, css: '#ff7ab0' },
+    nc_gold: { name: 'Gold', cost: 150, css: '#f5c518' },
+    nc_rainbow: { name: 'Rainbow', cost: 400, css: 'rainbow' },
+  };
+  A.nameHTML = (name, nc, esc = x => x) => { const c = (A.NCOLORS[nc] || A.NCOLORS.nc_white).css; return c === 'rainbow' ? `<span class="nrb">${esc(name)}</span>` : `<span style="color:${c}">${esc(name)}</span>`; };
+  A.bannerCSS = id => (A.BANNERS[id] || A.BANNERS.bn_plain).css;
   const cache = {};
   A.avURL = (av, bg) => {
     const k = av + '|' + bg; if (cache[k]) return cache[k];
@@ -62,14 +86,16 @@
     const p = read(PKEY) || {};
     if (!A.AVATARS[p.av]) p.av = 'cat';
     p.bg = p.bg || 0; p.tickets = p.tickets || 0; p.owned = p.owned || []; p.frame = p.frame || 'none'; p.earned = p.earned || 0;
+    p.banner = A.BANNERS[p.banner] ? p.banner : 'bn_plain'; p.ncolor = A.NCOLORS[p.ncolor] ? p.ncolor : 'nc_white'; p.bio = p.bio || ''; p.pins = Array.isArray(p.pins) ? p.pins.slice(0, 3) : []; p.showRank = p.showRank || 'chess';
     if (!p.since) p.since = Date.now();
     return p;
   };
   A.saveProfile = p => { p.at = Date.now(); write(PKEY, p); if (A.onProfile) try { A.onProfile(p); } catch (e) { } };
   A.addTickets = n => { const p = A.profile(); p.tickets += n; p.earned += n; A.saveProfile(p); return p.tickets; };
-  A.owns = (p, id) => A.PREMIUM[id] != null || (A.FRAMES[id] && id !== 'none') ? p.owned.includes(id) : true;
+  A.costOf = id => A.PREMIUM[id] != null ? A.PREMIUM[id] : (A.FRAMES[id] || A.BANNERS[id] || A.NCOLORS[id] || {}).cost;
+  A.owns = (p, id) => { const c = A.costOf(id); return !c || p.owned.includes(id); };
   A.buy = id => {
-    const p = A.profile(), cost = A.PREMIUM[id] != null ? A.PREMIUM[id] : (A.FRAMES[id] || {}).cost;
+    const p = A.profile(), cost = A.costOf(id);
     if (cost == null || p.owned.includes(id)) return { ok: false, msg: 'Already yours' };
     if (p.tickets < cost) return { ok: false, msg: `You need ${cost - p.tickets} more tickets` };
     p.tickets -= cost; p.owned.push(id); A.saveProfile(p); return { ok: true, p };

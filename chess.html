@@ -806,6 +806,61 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
 
 .rtag, .chalbar small b.rtag { color: var(--accent); display: inline; }
 .rtseg button { flex: 1; }
+
+/* profiles */
+.mehd { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer; }
+.mehd b { flex: 1; font-size: 15px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mehd > span:last-child { color: var(--soft); font-size: 12.5px; font-weight: 800; }
+#rateCard { cursor: pointer; }
+.nrb { background: linear-gradient(90deg, #ff5d5d, #ffd93d, #5ee08a, #38e0ff, #b06cff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.prof { padding: 0 16px 14px; overflow-x: hidden; }
+.pban { height: 84px; margin: 0 -16px; border-radius: 16px 16px 0 0; }
+.phead { display: flex; gap: 12px; align-items: flex-end; margin-top: -38px; }
+.phead .pbig { border-radius: 14px; box-shadow: 0 4px 14px rgba(0,0,0,.35); }
+.phead .pbig:not(.on) { outline: 3px solid var(--panel); }
+.pwho { flex: 1; min-width: 0; padding-bottom: 2px; }
+.pname { display: block; font-size: 20px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pname small { font-size: 13px; color: var(--soft); }
+.pchips { display: flex; gap: 5px; flex-wrap: wrap; margin: 3px 0; }
+.pwho > small { color: var(--soft); font-size: 12.5px; }
+.pbio { margin: 10px 0 8px; font-size: 14.5px; font-style: italic; }
+.pbio.empty { color: var(--soft); font-style: normal; font-size: 13px; }
+.pcharts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
+.pcharts > div { background: var(--panel2); border-radius: 10px; padding: 8px 10px; min-width: 0; }
+.pcharts .lbl2 b { color: var(--ink); margin-left: 4px; }
+.spark { width: 100%; height: 54px; display: block; }
+.sprange { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--soft); font-weight: 700; }
+.spnone { font-size: 12px; color: var(--soft); padding: 14px 0; }
+.phl { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.phl div { background: var(--panel2); border-radius: 10px; padding: 7px 10px; min-width: 0; }
+.phl small { display: block; color: var(--soft); font-size: 11.5px; font-weight: 700; }
+.phl b { font-size: 14px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pshow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.pshow div { background: var(--panel2); border-radius: 10px; padding: 8px 6px; text-align: center; min-width: 0; }
+.pshow span { font-size: 24px; display: block; }
+.pshow b { display: block; font-size: 12.5px; } .pshow small { display: block; font-size: 10.5px; color: var(--soft); line-height: 1.25; margin-top: 2px; }
+.prec { display: grid; grid-template-columns: 26px 1fr auto; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(127,127,127,.18); font-size: 14px; }
+.prec i { font-style: normal; font-weight: 900; text-align: center; border-radius: 6px; padding: 2px 0; color: #fff; font-size: 12px; }
+.prec i.w { background: var(--accent); } .prec i.l { background: var(--bad); } .prec i.d { background: var(--soft); }
+.prec small { color: var(--soft); font-size: 12px; }
+.pmore { margin-top: 10px; } .pmore summary { cursor: pointer; font-weight: 800; color: var(--soft); font-size: 13px; }
+.cust { padding: 0 16px 14px; }
+.custprev { pointer-events: none; }
+.custtk { margin: 10px 0 8px; font-weight: 900; } .custtk small { color: var(--soft); font-weight: 700; }
+.custseg button { flex: 1; }
+.cgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); gap: 6px; }
+.cgrid.wide { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
+.cgrid.bgs { grid-template-columns: repeat(4, 1fr); }
+.ctile { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 4px; border: 2px solid transparent; border-radius: 10px; background: var(--panel2); color: var(--ink); cursor: pointer; min-width: 0; }
+.ctile img { width: 40px; height: 40px; image-rendering: pixelated; border-radius: 6px; }
+.ctile small { font-size: 11px; font-weight: 800; color: var(--soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.ctile.on { border-color: var(--accent); } .ctile.lock small { color: var(--gold, #e8a21a); }
+.ctile.lock img, .ctile.lock .afr, .ctile.lock .bsw { opacity: .75; }
+.ctile.sw { aspect-ratio: 1; padding: 0; }
+.ctile.ach .ai { font-size: 22px; }
+.bsw { display: block; width: 100%; height: 34px; border-radius: 6px; }
+.ncsw { font-size: 14px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb .r .afr { margin-right: 6px; }
 </style>
 <script src="arcade.js"></script>
 </head>
@@ -2696,7 +2751,8 @@ function showMenu(keepOverlays) {
     $('friendSub').textContent = r ? `${pv.names[0]} ${r.w[normName(pv.names[0])] || 0} - ${r.w[normName(pv.names[1])] || 0} ${pv.names[1]}${r.d ? ` (${r.d} draw${r.d === 1 ? '' : 's'})` : ''}` : 'Two players, one phone. Pass it back and forth.'; }
   let w = 0, l = 0, d = 0; for (const k in SV.rec) { w += SV.rec[k].w; l += SV.rec[k].l; d += SV.rec[k].d; }
   renderQuestRow();
-  $('rateCard').innerHTML = `<div class="num"><small>YOUR RATING</small>${Math.round(SV.rating)}<div style="margin-top:4px">${AR.rankChip(SV.rating, true)}</div></div><div class="meta">Peak <b>${Math.round(SV.peak)}</b><br>W <b>${w}</b> · L <b>${l}</b> · D <b>${d}</b></div>`;
+  $('rateCard').onclick = e => { if (!e.target.closest('button,a')) openMe(); };
+  $('rateCard').innerHTML = `<div class="mehd">${avImg(AR.profile(), 30)}<b>${AR.nameHTML(playerName(), AR.profile().ncolor, esc)}</b><span>Profile ›</span></div><div class="num"><small>YOUR RATING</small>${Math.round(SV.rating)}<div style="margin-top:4px">${AR.rankChip(SV.rating, true)}</div></div><div class="meta">Peak <b>${Math.round(SV.peak)}</b><br>W <b>${w}</b> · L <b>${l}</b> · D <b>${d}</b></div>`;
   const g = SV.game;
   $('contBtn').hidden = !g;
   { const n = hist().length; $('histInfo').textContent = n ? `${n} game${n === 1 ? '' : 's'} · replay and share` : 'Replay and share your past games'; }
@@ -3783,7 +3839,8 @@ let pushT = 0;
 async function pushBoard() {
   const name = lbName();
   if (!fb.db || !fb.user || !name) return;
-  const d = { name, updated: firebase.firestore.FieldValue.serverTimestamp() };
+  const pf = AR.profile();
+  const d = { name, av: pf.av, bg: pf.bg, frame: pf.frame, ncolor: pf.ncolor, updated: firebase.firestore.FieldValue.serverTimestamp() };
   if (SV.games > 0) { d.chessRating = Math.round(SV.rating); d.chessPeak = Math.round(SV.peak); d.chessGames = SV.games; }
   if (PZ.solved + PZ.failed > 0) { d.puzzleRating = Math.round(PZ.rating); d.puzzlePeak = Math.round(PZ.peak); d.puzzlesSolved = PZ.solved; }
   if (rushBest() > 0) { d.rushBest = rushBest(); d.rush3 = PZ.rush.b3 || 0; d.rush5 = PZ.rush.b5 || 0; }
@@ -3808,7 +3865,7 @@ function boardHTML(k) {
   else if (!K.played()) top = `<div class="msg">${K.need} to get on the board, ${esc(lbName())}.</div>`;
   const rows = fb.rows[k].map((r, i) => {
     const me = fb.user && r.id === fb.user.uid;
-    return `<div class="r ${me ? 'me' : ''}" data-puid="${esc(r.id)}" data-pname="${esc(r.name)}" role="button"><span class="rk">#${i + 1}</span><span class="nm">${esc(r.name)}${me ? ' (you)' : ''}<small>${K.sub(r)}</small></span><span>${K.val(r)}</span></div>`;
+    return `<div class="r ${me ? 'me' : ''}" data-puid="${esc(r.id)}" data-pname="${esc(r.name)}" role="button"><span class="rk">#${i + 1}</span>${r.av ? avImg(r, 30) : ''}<span class="nm">${AR.nameHTML(r.name, r.ncolor, esc)}${me ? ' (you)' : ''}<small>${K.sub(r)}</small></span><span>${K.val(r)}</span></div>`;
   }).join('');
   return top + (rows || (fb.err ? '<div class="msg">Couldn\'t load the leaderboard right now.</div>' : '<div class="msg">No one is on this board yet. Be the first!</div>')) + (fb.user && lbName() ? `<div class="msg" style="padding:10px"><button class="lnk" data-lbname>Change name</button></div>` : '');
 }
@@ -3836,7 +3893,7 @@ function lbMeHTML(k) {
 function renderBoards() {
   const k = lbKind(), list = $('lbList'), me = $('lbMe');
   if (list) list.innerHTML = boardHTML(k);
-  if (me) me.innerHTML = lbMeHTML(k);
+  if (me) { me.innerHTML = lbMeHTML(k); me.onclick = () => openMe(); me.style.cursor = 'pointer'; }
 }
 document.addEventListener('click', e => { if (e.target.closest('[data-lbname]')) askName(); });
 function askName() {
@@ -4158,7 +4215,8 @@ function friendsBoot() {
 function heartbeat() {
   if (!fb.user || !fb.db) return;
   const a = myAv();
-  playerRef(fb.user.uid).set({ name: myName(), av: a.av, bg: a.bg, frame: a.frame, code: SV.fcode, rating: Math.round(SV.rating), puz: Math.round(PZ.rating), seen: fbTs(), seenMs: Date.now(), stats: publicStats() }, { merge: true }).catch(() => { });
+  const pf = AR.profile();
+  playerRef(fb.user.uid).set({ name: myName(), av: a.av, bg: a.bg, frame: a.frame, bio: pf.bio, banner: pf.banner, ncolor: pf.ncolor, code: SV.fcode, rating: Math.round(SV.rating), puz: Math.round(PZ.rating), seen: fbTs(), seenMs: Date.now(), stats: publicStats() }, { merge: true }).catch(() => { });
 }
 async function loadCards() {
   const uid = fb.user.uid;
@@ -4208,7 +4266,7 @@ function openFriends(prefill = '') {
         <div class="joinrow"><input class="field" id="frAdd" maxlength="8" placeholder="FRIEND'S CODE" autocomplete="off" autocapitalize="characters" spellcheck="false" value="${esc(add)}"><button class="btn" data-a="add"${busy ? ' disabled' : ''}>Add</button></div>
         ${inc.length ? `<div class="lbl2">Friend requests</div>${inc.map(f => { const c = card(f); return `<div class="frrow" data-puid="${other(f)}" data-pname="${esc(c.name)}">${avImg(c)}<div><b>${esc(c.name)}</b><small>wants to be friends</small></div><button class="btn alt sm" data-no="${f.id}">No</button><button class="btn sm" data-yes="${f.id}">Accept</button></div>`; }).join('')}` : ''}
         <div class="lbl2">Friends${fr.length ? ` · ${fr.filter(f => isOn(card(f))).length} online` : ''}</div>
-        ${fr.length ? fr.map(f => { const c = card(f), on = isOn(c); return `<div class="frrow" data-puid="${other(f)}" data-pname="${esc(c.name)}">${avImg(c)}<div><b>${esc(c.name)}</b><small>${on ? '<i class="odot on"></i>Online' : c.seenMs ? `Seen ${ago(c.seenMs)}` : 'Not seen yet'}${c.rating ? ` · ${AR.rankChip(c.rating, true)}` : ''}</small></div><button class="btn alt sm x" data-rm="${f.id}" aria-label="Remove friend">${arm === f.id ? 'Remove?' : '✕'}</button><button class="btn sm" data-ch="${other(f)}">Challenge</button></div>`; }).join('') : '<p class="meta" style="margin:4px 0 0">No friends yet. Share your code, or type theirs above.</p>'}
+        ${fr.length ? fr.map(f => { const c = card(f), on = isOn(c); return `<div class="frrow" data-puid="${other(f)}" data-pname="${esc(c.name)}">${avImg(c)}<div><b>${AR.nameHTML(c.name, c.ncolor, esc)}</b><small>${on ? '<i class="odot on"></i>Online' : c.seenMs ? `Seen ${ago(c.seenMs)}` : 'Not seen yet'}${c.rating ? ` · ${AR.rankChip(c.rating, true)}` : ''}</small></div><button class="btn alt sm x" data-rm="${f.id}" aria-label="Remove friend">${arm === f.id ? 'Remove?' : '✕'}</button><button class="btn sm" data-ch="${other(f)}">Challenge</button></div>`; }).join('') : '<p class="meta" style="margin:4px 0 0">No friends yet. Share your code, or type theirs above.</p>'}
         ${out.length ? `<div class="lbl2">Sent</div>${out.map(f => { const c = card(f); return `<div class="frrow" data-puid="${other(f)}" data-pname="${esc(c.name)}">${avImg(c)}<div><b>${esc(c.name)}</b><small>waiting for them to accept</small></div><button class="btn alt sm" data-rm="${f.id}">Cancel</button></div>`; }).join('')}` : ''}
         ${note ? `<p class="frnote">${esc(note)}</p>` : ''}`;
     }
@@ -4341,6 +4399,7 @@ function publicStats() {
     peak: Math.round(SV.peak || SV.rating), pzPeak: Math.round(PZ.peak || PZ.rating), solved: PZ.solved || 0, rush: rushBest(),
     ach: Object.keys(SV.ach || {}).length, fixed: SV.mineFixed || 0, sudoku: st.sudokuWins, cards: st.cardPacks, dig: st.digMined,
     tickets: AR.profile().earned || 0, since: AR.profile().since || null,
+    ...myHighlights(),
   };
 }
 function renderQuestRow() {
@@ -4354,43 +4413,183 @@ AR.onQuests = () => { renderQuestRow(); };
 function openQuests() {
   document.querySelectorAll('.ov').forEach(x => x.remove());
   const o = document.createElement('div'); o.className = 'ov';
-  const draw = () => { o.innerHTML = `<div class="card qcard qov">${AR.questsHTML()}<p class="meta" style="margin:8px 0 0;text-align:left">Spend tickets on new avatars and frames in the Shop on your arcade profile. Other players see them next to your name.</p><div class="row"><a class="btn alt" href="./#profile" style="text-decoration:none;text-align:center">Shop</a><button class="btn" data-a="close">Close</button></div></div>`; };
+  const draw = () => { o.innerHTML = `<div class="card qcard qov">${AR.questsHTML()}<p class="meta" style="margin:8px 0 0;text-align:left">Spend tickets on avatars, frames, banners and name colors in Customize on your profile. Other players see them.</p><div class="row"><button class="btn alt" data-a="shop">Customize</button><button class="btn" data-a="close">Close</button></div></div>`; };
   draw(); document.body.append(o);
   AR.wireQuests(o, () => { draw(); renderQuestRow(); }, msg => { toast(msg); sound('win'); });
-  o.addEventListener('click', e => { if (e.target === o || e.target.closest('[data-a=close]')) o.remove(); });
+  o.addEventListener('click', e => { if (e.target === o || e.target.closest('[data-a=close]')) o.remove(); else if (e.target.closest('[data-a=shop]')) openCustomize(); });
 }
 $('qBtn').onclick = openQuests;
-// someone else's profile: avatar, ranks and stats, from their public player card
-async function openPlayer(uid, fallback = {}) {
-  if (!uid) return;
+
+// =====================================================================
+// PROFILES: your own (built from this device) and other players' (from their public card), same layout.
+// Rating charts, highlights, showcase badges, recent games, head-to-head, plus a Customize screen.
+// =====================================================================
+function ratingSeries(now, deltas, n = 40) {
+  // deltas newest first; walk back from the current rating
+  const pts = [Math.round(now)];
+  for (const d of deltas) { if (d == null) continue; pts.unshift(pts[0] - d); if (pts.length >= n) break; }
+  return pts;
+}
+function myHighlights() {
+  const H = hist(), mine = H.filter(h => h.kind !== 'pvp' && h.me);
+  let best = null;
+  for (const h of mine) if (histScore(h) === 1 && h.kind === 'bot' && h.elo && (!best || h.elo > best.e)) best = { n: botById(h.bot).name, e: h.elo };
+  let run = 0, longest = 0;
+  for (const h of mine.slice().reverse()) { if (histScore(h) === 1) { run++; longest = Math.max(longest, run); } else run = 0; }
+  let cur = 0, curT = '';
+  for (const h of mine) { const sc = histScore(h), t = sc === 1 ? 'W' : sc === 0 ? 'L' : 'D'; if (!curT) curT = t; if (t !== curT) break; cur++; }
+  const ops = {}; for (const h of mine) if (h.op) ops[h.op] = (ops[h.op] || 0) + 1;
+  const fav = Object.entries(ops).sort((a, b) => b[1] - a[1])[0];
+  let theme = null;
+  for (const [k, t] of Object.entries(PZ.th || {})) { const n = (t.s || 0) + (t.f || 0); if (n < 5) continue; const acc = t.s / n; if (!theme || acc > theme.a) theme = { k, a: acc }; }
+  const T = theme && THEMES.find(x => x.k === theme.k);
+  const wins = mine.filter(h => histScore(h) === 1).length;
+  return {
+    rh: ratingSeries(SV.rating, H.map(h => h.delta)), ph: ratingSeries(PZ.rating, (PZ.hist || []).slice().reverse().map(h => h.d), 30),
+    best, ls: longest, cs: cur ? { n: cur, t: curT } : null, fav: fav && fav[1] >= 2 ? fav[0].split('|')[1] : null,
+    wr: mine.length ? Math.round(wins / mine.length * 100) : null, played: mine.length,
+    theme: T ? { n: T.name, a: Math.round(theme.a * 100) } : null, rush3: PZ.rush.b3 || 0, rush5: PZ.rush.b5 || 0, pzBest: PZ.best || 0,
+    recent: mine.slice(0, 5).map(h => ({ vs: h.names[h.me === 1 ? 1 : 0] || 'Player', s: histScore(h), why: h.reason, at: h.at, k: h.kind })),
+    pins: showcaseIds(),
+  };
+}
+function showcaseIds() {
+  const pf = AR.profile(), got = id => SV.ach && SV.ach[id];
+  const pins = (pf.pins || []).filter(got);
+  if (pins.length) return pins.slice(0, 3);
+  return Object.entries(SV.ach || {}).sort((a, b) => b[1] - a[1]).map(x => x[0]).filter(id => ACH.find(a => a.id === id)).slice(0, 3);
+}
+// what you look like to others, from local data
+function myCard() {
+  const pf = AR.profile();
+  return { name: playerName(), av: pf.av, bg: pf.bg, frame: pf.frame, bio: pf.bio, banner: pf.banner, ncolor: pf.ncolor, rating: Math.round(SV.rating), puz: PZ.solved + PZ.failed ? Math.round(PZ.rating) : 0, seenMs: Date.now(), stats: publicStats() };
+}
+function sparkSVG(pts, color) {
+  if (!pts || pts.length < 2) return '<div class="spnone">Not enough rated games yet</div>';
+  const W = 300, Hh = 64, lo = Math.min(...pts), hi = Math.max(...pts), span = Math.max(20, hi - lo);
+  const xy = pts.map((v, i) => [i / (pts.length - 1) * W, Hh - 6 - (v - lo) / span * (Hh - 12)]);
+  const d = xy.map((q, i) => (i ? 'L' : 'M') + q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join(' ');
+  return `<svg viewBox="0 0 ${W} ${Hh}" preserveAspectRatio="none" class="spark"><path d="${d} L ${W} ${Hh} L 0 ${Hh} Z" fill="${color}" opacity=".15"/><path d="${d}" fill="none" stroke="${color}" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg><div class="sprange"><span>${lo}</span><span>${pts.length - 1} change${pts.length > 2 ? 's' : ''}</span><span>${hi}</span></div>`;
+}
+function profileHTML(c, me) {
+  const st = c.stats || {}, on = me || Date.now() - (c.seenMs || 0) < ONLINE_MS;
+  const ach = id => ACH.find(a => a.id === id);
+  const hl = [
+    ['Best win', st.best ? `${esc(st.best.n)} (${st.best.e})` : '–'],
+    ['Longest win streak', st.ls != null ? st.ls : '–'],
+    ['Current streak', st.cs ? `${st.cs.n} ${st.cs.t === 'W' ? 'win' : st.cs.t === 'L' ? 'loss' : 'draw'}${st.cs.n > 1 ? (st.cs.t === 'L' ? 'es' : 's') : ''}` : '–'],
+    ['Win rate', st.wr != null ? `${st.wr}% of ${st.played}` : '–'],
+    ['Favorite opening', st.fav ? esc(st.fav) : '–'],
+    ['Rush best (3 / 5 min)', st.rush3 != null ? `${st.rush3} / ${st.rush5}` : (st.rush ?? '–')],
+    ['Best puzzle streak', st.pzBest ?? '–'],
+    ['Strongest theme', st.theme ? `${esc(st.theme.n)} ${st.theme.a}%` : '–'],
+  ];
+  const pins = (st.pins || []).map(ach).filter(Boolean);
+  const recent = (st.recent || []).map(r => `<div class="prec"><i class="${r.s === 1 ? 'w' : r.s === 0 ? 'l' : 'd'}">${r.s === 1 ? 'W' : r.s === 0 ? 'L' : 'D'}</i><span>vs ${esc(r.vs)}${r.k === 'online' ? ' <small>online</small>' : ''}</span><small>${esc(r.why || '')} · ${ago(r.at)}</small></div>`).join('');
+  const more = [['Chess rating', c.rating ? `${c.rating}${st.peak ? ` (peak ${st.peak})` : ''}` : '–'], ['Vs bots', st.games != null ? `${st.w || 0}W ${st.l || 0}L ${st.d || 0}D` : '–'], ['Rated online', st.online ? `${st.online.w}W ${st.online.l}L ${st.online.d}D` : '–'],
+    ['Puzzle rating', c.puz ? `${c.puz}${st.pzPeak ? ` (peak ${st.pzPeak})` : ''}` : '–'], ['Puzzles solved', st.solved ?? '–'], ['Chess achievements', st.ach ?? '–'], ['Mistakes fixed', st.fixed ?? '–'], ['Tickets earned', st.tickets ?? '–']];
+  const h2h = !me && c.name ? h2hLine(myName(), c.name, false) : '';
+  return `<div class="pban" style="background:${AR.bannerCSS(c.banner)}"></div>
+    <div class="phead">${avImg(c, 76, 'pbig')}<div class="pwho"><b class="pname">${AR.nameHTML(c.name || 'Player', c.ncolor, esc)}${me ? ' <small>(you)</small>' : ''}</b>
+      <div class="pchips">${c.rating ? AR.rankChip(c.rating, true) : ''}${c.puz ? AR.rankChip(c.puz, true).replace('</span>', ' puzzles</span>') : ''}</div>
+      <small>${on ? '<i class="odot on"></i>Online' : c.seenMs ? `Seen ${ago(c.seenMs)}` : ''}${st.since ? ` · since ${new Date(st.since).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}` : ''}</small></div></div>
+    ${c.bio ? `<p class="pbio">“${esc(c.bio)}”</p>` : me ? '<p class="pbio empty">Add a short bio in Customize.</p>' : ''}
+    ${me ? '<button class="btn" data-a="custom" style="width:100%;margin:2px 0 10px">Customize profile</button>' : ''}
+    <div class="pcharts"><div><div class="lbl2" style="margin:0 0 4px">Chess rating <b>${c.rating || '–'}</b></div>${sparkSVG(st.rh, 'var(--accent)')}</div>
+      <div><div class="lbl2" style="margin:0 0 4px">Puzzle rating <b>${c.puz || '–'}</b></div>${sparkSVG(st.ph, '#5ab8ff')}</div></div>
+    <div class="lbl2">Highlights</div><div class="phl">${hl.map(([k, v]) => `<div><small>${k}</small><b>${v}</b></div>`).join('')}</div>
+    <div class="lbl2">Showcase</div><div class="pshow">${pins.length ? pins.map(a => `<div><span>${a.icon}</span><b>${esc(a.name)}</b><small>${esc(a.desc)}</small></div>`).join('') : '<p class="meta" style="margin:0">No achievements yet.</p>'}</div>
+    ${h2h ? `<div class="lbl2">You vs ${esc(c.name)}</div>${h2h}` : ''}
+    <div class="lbl2">Recent games</div>${recent || '<p class="meta" style="margin:0">No games yet.</p>'}
+    <details class="pmore"><summary>More stats</summary><div class="pstats">${more.map(([k, v]) => `<div><span>${k}</span><b>${esc(String(v))}</b></div>`).join('')}</div></details>
+    ${c.stats || me ? '' : '<p class="meta" style="margin:8px 0 0">More shows up after they open Chess with the newest version.</p>'}`;
+}
+function profileOverlay(card, me, uid) {
   document.querySelectorAll('.ov').forEach(x => x.remove());
   const o = document.createElement('div'); o.className = 'ov';
-  const me = fb.user && fb.user.uid === uid;
-  const show = c => {
-    const st = c.stats || {}, on = Date.now() - (c.seenMs || 0) < ONLINE_MS;
-    const fr = fb.user && FR.list.find(f => f.users.includes(uid) && f.users.includes(fb.user.uid));
-    const rows = [['Chess rating', c.rating ? `${c.rating}${st.peak ? ` (peak ${st.peak})` : ''}` : '–'], ['Vs bots', st.games != null ? `${st.w || 0}W ${st.l || 0}L ${st.d || 0}D` : '–'], ['Rated online', st.online ? `${st.online.w}W ${st.online.l}L ${st.online.d}D` : '–'], ['Games played', st.games ?? '–'],
-      ['Puzzle rating', c.puz ? `${c.puz}${st.pzPeak ? ` (peak ${st.pzPeak})` : ''}` : '–'], ['Puzzles solved', st.solved ?? '–'], ['Puzzle Rush best', st.rush ?? '–'],
-      ['Chess achievements', st.ach ?? '–'], ['Mistakes fixed', st.fixed ?? '–'], ['Sudokus solved', st.sudoku ?? '–'], ['Card packs opened', st.cards ?? '–'], ['Deep Dig blocks', st.dig != null ? st.dig.toLocaleString() : '–'], ['Tickets earned', st.tickets ?? '–']];
-    o.innerHTML = `<div class="card pcardx"><div class="frrow big">${avImg(c, 64)}<div><b style="font-size:19px">${esc(c.name || fallback.name || 'Player')}${me ? ' (you)' : ''}</b><small>${on ? '<i class="odot on"></i>Online now' : c.seenMs ? `Seen ${ago(c.seenMs)}` : ''}${st.since ? ` · playing since ${new Date(st.since).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}` : ''}</small></div></div>
-      <div class="pranks">${c.rating ? `<div><span>Chess</span>${AR.rankChip(c.rating)}</div>` : ''}${c.puz ? `<div><span>Puzzles</span>${AR.rankChip(c.puz)}</div>` : ''}</div>
-      <div class="pstats">${rows.map(([k, v]) => `<div><span>${k}</span><b>${esc(String(v))}</b></div>`).join('')}</div>
-      ${c.stats ? '' : '<p class="meta" style="margin:8px 0 0">More stats show up after they open Chess with the newest version.</p>'}
-      <div class="row">${!me && fr && fr.status === 'friends' ? `<button class="btn" data-a="chal">Challenge</button>` : !me && c.code && !fr && fb.user ? `<button class="btn" data-a="add">Add friend</button>` : ''}<button class="btn alt" data-a="close">Close</button></div></div>`;
+  const fr = () => uid && fb.user && FR.list.find(f => f.users.includes(uid) && f.users.includes(fb.user.uid));
+  const draw = () => {
+    const f = fr();
+    o.innerHTML = `<div class="card pcardx prof">${profileHTML(card, me)}<div class="row">${!me && f && f.status === 'friends' ? '<button class="btn" data-a="chal">Challenge</button>' : !me && card.code && !f && fb.user ? '<button class="btn" data-a="add">Add friend</button>' : ''}<button class="btn alt" data-a="close">Close</button></div></div>`;
   };
-  o.innerHTML = '<div class="card"><p>Loading...</p></div>'; document.body.append(o);
-  let card = Object.assign({}, fallback);
-  if (fb.db && fb.user) { try { const s2 = await playerRef(uid).get(); if (s2.exists) card = Object.assign(card, s2.data()); } catch (e) { } }
-  else { o.innerHTML = '<div class="card"><p>Sign in on the Arcade page to see other players\' profiles.</p><div class="row"><button class="btn alt" data-a="close">Close</button></div></div>'; }
-  if (fb.db && fb.user) show(card);
+  draw(); document.body.append(o);
   o.onclick = async e => {
     const b = e.target.closest('[data-a]');
     if (e.target === o || (b && b.dataset.a === 'close')) { o.remove(); return; }
     if (!b) return;
+    if (b.dataset.a === 'custom') { openCustomize(); return; }
     if (b.dataset.a === 'add') { b.disabled = true; try { toast(await addFriend(card.code)); } catch (x) { toast(x.message || onlineErr(x)); } o.remove(); }
     if (b.dataset.a === 'chal') { o.remove(); openFriends(); setTimeout(() => { const c2 = document.querySelector(`[data-ch="${uid}"]`); if (c2) c2.click(); }, 50); }
   };
 }
+function openMe() { profileOverlay(myCard(), true); }
+async function openPlayer(uid, fallback = {}) {
+  if (!uid) return;
+  if (fb.user && uid === fb.user.uid) { openMe(); return; }
+  document.querySelectorAll('.ov').forEach(x => x.remove());
+  if (!fb.db || !fb.user) {
+    const o = document.createElement('div'); o.className = 'ov';
+    o.innerHTML = '<div class="card"><p>Sign in on the Arcade page to see other players\' profiles.</p><div class="row"><button class="btn alt" data-a="close">Close</button></div></div>';
+    o.onclick = e => { if (e.target === o || e.target.closest('[data-a]')) o.remove(); };
+    document.body.append(o); return;
+  }
+  let card = Object.assign({}, fallback);
+  try { const s2 = await playerRef(uid).get(); if (s2.exists) card = Object.assign(card, s2.data()); } catch (e) { }
+  profileOverlay(card, false, uid);
+}
+// ---------- Customize: avatar, colors, frame, banner, name color, bio, showcase; buy with tickets right here ----------
+function openCustomize() {
+  document.querySelectorAll('.ov').forEach(x => x.remove());
+  const o = document.createElement('div'); o.className = 'ov';
+  let arm = null, tab = 'look';
+  const tile = (kind, id, inner, label) => {
+    const p = AR.profile(), own = AR.owns(p, id), cost = AR.costOf(id) || 0;
+    const on = (kind === 'av' && p.av === id) || (kind === 'frame' && p.frame === id) || (kind === 'banner' && p.banner === id) || (kind === 'nc' && p.ncolor === id);
+    return `<button class="ctile${on ? ' on' : ''}${own ? '' : ' lock'}" data-kind="${kind}" data-id="${id}">${inner}<small>${arm === id ? (p.tickets >= cost ? `Buy 🎟 ${cost}?` : `Need 🎟 ${cost}`) : own ? label : `🎟 ${cost}`}</small></button>`;
+  };
+  const draw = () => {
+    const p = AR.profile(), card = myCard();
+    const got = ACH.filter(a => SV.ach && SV.ach[a.id]);
+    const keepScroll = o.firstElementChild ? o.firstElementChild.scrollTop : 0;
+    o.innerHTML = `<div class="card pcardx cust${draw.done ? ' still' : ''}">
+      <div class="custprev">${profileHTML(card, true).split('<div class="pcharts">')[0].replace('<button class="btn" data-a="custom" style="width:100%;margin:2px 0 10px">Customize profile</button>', '')}</div>
+      <div class="custtk">🎟 ${p.tickets} tickets <small>· earn more from Daily quests</small></div>
+      <div class="seg custseg">${[['look', 'Look'], ['banner', 'Banner'], ['name', 'Name'], ['show', 'Showcase']].map(([k, n]) => `<button data-tab="${k}" aria-pressed="${tab === k}">${n}</button>`).join('')}</div>
+      ${tab === 'look' ? `<div class="lbl2">Avatar</div><div class="cgrid">${Object.keys(AR.AVATARS).map(k => tile('av', k, `<img src="${AR.avURL(k, p.bg)}" alt="">`, k[0].toUpperCase() + k.slice(1))).join('')}</div>
+        <div class="lbl2">Background</div><div class="cgrid bgs">${AR.AV_BG.map((c2, i) => `<button class="ctile${p.bg === i ? ' on' : ''}" data-kind="bg" data-id="${i}" aria-label="Background ${i + 1}"><i class="bsw" style="background:${c2};height:26px"></i></button>`).join('')}</div>
+        <div class="lbl2">Frame</div><div class="cgrid">${Object.entries(AR.FRAMES).map(([k, f]) => tile('frame', k, avImg(Object.assign({}, p, { frame: k }), 40), f.name)).join('')}</div>` : ''}
+      ${tab === 'banner' ? `<div class="lbl2">Banner</div><div class="cgrid wide">${Object.entries(AR.BANNERS).map(([k, bn]) => tile('banner', k, `<i class="bsw" style="background:${bn.css}"></i>`, bn.name)).join('')}</div>` : ''}
+      ${tab === 'name' ? `<div class="lbl2">Name color</div><div class="cgrid wide">${Object.entries(AR.NCOLORS).map(([k, nc]) => tile('nc', k, `<b class="ncsw">${AR.nameHTML(playerName(), k, esc)}</b>`, nc.name)).join('')}</div>
+        <div class="lbl2">Bio</div><input class="field" id="cBio" maxlength="60" placeholder="Say something about yourself" value="${esc(p.bio || '')}"><small class="note" style="display:block;margin-top:4px">Up to 60 characters. Other players can see it.</small>
+        <div class="lbl2">Name</div><p class="meta" style="margin:0">Your name is <b>${esc(playerName())}</b>. Change it on the arcade profile.</p>` : ''}
+      ${tab === 'show' ? `<div class="lbl2">Pin up to 3 achievements</div>${got.length ? `<div class="cgrid wide">${got.map(a => `<button class="ctile ach${(p.pins || []).includes(a.id) ? ' on' : ''}" data-kind="pin" data-id="${a.id}"><span class="ai">${a.icon}</span><small>${esc(a.name)}</small></button>`).join('')}</div><small class="note">With none pinned, your 3 newest show.</small>` : '<p class="meta">Unlock achievements to pin them here.</p>'}` : ''}
+      <div class="row"><button class="btn alt" data-a="back">Back to profile</button><button class="btn" data-a="close">Done</button></div></div>`;
+    draw.done = true; o.firstElementChild.scrollTop = keepScroll;
+  };
+  const saveBio = () => { const el = o.querySelector('#cBio'); if (!el) return; const v = el.value.replace(/[<>]/g, '').trim().slice(0, 60); const p = AR.profile(); if (p.bio !== v) { p.bio = v; AR.saveProfile(p); } };
+  draw(); document.body.append(o);
+  o.addEventListener('change', e => { if (e.target.id === 'cBio') { saveBio(); heartbeat(); } });
+  o.onclick = e => {
+    const b = e.target.closest('button'); if (!b) { if (e.target === o) { saveBio(); o.remove(); renderMenuSoon(); } return; }
+    if (b.dataset.tab) { saveBio(); tab = b.dataset.tab; arm = null; draw(); return; }
+    if (b.dataset.a === 'close') { saveBio(); heartbeat(); o.remove(); renderMenuSoon(); return; }
+    if (b.dataset.a === 'back') { saveBio(); heartbeat(); if (!$('menu').hidden) showMenu(); openMe(); return; }
+    const kind = b.dataset.kind, id = b.dataset.id; if (!kind) return;
+    const p = AR.profile();
+    if (kind === 'bg') { p.bg = +id; AR.saveProfile(p); draw(); return; }
+    if (kind === 'pin') { const pins = (p.pins || []).filter(x => x !== id); if (pins.length === (p.pins || []).length) { if (pins.length >= 3) { toast('You can pin 3. Unpin one first.'); return; } pins.push(id); } p.pins = pins; AR.saveProfile(p); draw(); return; }
+    if (!AR.owns(p, id)) {
+      if (arm !== id) { arm = id; draw(); return; }
+      const r = AR.buy(id); arm = null;
+      if (!r.ok) { toast(r.msg); draw(); return; }
+      sound('win'); toast('Bought!');
+    }
+    const q = AR.profile();
+    if (kind === 'av') q.av = id; else if (kind === 'frame') q.frame = id; else if (kind === 'banner') q.banner = id; else if (kind === 'nc') q.ncolor = id;
+    AR.saveProfile(q); arm = null; draw();
+  };
+}
+function renderMenuSoon() { setTimeout(() => { if (!$('menu').hidden) showMenu(); }, 0); }
 document.addEventListener('click', e => {
   const r = e.target.closest('[data-puid]'); if (!r || e.target.closest('button[data-ch],button[data-rm],button[data-yes],button[data-no]')) return;
   openPlayer(r.dataset.puid, { name: r.dataset.pname || '' });
