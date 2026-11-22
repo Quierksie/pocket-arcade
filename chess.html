@@ -737,8 +737,8 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
 .frrow.big { border: 0; margin-bottom: 4px; } .frrow.big .fav { width: 48px; height: 48px; }
 .btn.sm { padding: 7px 11px; min-height: 0; font-size: 13.5px; width: auto; flex: none; margin: 0; }
 .btn.sm.x { padding: 7px 9px; }
-.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--soft); margin-right: 5px; vertical-align: 1px; }
-.dot.on { background: var(--accent); }
+.odot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--soft); margin-right: 5px; vertical-align: 1px; }
+.odot.on { background: var(--accent); }
 .frnote { font-size: 13.5px; color: var(--accent); margin: 10px 0 0; }
 .chalwait { display: flex; gap: 12px; align-items: center; text-align: left; } .chalwait p { margin: 0; }
 .chalbar { position: fixed; z-index: 80; top: max(10px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); width: min(460px, calc(100vw - 20px)); display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; background: var(--panel); color: var(--ink); box-shadow: 0 10px 30px rgba(0,0,0,.35); border: 2px solid var(--accent); animation: chalIn .25s ease-out; }
@@ -766,10 +766,10 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
 .rchip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; background: var(--rc); color: #fff; font-weight: 800; font-size: 13px; white-space: nowrap; vertical-align: middle; letter-spacing: 0; }
 .rchip.sm { font-size: 11px; padding: 2px 7px; }
 .pl .who .rchip { margin-left: 6px; }
-.promo { position: fixed; z-index: 90; left: 50%; top: max(14px, env(safe-area-inset-top)); transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 22px; border-radius: 16px; background: var(--panel); box-shadow: 0 14px 40px rgba(0,0,0,.35); animation: promoIn .35s cubic-bezier(.2,1.4,.4,1); transition: opacity .4s; }
-.promo small { font-weight: 800; color: var(--soft); text-transform: uppercase; letter-spacing: .08em; font-size: 12px; }
-.promo .rchip { font-size: 22px; padding: 6px 16px; }
-.promo.out { opacity: 0; }
+.rankup { position: fixed; z-index: 90; left: 50%; top: max(14px, env(safe-area-inset-top)); transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 22px; border-radius: 16px; background: var(--panel); box-shadow: 0 14px 40px rgba(0,0,0,.35); animation: promoIn .35s cubic-bezier(.2,1.4,.4,1); transition: opacity .4s; }
+.rankup small { font-weight: 800; color: var(--soft); text-transform: uppercase; letter-spacing: .08em; font-size: 12px; }
+.rankup .rchip { font-size: 22px; padding: 6px 16px; }
+.rankup.out { opacity: 0; }
 @keyframes promoIn { from { transform: translateX(-50%) scale(.6); opacity: 0; } }
 .afr { display: inline-block; position: relative; border-radius: 9px; padding: 3px; background: transparent; flex: none; box-sizing: border-box; }
 .afr.on { background: var(--afr); }
@@ -4189,7 +4189,7 @@ function openFriends(prefill = '') {
     else if (FR.err === 'rules') body = "<p>Friends aren't switched on in the arcade's database yet (its Firestore rules need the players, friends and challenges parts).</p>";
     else if (view === 'chal') {
       const c = FR.cards[pick] || {};
-      body = `<div class="frrow big">${avImg(c)}<div><b>${esc(c.name || 'Friend')}</b><small>${isOn(c) ? '<i class="dot on"></i>Online now' : 'Offline · they get the challenge when they open Chess'}</small></div></div>
+      body = `<div class="frrow big">${avImg(c)}<div><b>${esc(c.name || 'Friend')}</b><small>${isOn(c) ? '<i class="odot on"></i>Online now' : 'Offline · they get the challenge when they open Chess'}</small></div></div>
         <div class="lbl2">You play</div>
         <div class="seg">${[['w', 'White', 6], ['r', 'Random', 0], ['b', 'Black', -6]].map(([k, n, pc]) => `<button data-c="${k}" aria-pressed="${P.color === k}">${pc ? pieceSVG(pc, '') : ''}${n}</button>`).join('')}</div>
         <div class="lbl2">Clock</div>
@@ -4205,7 +4205,7 @@ function openFriends(prefill = '') {
         <div class="joinrow"><input class="field" id="frAdd" maxlength="8" placeholder="FRIEND'S CODE" autocomplete="off" autocapitalize="characters" spellcheck="false" value="${esc(add)}"><button class="btn" data-a="add"${busy ? ' disabled' : ''}>Add</button></div>
         ${inc.length ? `<div class="lbl2">Friend requests</div>${inc.map(f => { const c = card(f); return `<div class="frrow" data-puid="${other(f)}" data-pname="${esc(c.name)}">${avImg(c)}<div><b>${esc(c.name)}</b><small>wants to be friends</small></div><button class="btn alt sm" data-no="${f.id}">No</button><button class="btn sm" data-yes="${f.id}">Accept</button></div>`; }).join('')}` : ''}
         <div class="lbl2">Friends${fr.length ? ` · ${fr.filter(f => isOn(card(f))).length} online` : ''}</div>
-        ${fr.length ? fr.map(f => { const c = card(f), on = isOn(c); return `<div class="frrow" data-puid="${other(f)}" data-pname="${esc(c.name)}">${avImg(c)}<div><b>${esc(c.name)}</b><small>${on ? '<i class="dot on"></i>Online' : c.seenMs ? `Seen ${ago(c.seenMs)}` : 'Not seen yet'}${c.rating ? ` · ${AR.rankChip(c.rating, true)}` : ''}</small></div><button class="btn alt sm x" data-rm="${f.id}" aria-label="Remove friend">${arm === f.id ? 'Remove?' : '✕'}</button><button class="btn sm" data-ch="${other(f)}">Challenge</button></div>`; }).join('') : '<p class="meta" style="margin:4px 0 0">No friends yet. Share your code, or type theirs above.</p>'}
+        ${fr.length ? fr.map(f => { const c = card(f), on = isOn(c); return `<div class="frrow" data-puid="${other(f)}" data-pname="${esc(c.name)}">${avImg(c)}<div><b>${esc(c.name)}</b><small>${on ? '<i class="odot on"></i>Online' : c.seenMs ? `Seen ${ago(c.seenMs)}` : 'Not seen yet'}${c.rating ? ` · ${AR.rankChip(c.rating, true)}` : ''}</small></div><button class="btn alt sm x" data-rm="${f.id}" aria-label="Remove friend">${arm === f.id ? 'Remove?' : '✕'}</button><button class="btn sm" data-ch="${other(f)}">Challenge</button></div>`; }).join('') : '<p class="meta" style="margin:4px 0 0">No friends yet. Share your code, or type theirs above.</p>'}
         ${out.length ? `<div class="lbl2">Sent</div>${out.map(f => { const c = card(f); return `<div class="frrow" data-puid="${other(f)}" data-pname="${esc(c.name)}">${avImg(c)}<div><b>${esc(c.name)}</b><small>waiting for them to accept</small></div><button class="btn alt sm" data-rm="${f.id}">Cancel</button></div>`; }).join('')}` : ''}
         ${note ? `<p class="frnote">${esc(note)}</p>` : ''}`;
     }
@@ -4325,7 +4325,7 @@ function promoCheck(before, r, what) {
   const after = AR.rank(r);
   if (after.key <= before.key) return;
   setTimeout(() => {
-    const el = document.createElement('div'); el.className = 'promo';
+    const el = document.createElement('div'); el.className = 'rankup';
     el.innerHTML = `<small>${what} rank up!</small>${AR.rankChip(r)}`;
     document.body.append(el); sound('win');
     setTimeout(() => el.classList.add('out'), 2600); setTimeout(() => el.remove(), 3100);
@@ -4369,7 +4369,7 @@ async function openPlayer(uid, fallback = {}) {
     const rows = [['Chess rating', c.rating ? `${c.rating}${st.peak ? ` (peak ${st.peak})` : ''}` : '–'], ['Vs bots', st.games != null ? `${st.w || 0}W ${st.l || 0}L ${st.d || 0}D` : '–'], ['Rated online', st.online ? `${st.online.w}W ${st.online.l}L ${st.online.d}D` : '–'], ['Games played', st.games ?? '–'],
       ['Puzzle rating', c.puz ? `${c.puz}${st.pzPeak ? ` (peak ${st.pzPeak})` : ''}` : '–'], ['Puzzles solved', st.solved ?? '–'], ['Puzzle Rush best', st.rush ?? '–'],
       ['Chess achievements', st.ach ?? '–'], ['Mistakes fixed', st.fixed ?? '–'], ['Sudokus solved', st.sudoku ?? '–'], ['Card packs opened', st.cards ?? '–'], ['Deep Dig blocks', st.dig != null ? st.dig.toLocaleString() : '–'], ['Tickets earned', st.tickets ?? '–']];
-    o.innerHTML = `<div class="card pcardx"><div class="frrow big">${avImg(c, 64)}<div><b style="font-size:19px">${esc(c.name || fallback.name || 'Player')}${me ? ' (you)' : ''}</b><small>${on ? '<i class="dot on"></i>Online now' : c.seenMs ? `Seen ${ago(c.seenMs)}` : ''}${st.since ? ` · playing since ${new Date(st.since).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}` : ''}</small></div></div>
+    o.innerHTML = `<div class="card pcardx"><div class="frrow big">${avImg(c, 64)}<div><b style="font-size:19px">${esc(c.name || fallback.name || 'Player')}${me ? ' (you)' : ''}</b><small>${on ? '<i class="odot on"></i>Online now' : c.seenMs ? `Seen ${ago(c.seenMs)}` : ''}${st.since ? ` · playing since ${new Date(st.since).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}` : ''}</small></div></div>
       <div class="pranks">${c.rating ? `<div><span>Chess</span>${AR.rankChip(c.rating)}</div>` : ''}${c.puz ? `<div><span>Puzzles</span>${AR.rankChip(c.puz)}</div>` : ''}</div>
       <div class="pstats">${rows.map(([k, v]) => `<div><span>${k}</span><b>${esc(String(v))}</b></div>`).join('')}</div>
       ${c.stats ? '' : '<p class="meta" style="margin:8px 0 0">More stats show up after they open Chess with the newest version.</p>'}
