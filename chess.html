@@ -766,7 +766,7 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
 .rchip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; background: var(--rc); color: #fff; font-weight: 800; font-size: 13px; white-space: nowrap; vertical-align: middle; letter-spacing: 0; }
 .rchip.sm { font-size: 11px; padding: 2px 7px; }
 .pl .who .rchip { margin-left: 6px; }
-.promo { position: fixed; z-index: 90; left: 50%; top: 22%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 22px; border-radius: 16px; background: var(--panel); box-shadow: 0 14px 40px rgba(0,0,0,.35); animation: promoIn .35s cubic-bezier(.2,1.4,.4,1); transition: opacity .4s; }
+.promo { position: fixed; z-index: 90; left: 50%; top: max(14px, env(safe-area-inset-top)); transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 22px; border-radius: 16px; background: var(--panel); box-shadow: 0 14px 40px rgba(0,0,0,.35); animation: promoIn .35s cubic-bezier(.2,1.4,.4,1); transition: opacity .4s; }
 .promo small { font-weight: 800; color: var(--soft); text-transform: uppercase; letter-spacing: .08em; font-size: 12px; }
 .promo .rchip { font-size: 22px; padding: 6px 16px; }
 .promo.out { opacity: 0; }
@@ -800,6 +800,9 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
 .pstats { display: grid; grid-template-columns: 1fr; gap: 0; }
 .pstats div { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(127,127,127,.18); font-size: 14px; }
 .pstats span { color: var(--soft); }
+
+.rtag, .chalbar small b.rtag { color: var(--accent); display: inline; }
+.rtseg button { flex: 1; }
 </style>
 <script src="arcade.js"></script>
 </head>
@@ -2562,6 +2565,16 @@ function finishGame(st) {
     stopClock(); thinking = false; premove = null;
     const white = st.result === '1/2-1/2' ? .5 : st.result === '1-0' ? 1 : 0;
     G.over = { ...st, score: G.me === 1 ? white : 1 - white, delta: 0, rated: false };
+    // rated games against a friend: the usual rating math against their rating when the game started
+    if (G.rated && G.moves.length >= 2 && st.result !== '*') {
+      const opp = (G.ratings && G.ratings[G.me === 1 ? 1 : 0]) || 1200, k = SV.games < 20 ? 40 : 24;
+      const exp = 1 / (1 + Math.pow(10, (opp - SV.rating) / 400)), delta = Math.round(k * (G.over.score - exp));
+      const rk0 = AR.rank(SV.rating);
+      SV.rating = Math.max(100, SV.rating + delta); SV.peak = Math.max(SV.peak, SV.rating); SV.games++;
+      const r = SV.orec || (SV.orec = { w: 0, l: 0, d: 0 }); if (G.over.score === 1) r.w++; else if (G.over.score === 0) r.l++; else r.d++;
+      G.over.delta = delta; G.over.rated = true; G.over.before = Math.round(SV.rating - delta);
+      promoCheck(rk0, SV.rating, 'Chess');
+    }
     if (!ONL.fromServer) onlineWriteResult(st, G.code, G.me);
     if (G.moves.length >= 2 && normName(G.names[0]) !== normName(G.names[1])) h2hAdd(G.names, white);
     document.querySelectorAll('.ov[data-draw]').forEach(x => x.remove());
@@ -2636,8 +2649,8 @@ function showResult() {
     const opp = oppName(), asked = ONL.d && ONL.d.rematch && ONL.d.rematch.by !== G.me;
     gameOverModal({
       title: o.score === 1 ? 'You won!' : o.score === 0 ? `${esc(opp)} won` : 'Draw', sub,
-      players: [0, 1].map(i => ({ name: G.names[i] + ((i === 0) === (G.me === 1) ? ' (you)' : ''), side: i ? 'Black' : 'White', av: sideAv(i ? -1 : 1), win: i === 0 ? wScore === 1 : wScore === 0 })),
-      extra: `${h2hLine(G.names[0], G.names[1], true)}<p class="rmnote" style="font-size:13px;margin-top:8px">${asked ? `${esc(opp)} wants a rematch!` : 'Rematch swaps colors.'}</p>`,
+      players: [0, 1].map(i => { const mine = (i === 0) === (G.me === 1); return { name: G.names[i] + (mine ? ' (you)' : ''), side: i ? 'Black' : 'White', av: (G.avs && plateAv(G.avs[i])) || sideAv(i ? -1 : 1), win: i === 0 ? wScore === 1 : wScore === 0, rating: o.rated ? (mine ? SV.rating : G.ratings[i]) : null, delta: o.rated && mine ? o.delta : 0 }; }),
+      extra: `${o.rated ? '' : '<p style="font-size:13px">Casual game, no rating change.</p>'}${h2hLine(G.names[0], G.names[1], true)}<p class="rmnote" style="font-size:13px;margin-top:8px">${asked ? `${esc(opp)} wants a rematch!` : 'Rematch swaps colors.'}</p>`,
       againLabel: asked ? 'Accept rematch' : 'Rematch', onAgain: onlineRematch,
     });
     return;
@@ -3871,7 +3884,7 @@ async function createOnline(P, mine) {
       await fb.db.runTransaction(async tx => {
         const s = await tx.get(ref); if (s.exists) throw { code: 'exists' };
         tx.set(ref, { v: 1, code, status: 'waiting', host: me.uid, players: [me.uid], white: col === 1 ? me : null, black: col === -1 ? me : null,
-          clock: m ? { base: m * 60000, inc: inc * 1000 } : null, moves: [], times: [], result: null, drawOffer: null, rematch: null, created: fbTs(), updated: fbTs() });
+          clock: m ? { base: m * 60000, inc: inc * 1000 } : null, rated: !!P.rated, moves: [], times: [], result: null, drawOffer: null, rematch: null, created: fbTs(), updated: fbTs() });
       });
       return code;
     } catch (e) { if (e.code !== 'exists') throw e; }
@@ -3893,13 +3906,13 @@ async function joinOnline(code) {
 function startOnline(code, d) {
   if (G && G.online && G.code !== code) onlineDetach();
   const me = seatOf(d, fb.user.uid), c = d.clock;
-  G = { online: true, code, bot: null, me, moves: [], takebacks: 0, hints: 0, tb: false, over: null, names: [d.white.name, d.black.name], avs: [d.white.av ? { av: d.white.av, bg: d.white.bg, frame: d.white.frame } : null, d.black.av ? { av: d.black.av, bg: d.black.bg, frame: d.black.frame } : null], ratings: [d.white.rating, d.black.rating], uids: [d.white.uid, d.black.uid],
+  G = { online: true, code, bot: null, me, moves: [], takebacks: 0, hints: 0, tb: false, over: null, names: [d.white.name, d.black.name], rated: !!d.rated, avs: [d.white.av ? { av: d.white.av, bg: d.white.bg, frame: d.white.frame } : null, d.black.av ? { av: d.black.av, bg: d.black.bg, frame: d.black.frame } : null], ratings: [d.white.rating, d.black.rating], uids: [d.white.uid, d.black.uid],
     clock: c ? { base: c.base, inc: c.inc, t: [c.base, c.base], last: null } : null };
   ONL.seenDraw = ONL.myOffer = ONL.rematchShown = null; ONL.lastEmote = undefined;
   SV.game = G; save();
   document.querySelectorAll('.ov').forEach(o => o.remove());
   startGame();
-  sound('move'); toast(`You're ${me === 1 ? 'White' : 'Black'} vs ${oppName()}`);
+  sound('move'); toast(`${d.rated ? 'Rated game. ' : ''}You're ${me === 1 ? 'White' : 'Black'} vs ${oppName()}`);
 }
 function onlineAttach() {
   onlineDetach();
@@ -4004,7 +4017,7 @@ async function onlineRematch() {
   if (d && d.rematch && d.rematch.by === me) { openOnline({ wait: d.rematch.code }); return; }
   try {
     const c = G.clock, ci = c ? CLOCKS.findIndex(x => x[0] * 60000 === c.base && x[1] * 1000 === c.inc) : 0;
-    const nc = await createOnline({ clock: Math.max(0, ci) }, -me);
+    const nc = await createOnline({ clock: Math.max(0, ci), rated: !!G.rated }, -me);
     await onlineRef(code).update({ rematch: { code: nc, by: me }, updated: fbTs() });
     openOnline({ wait: nc, rematch: true });
   } catch (e) { toast(onlineErr(e)); }
@@ -4024,7 +4037,7 @@ function openOnline(opt = {}) {
   if (SV.game && !SV.game.online && SV.game.moves && SV.game.moves.length) { toast(SV.game.pvp ? 'Finish your game on this phone first' : 'Finish or resign your bot game first'); return; }
   if (SV.game && SV.game.online && !opt.wait) { G = SV.game; startGame(); return; } // already in an online game: go back to it
   document.querySelectorAll('.ov').forEach(x => x.remove());
-  const P = Object.assign({ color: 'r', clock: 4 }, SV.onl || {});
+  const P = Object.assign({ color: 'r', clock: 4, rated: false }, SV.onl || {});
   let mode = opt.wait ? 'wait' : opt.join != null ? 'join' : 'home', code = opt.wait || cleanCode(opt.join), err = '', busy = false, unsub = null, poll = null;
   const o = document.createElement('div'); o.className = 'ov';
   let unsubC = null;
@@ -4053,6 +4066,7 @@ function openOnline(opt = {}) {
         <div class="lbl2" style="margin-top:16px">Or start a new game</div>
         <div class="seg">${[['w', 'White', 6], ['r', 'Random', 0], ['b', 'Black', -6]].map(([k, n, p]) => `<button data-c="${k}" aria-pressed="${P.color === k}">${p ? pieceSVG(p, '') : ''}${n}</button>`).join('')}</div>
         <div class="chips" style="margin-top:8px">${CLOCKS.map(([m, inc, n], i) => `<button data-k="${i}" aria-pressed="${P.clock === i}">${n}</button>`).join('')}</div>
+        ${ratedSeg(P)}
         <button class="btn" data-a="create" style="width:100%;margin-top:12px"${busy ? ' disabled' : ''}>Create game</button>
         <small class="note">You'll get a code and a link to send. Moves sync live, so you can be in different houses.</small>`;
     }
@@ -4083,6 +4097,7 @@ function openOnline(opt = {}) {
     const t = e.target;
     if (t.closest('[data-c]')) { keepName(); P.color = t.closest('[data-c]').dataset.c; SV.onl = P; save(); draw(); return; }
     if (t.closest('[data-k]')) { keepName(); P.clock = +t.closest('[data-k]').dataset.k; SV.onl = P; save(); draw(); return; }
+    if (t.closest('[data-rt]')) { keepName(); P.rated = t.closest('[data-rt]').dataset.rt === '1'; SV.onl = P; save(); draw(); return; }
     const a = t.closest('[data-a]'); const act = a && a.dataset.a;
     if (act === 'close' || (t === o && mode !== 'wait')) { close(); return; }
     if (act === 'copy' || act === 'copycode') { try { await navigator.clipboard.writeText(act === 'copy' ? joinLink(code) : code); toast(act === 'copy' ? 'Link copied' : 'Code copied'); } catch (x) { toast(act === 'copy' ? joinLink(code) : code); } return; }
@@ -4164,7 +4179,7 @@ let frOpen = null;
 function openFriends(prefill = '') {
   document.querySelectorAll('.ov').forEach(x => x.remove());
   let view = 'list', pick = null, err = '', note = '', busy = false, add = cleanFCode(prefill), arm = null;
-  const P = Object.assign({ color: 'r', clock: 4 }, SV.onl || {});
+  const P = Object.assign({ color: 'r', clock: 4, rated: false }, SV.onl || {});
   const o = document.createElement('div'); o.className = 'ov';
   const close = () => { frOpen = null; o.remove(); };
   const draw = () => {
@@ -4179,6 +4194,7 @@ function openFriends(prefill = '') {
         <div class="seg">${[['w', 'White', 6], ['r', 'Random', 0], ['b', 'Black', -6]].map(([k, n, pc]) => `<button data-c="${k}" aria-pressed="${P.color === k}">${pc ? pieceSVG(pc, '') : ''}${n}</button>`).join('')}</div>
         <div class="lbl2">Clock</div>
         <div class="chips">${CLOCKS.map(([m, inc, n], i) => `<button data-k="${i}" aria-pressed="${P.clock === i}">${n}</button>`).join('')}</div>
+        ${ratedSeg(P)}
         <button class="btn" data-a="send" style="width:100%;margin-top:12px"${busy ? ' disabled' : ''}>Send challenge</button>
         <div class="row"><button class="btn alt" data-a="back">Back</button></div>`;
     } else {
@@ -4226,13 +4242,14 @@ function openFriends(prefill = '') {
     if (b.dataset.ch) { pick = b.dataset.ch; view = 'chal'; draw(); return; }
     if (b.dataset.c) { P.color = b.dataset.c; SV.onl = P; save(); draw(); return; }
     if (b.dataset.k != null) { P.clock = +b.dataset.k; SV.onl = P; save(); draw(); return; }
+    if (b.dataset.rt != null) { P.rated = b.dataset.rt === '1'; SV.onl = P; save(); draw(); return; }
     if (a === 'back') { view = 'list'; draw(); return; }
     if (a === 'send' && !busy) {
       if (SV.game && SV.game.moves && SV.game.moves.length && !SV.game.over) { err = 'Finish your current game first.'; draw(); return; }
       busy = true; draw();
       try {
         const code = await createOnline(P), a2 = myAv(), c = FR.cards[pick] || {};
-        const ref = await fb.db.collection('challenges').add({ from: uid, to: pick, fromName: myName(), av: a2.av, bg: a2.bg, code, clock: P.clock, color: P.color, status: 'open', at: fbTs(), atMs: Date.now() });
+        const ref = await fb.db.collection('challenges').add({ from: uid, to: pick, fromName: myName(), av: a2.av, bg: a2.bg, code, clock: P.clock, color: P.color, rated: !!P.rated, status: 'open', at: fbTs(), atMs: Date.now() });
         close(); openOnline({ wait: code, chal: ref.id, friend: c.name, av: avImg(c, 56) });
       } catch (x) { busy = false; err = onlineErr(x); draw(); }
     }
@@ -4261,7 +4278,7 @@ function showChallenges() {
   if (G && G.online && !G.over) return; // busy in a game: it stays in the list for later
   const CL = CLOCKS[c.clock] || CLOCKS[0], youAre = c.color === 'w' ? 'Black' : c.color === 'b' ? 'White' : 'random color';
   const el = document.createElement('div'); el.id = 'chalBar'; el.className = 'chalbar';
-  el.innerHTML = `${avImg(c)}<div><b>${esc(c.fromName)} challenges you!</b><small>${CL[2]} · you play ${youAre}</small></div><button class="btn alt sm" data-a="no">Not now</button><button class="btn sm" data-a="yes">Play</button>`;
+  el.innerHTML = `${avImg(c)}<div><b>${esc(c.fromName)} challenges you!</b><small>${c.rated ? '<b class="rtag">Rated</b> · ' : ''}${CL[2]} · you play ${youAre}</small></div><button class="btn alt sm" data-a="no">Not now</button><button class="btn sm" data-a="yes">Play</button>`;
   document.body.append(el); sound('move');
   el.onclick = async e => {
     const b = e.target.closest('[data-a]'); if (!b) return;
@@ -4300,6 +4317,10 @@ function showEmote(i, mine) {
 }
 
 // ---------- ranks, quests and other players' profiles ----------
+function ratedSeg(P) {
+  return `<div class="lbl2">Game type</div><div class="seg rtseg"><button data-rt="0" aria-pressed="${!P.rated}">Casual</button><button data-rt="1" aria-pressed="${!!P.rated}">Rated</button></div>
+    <small class="note" style="display:block;margin-top:6px">${P.rated ? 'Counts toward both players\' chess ratings, like a bot game.' : 'Just for fun. Ratings stay the same.'}</small>`;
+}
 function promoCheck(before, r, what) {
   const after = AR.rank(r);
   if (after.key <= before.key) return;
@@ -4313,7 +4334,7 @@ function promoCheck(before, r, what) {
 function publicStats() {
   const rec = Object.values(SV.rec || {}), st = AR.stats();
   return {
-    games: SV.games || 0, w: rec.reduce((a, r) => a + (r.w || 0), 0), l: rec.reduce((a, r) => a + (r.l || 0), 0), d: rec.reduce((a, r) => a + (r.d || 0), 0),
+    online: SV.orec || null, games: SV.games || 0, w: rec.reduce((a, r) => a + (r.w || 0), 0), l: rec.reduce((a, r) => a + (r.l || 0), 0), d: rec.reduce((a, r) => a + (r.d || 0), 0),
     peak: Math.round(SV.peak || SV.rating), pzPeak: Math.round(PZ.peak || PZ.rating), solved: PZ.solved || 0, rush: rushBest(),
     ach: Object.keys(SV.ach || {}).length, fixed: SV.mineFixed || 0, sudoku: st.sudokuWins, cards: st.cardPacks, dig: st.digMined,
     tickets: AR.profile().earned || 0, since: AR.profile().since || null,
@@ -4345,7 +4366,7 @@ async function openPlayer(uid, fallback = {}) {
   const show = c => {
     const st = c.stats || {}, on = Date.now() - (c.seenMs || 0) < ONLINE_MS;
     const fr = fb.user && FR.list.find(f => f.users.includes(uid) && f.users.includes(fb.user.uid));
-    const rows = [['Chess rating', c.rating ? `${c.rating}${st.peak ? ` (peak ${st.peak})` : ''}` : '–'], ['Vs bots', st.games != null ? `${st.w || 0}W ${st.l || 0}L ${st.d || 0}D` : '–'], ['Games played', st.games ?? '–'],
+    const rows = [['Chess rating', c.rating ? `${c.rating}${st.peak ? ` (peak ${st.peak})` : ''}` : '–'], ['Vs bots', st.games != null ? `${st.w || 0}W ${st.l || 0}L ${st.d || 0}D` : '–'], ['Rated online', st.online ? `${st.online.w}W ${st.online.l}L ${st.online.d}D` : '–'], ['Games played', st.games ?? '–'],
       ['Puzzle rating', c.puz ? `${c.puz}${st.pzPeak ? ` (peak ${st.pzPeak})` : ''}` : '–'], ['Puzzles solved', st.solved ?? '–'], ['Puzzle Rush best', st.rush ?? '–'],
       ['Chess achievements', st.ach ?? '–'], ['Mistakes fixed', st.fixed ?? '–'], ['Sudokus solved', st.sudoku ?? '–'], ['Card packs opened', st.cards ?? '–'], ['Deep Dig blocks', st.dig != null ? st.dig.toLocaleString() : '–'], ['Tickets earned', st.tickets ?? '–']];
     o.innerHTML = `<div class="card pcardx"><div class="frrow big">${avImg(c, 64)}<div><b style="font-size:19px">${esc(c.name || fallback.name || 'Player')}${me ? ' (you)' : ''}</b><small>${on ? '<i class="dot on"></i>Online now' : c.seenMs ? `Seen ${ago(c.seenMs)}` : ''}${st.since ? ` · playing since ${new Date(st.since).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}` : ''}</small></div></div>
