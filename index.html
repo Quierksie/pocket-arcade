@@ -10,6 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Pocket Arcade">
 <link rel="manifest" href="manifest.json">
+<script src="arcade.js"></script>
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -265,7 +266,7 @@ a.cab { color: inherit; text-decoration: none; box-sizing: border-box; }
 .pfme { display: grid; grid-template-columns: 96px 1fr; gap: 14px; align-items: center; }
 .pfav { position: relative; border: 0; padding: 0; background: none; cursor: pointer; }
 .pfav canvas { width: 96px; height: 96px; }
-.pfav span { position: absolute; right: -4px; bottom: -4px; background: var(--gold); color: #000; font-size: 11px; font-weight: 700; border-radius: 4px; padding: 2px 5px; }
+.pfav > .ed { position: absolute; right: -4px; bottom: -4px; background: var(--gold); color: #000; font-size: 11px; font-weight: 700; border-radius: 4px; padding: 2px 5px; }
 .pfme h2 { margin: 0 0 4px; font-size: 20px; overflow-wrap: anywhere; }
 .pfme p { margin: 0 0 8px; color: var(--muted); font-size: 13px; line-height: 1.4; }
 .pfme .lnk { background: none; border: 1px solid var(--line); border-radius: 4px; padding: 5px 9px; font-size: 13px; cursor: pointer; color: var(--ink); }
@@ -287,6 +288,43 @@ a.cab { color: inherit; text-decoration: none; box-sizing: border-box; }
 .colgrid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
 .colgrid button { aspect-ratio: 1; padding: 0; }
 #pfName { width: 100%; padding: 10px; font-size: 16px; border-radius: 6px; border: 2px solid var(--line); background: var(--panel-2); color: var(--ink); }
+
+/* quests, titles, shop */
+.qcard { background: var(--panel); border: 2px solid var(--line); border-radius: 6px; padding: 12px; display: grid; gap: 8px; }
+.aq-head { display: flex; justify-content: space-between; align-items: center; font-family: var(--display); font-size: 11px; color: var(--gold); }
+.aq-tk { font-family: var(--body); font-size: 14px; color: var(--ink); font-weight: 700; }
+.aq-item { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 6px; background: var(--panel-2); }
+.aq-item b { font-size: 13.5px; font-weight: 500; display: block; }
+.aq-item small { color: var(--muted); font-size: 12px; }
+.aq-bar { height: 6px; border-radius: 3px; background: #00000055; margin: 5px 0 2px; overflow: hidden; }
+.aq-bar i { display: block; height: 100%; background: var(--good); }
+.aq-item.done { opacity: .6; } .aq-item.ready { outline: 2px solid var(--gold); }
+.aq-claim { border: 0; border-radius: 4px; padding: 7px 10px; background: var(--gold); color: #000; font-weight: 700; cursor: pointer; font-size: 13px; }
+.aq-go { color: var(--gold); text-decoration: none; font-size: 13px; font-weight: 700; white-space: nowrap; }
+.aq-ok { color: var(--good); font-size: 18px; font-weight: 700; } .aq-lock { opacity: .6; }
+.aq-chest b { color: var(--gold); }
+.aq-new { color: var(--muted); font-size: 11.5px; text-align: center; }
+.pftoast { position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%); z-index: 99; background: var(--gold); color: #000; font-weight: 700; padding: 10px 16px; border-radius: 6px; }
+.afr { display: inline-block; position: relative; border-radius: 8px; padding: 3px; background: transparent; flex: none; box-sizing: border-box; }
+.afr.on { background: var(--afr); }
+.afr.rb { animation: afrspin 4s linear infinite; }
+@keyframes afrspin { to { filter: hue-rotate(360deg); } }
+.afr img { width: 100%; height: 100%; display: block; border-radius: 5px; image-rendering: pixelated; }
+.mebtn canvas.framed { outline: 3px solid var(--afr); outline-offset: 0; }
+.rchip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 999px; background: var(--rc); color: #fff; font-weight: 700; font-size: 13px; white-space: nowrap; }
+.rchip.sm { font-size: 11px; padding: 2px 6px; }
+.pftitles { display: grid; gap: 8px; }
+.pftitle { display: flex; justify-content: space-between; align-items: center; }
+.pftitle span:first-child { color: var(--muted); }
+.pftitles small { color: var(--muted); font-size: 12px; line-height: 1.4; }
+.pfshop h3 { font-family: var(--display); font-size: 11px; margin: 0 0 6px; color: var(--gold); }
+.shl { font-size: 12px; color: var(--muted); margin: 10px 0 6px; text-transform: uppercase; letter-spacing: .06em; }
+.shgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 8px; }
+.shgrid button { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px; border: 2px solid var(--line); border-radius: 6px; background: var(--panel-2); cursor: pointer; }
+.shgrid button img { width: 44px; height: 44px; image-rendering: pixelated; border-radius: 5px; }
+.shgrid button .afr img { width: 100%; height: 100%; }
+.shgrid button small { font-size: 11.5px; color: var(--muted); }
+.shgrid button.can { border-color: var(--gold); } .shgrid button.own small { color: var(--good); }
 </style>
 </head>
 <body>
@@ -299,6 +337,7 @@ a.cab { color: inherit; text-decoration: none; box-sizing: border-box; }
       <p>Free games built for your phone. Tap a cabinet to play. New games get added to this page over time.</p>
     </div>
     <button class="mebtn" id="meBtn" type="button"><canvas width="8" height="8" id="meAv"></canvas><div><b id="meName">Player</b><small id="meSub">Your profile and stats</small></div><span class="go">›</span></button>
+    <div class="qcard" id="qCard"></div>
     <div class="acct" id="acct-arcade"></div>
     <div class="cabinets">
       <button class="cab" id="cab-dig" type="button">
@@ -1690,7 +1729,7 @@ async function pushCloud() {
 function adoptCloud(d) {
   const sound = S.sound;
   S = normalize(d.state);
-  if (d.state.profile) adoptProfile(d.state.profile); S.profile = PF;
+  if (d.state.profile) adoptProfile(d.state.profile); S.profile = AR.profile();
   S.sound = sound; S.cloudStamp = d.updatedAt; cloud.lastSync = d.updatedAt; save();
   $('cab-best').textContent = (S.best > 0 ? `Best: ${S.best} m` : '') + (S.stars ? ` · ★${S.stars}` : '');
   if (running) { spawnBlock(); renderUpgrades('build'); setTab(tab); markDirty(); offlineProgress(); }
@@ -1888,55 +1927,33 @@ function sortCabs() {
   cabs.sort((a, b) => (r[b.id] || 0) - (r[a.id] || 0) || a.dataset.order - b.dataset.order).forEach(c => box.append(c));
 }
 document.querySelector('.cabinets').addEventListener('click', e => { const c = e.target.closest('.cab'); if (c && c.id !== 'cab-dig') markPlayed(c.id); });
-window.addEventListener('pageshow', sortCabs);
+window.addEventListener('pageshow', () => { sortCabs(); drawMe(); });
 
 // ---------- Profile: one name and pixel avatar for the whole arcade, plus stats from every game ----------
 // Stored in its own key so wiping Deep Dig doesn't erase it; also mirrored into the Deep Dig save (S.profile)
 // so it rides along with the cloud save when you're signed in.
-const PROFILE_KEY = 'pocketArcade.profile';
-const AVATARS = {
-  cat: { map: ['B......B', 'BB....BB', 'BBBBBBBB', 'BEBBBBEB', 'BBBNNBBB', 'BBPBBPBB', '.BBBBBB.', '..BBBB..'], pal: { B: '#f0a13a', E: '#1b1b1b', N: '#ff8fa3', P: '#c46f1d' } },
-  robot: { map: ['...AA...', '.GGGGGG.', 'GGEGGEGG', 'GGEGGEGG', 'GGGGGGGG', 'GGMMMMGG', '.GGGGGG.', '.G....G.'], pal: { A: '#ff5d5d', G: '#a7b6c2', E: '#38e0ff', M: '#4a5560' } },
-  slime: { map: ['........', '...SS...', '..SSSS..', '.SSsSSS.', '.SESSES.', 'SSSSSSSS', 'SSSMMSSS', 'SSSSSSSS'], pal: { S: '#5ee08a', s: '#c9ffd9', E: '#123b22', M: '#2c8a4f' } },
-  ghost: { map: ['..WWWW..', '.WWWWWW.', 'WWEWWEWW', 'WWEWWEWW', 'WWWWWWWW', 'WWWOOWWW', 'WWWWWWWW', 'W.WW.WW.'], pal: { W: '#eef2ff', E: '#2b2d42', O: '#9aa2c9' } },
-  knight: { map: ['...RR...', '.HHHHHH.', 'HHHHHHHH', 'HDDDDDDH', 'HHHHHHHH', 'HHDHHDHH', '.HHHHHH.', '..HHHH..'], pal: { R: '#e23b3b', H: '#c9d3dc', D: '#2a2f36' } },
-  frog: { map: ['.GG..GG.', 'GEGGGGEG', 'GGGGGGGG', 'GGGGGGGG', 'GMMMMMMG', 'GGGGGGGG', '.LLLLLL.', '..L..L..'], pal: { G: '#59c44e', E: '#111', M: '#c0392b', L: '#3e8e36' } },
-  alien: { map: ['A......A', '.A....A.', '..GGGG..', '.GGGGGG.', 'GEEGGEEG', 'GEEGGEEG', '.GGGGGG.', '..GMMG..'], pal: { A: '#b6ff5c', G: '#8be04e', E: '#0d0d0d', M: '#3b6e1f' } },
-  bear: { map: ['BB....BB', 'BbBBBBbB', 'BBBBBBBB', 'BEBBBBEB', 'BBBMMBBB', 'BBMNNMBB', '.BBMMBB.', '..BBBB..'], pal: { B: '#8a5a35', b: '#c98f5f', E: '#111', M: '#d9b38c', N: '#2b1a10' } },
-  shroom: { map: ['..RRRR..', '.RWRRWR.', 'RRRRRRRR', 'RWRRRRWR', '..SSSS..', '..SESE..', '..SSSS..', '..SSSS..'], pal: { R: '#e0413a', W: '#fff', S: '#f1e3c8', E: '#333' } },
-  dragon: { map: ['H....H..', 'HH..HH..', '.DDDDDD.', 'DDEDDDDD', 'DDDDDDDF', 'DDDDNNDF', '.DDDDDD.', '..D..D..'], pal: { H: '#f5c518', D: '#7a4fd6', E: '#ffe066', N: '#3b2370', F: '#ff8a3d' } },
-  duck: { map: ['..YYYY..', '.YYYYYY.', '.YEYYYY.', '.YYYYOOO', '.YYYYOOO', 'YYYYYYY.', 'YYYYYYY.', '.YYYYY..'], pal: { Y: '#ffd93d', E: '#111', O: '#ff8c1a' } },
-  pixel: { map: ['.KKKKKK.', 'KSSSSSSK', 'KSESSESK', 'KSSSSSSK', 'KSMSSMSK', 'KSSMMSSK', 'KSSSSSSK', '.KKKKKK.'], pal: { K: '#3a2a1a', S: '#ffd08a', E: '#222', M: '#a0522d' } },
-};
-const AV_BG = ['#2a221b', '#1f3a5f', '#3b1f4a', '#1f4a33', '#5a2a1f', '#4a4a1f', '#2b2b2b', '#0f2f3a'];
-function loadProfile() {
-  let p = null; try { p = JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null'); } catch (e) { }
-  if (!p) {
-    let name = '';
-    try { name = JSON.parse(localStorage.getItem('pocketArcade.chess.v1') || '{}').lbName || JSON.parse(localStorage.getItem('pocketArcade.sudoku.v1') || '{}').lbName || ''; } catch (e) { }
-    p = { name, av: 'cat', bg: 0, since: Date.now(), at: 0 };
-    try { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); } catch (e) { } // remember when you started
-  }
-  if (!AVATARS[p.av]) p.av = 'cat';
-  return p;
-}
-let PF = loadProfile();
-if (S.profile && (S.profile.at || 0) > (PF.at || 0) && AVATARS[S.profile.av]) { PF = S.profile; try { localStorage.setItem(PROFILE_KEY, JSON.stringify(PF)); } catch (e) { } } else S.profile = PF;
-function saveProfile() {
-  PF.at = Date.now();
-  try { localStorage.setItem(PROFILE_KEY, JSON.stringify(PF)); } catch (e) { }
-  S.profile = PF; save(); if (cloud.state === 'on') pushCloud();
-  drawMe();
-}
-// a newer profile came in with the cloud save
-function adoptProfile(p) { if (p && p.at > (PF.at || 0) && AVATARS[p.av]) { PF = p; try { localStorage.setItem(PROFILE_KEY, JSON.stringify(PF)); } catch (e) { } drawMe(); if (!$('profile').hidden) renderProfile(); } }
-function drawAvatar(cv, av = PF.av, bg = PF.bg) {
-  const c = cv.getContext('2d'); c.fillStyle = AV_BG[bg] || AV_BG[0]; c.fillRect(0, 0, 8, 8);
-  const A = AVATARS[av] || AVATARS.cat; drawMap(c, A.map, A.pal);
-}
-const pfName = () => PF.name || 'Player';
+const AR = window.Arcade;
+// the profile always comes fresh from storage, so tickets earned in Chess are never overwritten by an old copy
+let PF = AR.profile();
+if (S.profile && (S.profile.at || 0) > (PF.at || 0) && AR.AVATARS[S.profile.av]) { PF = Object.assign(AR.profile(), S.profile); }
+if (!PF.name) { try { PF.name = JSON.parse(localStorage.getItem('pocketArcade.chess.v1') || '{}').lbName || JSON.parse(localStorage.getItem('pocketArcade.sudoku.v1') || '{}').lbName || ''; } catch (e) { } }
+AR.saveProfile(PF); S.profile = PF;
+AR.onProfile = p => { PF = p; S.profile = p; save(); if (cloud.state === 'on') pushCloud(); };
+function editProfile(fn) { const p = AR.profile(); fn(p); AR.saveProfile(p); drawMe(); }
+function adoptProfile(p) { if (p && p.at > (AR.profile().at || 0) && AR.AVATARS[p.av]) { const keep = AR.onProfile; AR.onProfile = null; AR.saveProfile(Object.assign(AR.profile(), p)); AR.onProfile = keep; drawMe(); if (!$('profile').hidden) renderProfile(); } }
+function drawAvatar(cv, av, bg) { const p = AR.profile(); AR.drawAvatar(cv, av || p.av, bg == null ? p.bg : bg); }
+const pfName = () => AR.profile().name || 'Player';
 function readSave(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
-function drawMe() { drawAvatar($('meAv')); $('meName').textContent = pfName(); }
+function drawMe() {
+  const p = AR.profile(); PF = p;
+  drawAvatar($('meAv')); $('meName').textContent = pfName();
+  $('meAv').style.setProperty('--afr', (AR.FRAMES[p.frame] || AR.FRAMES.none).css);
+  $('meAv').classList.toggle('framed', !!p.frame && p.frame !== 'none');
+  $('meSub').textContent = `🎟 ${p.tickets} tickets · profile, shop and stats`;
+  renderQuests();
+}
+function renderQuests() { const el = $('qCard'); if (el) el.innerHTML = AR.questsHTML(); }
+AR.wireQuests($('qCard'), () => drawMe(), msg => { const t = document.createElement('div'); t.className = 'pftoast'; t.textContent = msg; document.body.append(t); setTimeout(() => t.remove(), 2200); });
 
 function gameStats() {
   const out = [], chess = readSave('pocketArcade.chess.v1'), sud = readSave('pocketArcade.sudoku.v1'), cards = readSave('pocketArcade.cardshop.v2'), tidy = readSave('pocketArcade.tidy.v1');
@@ -1965,36 +1982,52 @@ function gameStats() {
   let tn = 0, ts = 0; for (const k in ((tidy && tidy.best) || {})) { const b = tidy.best[k]; const v = Math.max(b.relaxed || 0, b.timed || 0); if (v) { tn++; ts += v; } }
   if (tn) played++;
   out.push({ id: 'tidy', name: 'TIDY TIME', href: './tidy.html', thumb: 'thumb-tidy', rows: tn ? [['Levels cleared', tn], ['Stars', '★' + ts]] : null });
-  return { games: out, trophies, played, chessRating: chess && chess.games ? Math.round(chess.rating || 150) : 0 };
+  return { games: out, trophies, played, chessRating: chess && chess.games ? Math.round(chess.rating || 150) : 0, pzRating: chess && chess.pz && (chess.pz.solved || chess.pz.failed) ? Math.round(chess.pz.rating) : 0 };
 }
 function renderProfile() {
-  const st = gameStats();
-  const since = new Date(PF.since || Date.now()).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+  const st = gameStats(), p = AR.profile(); PF = p;
+  const since = new Date(p.since || Date.now()).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+  const titles = (st.chessRating ? `<div class="pftitle"><span>Chess</span>${AR.rankChip(st.chessRating)}</div>` : '') + (st.pzRating ? `<div class="pftitle"><span>Puzzles</span>${AR.rankChip(st.pzRating)}</div>` : '');
   $('pfBody').innerHTML = `
-    <div class="pfcard pfme"><button class="pfav" id="pfAv" type="button" aria-label="Change avatar"><canvas width="8" height="8" id="pfAvCv"></canvas><span>EDIT</span></button>
+    <div class="pfcard pfme"><button class="pfav" id="pfAv" type="button" aria-label="Change avatar">${AR.avHTML(p, 96, 'pfbig')}<span class="ed">EDIT</span></button>
       <div><h2 id="pfNameTxt"></h2><p>Playing since ${since}. Your name shows on leaderboards unless you picked a different one inside a game.</p><button class="lnk" id="pfEdit" type="button">Change name</button></div></div>
-    <div class="pftot"><div><b>${st.played}</b><small>games played</small></div><div><b>${st.trophies}</b><small>achievements</small></div><div><b>${st.chessRating || '–'}</b><small>chess rating</small></div></div>
+    ${titles ? `<div class="pfcard pftitles">${titles}<small>Ranks come from your ratings: Pawn, Knight, Bishop, Rook, Queen, King, then Grandmaster, with three steps (III, II, I) in each.</small></div>` : ''}
+    <div class="pftot"><div><b>${st.played}</b><small>games played</small></div><div><b>${st.trophies}</b><small>achievements</small></div><div><b>🎟 ${p.tickets}</b><small>tickets</small></div></div>
+    <div class="pfcard pfshop"><h3>SHOP</h3><p class="pfnone">Earn tickets from daily quests on the arcade page and in Chess.</p>
+      <div class="shl">Avatars</div><div class="shgrid">${Object.entries(AR.PREMIUM).map(([k, c]) => { const own = p.owned.includes(k); return `<button type="button" data-buy="${k}" class="${own ? 'own' : p.tickets >= c ? 'can' : ''}"><img src="${AR.avURL(k, p.bg)}" alt=""><small>${own ? (p.av === k ? 'Wearing' : 'Wear') : '🎟 ' + c}</small></button>`; }).join('')}</div>
+      <div class="shl">Frames</div><div class="shgrid">${Object.entries(AR.FRAMES).map(([k, f]) => { const own = AR.owns(p, k); return `<button type="button" data-frame="${k}" class="${own ? 'own' : p.tickets >= f.cost ? 'can' : ''}">${AR.avHTML(Object.assign({}, p, { frame: k }), 44)}<small>${own ? (p.frame === k || (k === 'none' && !p.frame) ? 'Using' : f.name) : '🎟 ' + f.cost}</small></button>`; }).join('')}</div>
+    </div>
     ${st.games.map(g => `<div class="pfcard pfgame"><h3><canvas width="16" height="16" data-th="${g.thumb}"></canvas>${g.name}<a href="${g.href}">PLAY ›</a></h3>${g.rows ? `<div class="pfrows">${g.rows.map(([k, v]) => `<div><span>${k}</span><b>${esc(String(v))}</b></div>`).join('')}</div>` : '<p class="pfnone">Not played yet.</p>'}</div>`).join('')}`;
   $('pfNameTxt').textContent = pfName();
-  drawAvatar($('pfAvCv'));
   $('pfBody').querySelectorAll('[data-th]').forEach(c => c.getContext('2d').drawImage($(c.dataset.th), 0, 0));
   $('pfAv').onclick = pickAvatar;
   $('pfEdit').onclick = editName;
   $('pfBody').querySelector('a[href="#deep-dig"]').onclick = e => { e.preventDefault(); audio(); location.hash = 'deep-dig'; };
+  $('pfBody').querySelector('.pfshop').onclick = e => {
+    const b = e.target.closest('[data-buy],[data-frame]'); if (!b) return;
+    const id = b.dataset.buy || b.dataset.frame, cur = AR.profile();
+    const wear = () => editProfile(x => { if (b.dataset.buy) x.av = id; else x.frame = id; });
+    if (AR.owns(cur, id)) { wear(); renderProfile(); return; }
+    const cost = b.dataset.buy ? AR.PREMIUM[id] : AR.FRAMES[id].cost, name = b.dataset.buy ? id[0].toUpperCase() + id.slice(1) : AR.FRAMES[id].name + ' frame';
+    if (cur.tickets < cost) { modal('Not enough tickets', `${name} costs 🎟 ${cost}. You have 🎟 ${cur.tickets}. Finish daily quests to earn more.`, [{ label: 'OK', cls: 'primary' }]); return; }
+    modal(`Buy ${name}?`, `It costs 🎟 ${cost}. You'll have 🎟 ${cur.tickets - cost} left.`, [{ label: 'Cancel' }, { label: 'Buy', cls: 'primary', fn: () => { const r = AR.buy(id); if (r.ok) wear(); renderProfile(); } }]);
+  };
 }
 function pickAvatar() {
-  let av = PF.av, bg = PF.bg;
-  modal('Pick your avatar', `<div class="avgrid" id="avGrid">${Object.keys(AVATARS).map(k => `<button type="button" data-av="${k}" aria-label="${k}" aria-pressed="${k === av}"><canvas width="8" height="8"></canvas></button>`).join('')}</div>
-    <div class="colgrid" id="colGrid">${AV_BG.map((c, i) => `<button type="button" data-bg="${i}" aria-label="Background ${i + 1}" aria-pressed="${i === bg}" style="background:${c}"></button>`).join('')}</div>`,
-    [{ label: 'Cancel' }, { label: 'Save', cls: 'primary', fn: () => { PF.av = av; PF.bg = bg; saveProfile(); renderProfile(); } }]);
+  const p0 = AR.profile(); let av = p0.av, bg = p0.bg;
+  const mine = Object.keys(AR.AVATARS).filter(k => AR.PREMIUM[k] == null || p0.owned.includes(k));
+  modal('Pick your avatar', `<div class="avgrid" id="avGrid">${mine.map(k => `<button type="button" data-av="${k}" aria-label="${k}" aria-pressed="${k === av}"><canvas width="8" height="8"></canvas></button>`).join('')}</div>
+    <div class="colgrid" id="colGrid">${AR.AV_BG.map((c, i) => `<button type="button" data-bg="${i}" aria-label="Background ${i + 1}" aria-pressed="${i === bg}" style="background:${c}"></button>`).join('')}</div>
+    <p class="hint" style="margin:10px 0 0">More avatars and frames are in the Shop below.</p>`,
+    [{ label: 'Cancel' }, { label: 'Save', cls: 'primary', fn: () => { editProfile(x => { x.av = av; x.bg = bg; }); renderProfile(); } }]);
   const draw = () => document.querySelectorAll('#avGrid [data-av]').forEach(b => { drawAvatar(b.firstChild, b.dataset.av, bg); b.setAttribute('aria-pressed', b.dataset.av === av); });
   draw();
   $('avGrid').onclick = e => { const b = e.target.closest('[data-av]'); if (b) { av = b.dataset.av; draw(); } };
   $('colGrid').onclick = e => { const b = e.target.closest('[data-bg]'); if (!b) return; bg = +b.dataset.bg; document.querySelectorAll('#colGrid [data-bg]').forEach(x => x.setAttribute('aria-pressed', +x.dataset.bg === bg)); draw(); };
 }
 function editName() {
-  modal('Your name', `<input id="pfName" maxlength="16" autocomplete="nickname" value="${esc(PF.name || '')}" placeholder="Player"><p class="hint" style="margin:8px 0 0">Up to 16 letters. Keep it friendly, other players can see it.</p>`,
-    [{ label: 'Cancel' }, { label: 'Save', cls: 'primary', fn: () => { PF.name = $('pfName').value.replace(/[<>]/g, '').trim().slice(0, 16); saveProfile(); renderProfile(); } }]);
+  modal('Your name', `<input id="pfName" maxlength="16" autocomplete="nickname" value="${esc(AR.profile().name || '')}" placeholder="Player"><p class="hint" style="margin:8px 0 0">Up to 16 letters. Keep it friendly, other players can see it.</p>`,
+    [{ label: 'Cancel' }, { label: 'Save', cls: 'primary', fn: () => { const v = $('pfName').value.replace(/[<>]/g, '').trim().slice(0, 16); editProfile(x => { x.name = v; }); renderProfile(); } }]);
   setTimeout(() => $('pfName').focus(), 50);
 }
 function showProfile() {

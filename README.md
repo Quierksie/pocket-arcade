@@ -7,6 +7,14 @@ Free browser games built for your phone.
 ## Profile
 The **profile** button at the top of the arcade opens your profile: a pixel avatar (12 characters, 8 background colors), your name, the month you started, totals (games played, achievements, chess rating) and stats from every game (Deep Dig, Chess, Sudoku, Card Shop, Tidy Time), each with a Play link. The name is used on the Chess and Sudoku leaderboards unless you picked a different name inside the game. The profile is stored in `pocketArcade.profile` and also travels inside the Deep Dig save, so it syncs to your account when you're signed in, and wiping Deep Dig doesn't erase it.
 
+## Ranks, daily quests and the shop
+`arcade.js` is shared by the arcade page and Chess. It holds the avatars and frames, rank titles, tickets and daily quests.
+
+- **Ranks:** your chess rating and puzzle rating each give you a rank named after a chess piece: Pawn (under 500), Knight (500), Bishop (800), Rook (1100), Queen (1400), King (1700) and Grandmaster (2000+), each with three steps (III, II, I). Ranks show on your rating cards, your profile, the friends list, other players' profiles and next to names in online games, and a "rank up!" banner pops up when you reach a new one.
+- **Daily quests:** three new quests every day (at least one with puzzles, one chess or puzzle, one from another game you play, like "Solve 2 puzzles on Harder or Hardest", "Score 10 in one Puzzle Rush", "Win 2 games against bots", "Solve a Sudoku"). Finishing one lets you claim tickets 🎟; finishing all three opens the Daily chest (🎟 50, plus 10 per day of streak up to +50). They show on the arcade page, at the top of the Puzzles tab and under Daily quests in the Chess lobby.
+- **Shop:** on the arcade profile. Six more avatars (King, Wizard, Ninja, Panda, Unicorn, Pirate) and frames for your avatar (Bronze, Silver, Gold, Diamond, Rainbow) that other players see next to your name.
+- **Other players' profiles:** tap someone on the Chess leaderboard or in your friends list to see their avatar, ranks and stats (chess record, puzzle rating, Rush best, achievements, and their Sudoku, Card Shop and Deep Dig numbers). These come from each player's public card (`players/{uid}`), which Chess updates while it's open.
+
 ## Offline
 After your first visit the service worker (`sw.js`) keeps a copy of every game, the puzzles and the opening names, so the whole arcade opens and plays without internet. Online, it always checks for a newer version first. Signing in, cloud saves, leaderboards and online chess need a connection; your progress keeps saving on the device in the meantime.
 
