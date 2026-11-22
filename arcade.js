@@ -109,11 +109,14 @@
       sudokuWins: Object.values(sud.wins || {}).reduce((a, b) => a + b, 0), cardPacks: ((cards.stats || {}).packs) || 0,
       digMined: dig.mined || 0, tidyCleared: tidyN, playedDig: (dig.mined || 0) > 0, playedSudoku: !!Object.keys(sud.wins || {}).length,
       playedCards: ((cards.stats || {}).packs || 0) > 0, playedTidy: tidyN > 0,
+      openStars: Object.values(chess.open || {}).reduce((a, o) => a + ((o && o.stars) || 0), 0),
+      endStars: Object.values(chess.end || {}).reduce((a, o) => a + ((o && o.stars) || 0), 0),
+      strongWins: ['dex', 'mara', 'viktor', 'titan'].reduce((a, id) => a + (((chess.rec || {})[id] || {}).w || 0), 0),
     };
   };
 
   // ---------- daily quests ----------
-  // stat quests compare a stat with its value when the day's quests were picked; event quests count things the game reports with Arcade.bump().
+  // Chess only. Stat quests compare a stat with its value when the day's quests were picked; event quests count things Chess reports with Arcade.bump().
   A.QUESTS = [
     { id: 'p5', g: 'puz', text: 'Solve 5 rated puzzles', goal: 5, stat: 'solved', t: 25, href: 'chess.html#puzzles' },
     { id: 'p10', g: 'puz', text: 'Solve 10 rated puzzles', goal: 10, stat: 'solved', t: 45, href: 'chess.html#puzzles' },
@@ -126,22 +129,28 @@
     { id: 'g3', g: 'chess', text: 'Play 3 chess games against bots', goal: 3, stat: 'chessGames', t: 30, href: 'chess.html' },
     { id: 'w2', g: 'chess', text: 'Win 2 chess games against bots', goal: 2, stat: 'chessWins', t: 40, href: 'chess.html' },
     { id: 'online1', g: 'chess', text: 'Play an online game with a friend', goal: 1, ev: 'online', t: 45, need: () => !!(read('pocketArcade.chess.v1') || {}).fcode, href: 'chess.html' },
-    { id: 'dig', g: 'other', text: 'Mine 300 blocks in Deep Dig', goal: 300, stat: 'digMined', t: 25, need: s => s.playedDig, href: './#deep-dig' },
-    { id: 'sudoku', g: 'other', text: 'Solve a Sudoku', goal: 1, stat: 'sudokuWins', t: 35, need: s => s.playedSudoku, href: 'sudoku.html' },
-    { id: 'cards', g: 'other', text: 'Open 3 packs in Card Shop', goal: 3, stat: 'cardPacks', t: 25, need: s => s.playedCards, href: 'card-shop.html' },
-    { id: 'tidy', g: 'other', text: 'Clear a new Tidy Time level', goal: 1, stat: 'tidyCleared', t: 30, need: s => s.playedTidy, href: 'tidy.html' },
+    { id: 'strong1', g: 'chess', text: 'Beat Dex or a stronger bot', goal: 1, stat: 'strongWins', t: 50, href: 'chess.html' },
+    { id: 'open1', g: 'learn', text: 'Earn a star in the openings trainer (Learn tab)', goal: 1, stat: 'openStars', t: 30, href: 'chess.html' },
+    { id: 'end1', g: 'learn', text: 'Earn a star in endgame practice (Learn tab)', goal: 1, stat: 'endStars', t: 30, href: 'chess.html' },
   ];
   A.BONUS = 50; // for finishing all three, plus 10 per day of streak (up to +50)
   const QKEY = 'pocketArcade.quests';
   const rng = seed => () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; };
   A.quests = () => {
     const d = dayStr(); let q = read(QKEY);
+    if (q && q.date === d && q.picks.some(id => !A.QUESTS.find(x => x.id === id))) { // quests from an older version: pick again, keep progress
+      const st = A.stats(), r = rng(Date.now() % 100000);
+      const L = A.QUESTS.filter(x => (!x.need || x.need(st)) && !q.picks.includes(x.id));
+      q.picks = q.picks.map(id => A.QUESTS.find(x => x.id === id) ? id : (L.splice(Math.floor(r() * L.length), 1)[0] || {}).id).filter(Boolean);
+      for (const [k, v] of Object.entries(st)) if (q.base[k] == null) q.base[k] = +v || 0;
+      write(QKEY, q);
+    }
     if (!q || q.date !== d) {
       const st = A.stats(), prev = q, r = rng([...d].reduce((a, c) => a * 31 + c.charCodeAt(0), 7) + (A.profile().since % 997));
       const avail = A.QUESTS.filter(x => !x.need || x.need(st));
       const pickFrom = g => { const L = avail.filter(x => g.includes(x.g) && !picks.includes(x.id)); return L.length ? L[Math.floor(r() * L.length)].id : null; };
       const picks = [];
-      [['puz'], ['chess', 'puz'], ['other', 'chess']].forEach(g => { const id = pickFrom(g) || pickFrom(['puz', 'chess']); if (id) picks.push(id); });
+      [['puz'], ['chess'], ['puz', 'chess', 'learn']].forEach(g => { const id = pickFrom(g) || pickFrom(['puz', 'chess']); if (id) picks.push(id); });
       const streakAlive = prev && prev.allDone && prev.date === dayStr(-1);
       q = { date: d, picks, base: Object.fromEntries(Object.entries(st).map(([k, v]) => [k, +v || 0])), ev: {}, claimed: [], bonus: false, streak: streakAlive ? prev.streak || 0 : 0, allDone: false };
       write(QKEY, q);

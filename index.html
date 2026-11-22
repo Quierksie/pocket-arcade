@@ -337,7 +337,6 @@ a.cab { color: inherit; text-decoration: none; box-sizing: border-box; }
       <p>Free games built for your phone. Tap a cabinet to play. New games get added to this page over time.</p>
     </div>
     <button class="mebtn" id="meBtn" type="button"><canvas width="8" height="8" id="meAv"></canvas><div><b id="meName">Player</b><small id="meSub">Your profile and stats</small></div><span class="go">›</span></button>
-    <div class="qcard" id="qCard"></div>
     <div class="acct" id="acct-arcade"></div>
     <div class="cabinets">
       <button class="cab" id="cab-dig" type="button">
@@ -1950,10 +1949,7 @@ function drawMe() {
   $('meAv').style.setProperty('--afr', (AR.FRAMES[p.frame] || AR.FRAMES.none).css);
   $('meAv').classList.toggle('framed', !!p.frame && p.frame !== 'none');
   $('meSub').textContent = `🎟 ${p.tickets} tickets · profile, shop and stats`;
-  renderQuests();
 }
-function renderQuests() { const el = $('qCard'); if (el) el.innerHTML = AR.questsHTML(); }
-AR.wireQuests($('qCard'), () => drawMe(), msg => { const t = document.createElement('div'); t.className = 'pftoast'; t.textContent = msg; document.body.append(t); setTimeout(() => t.remove(), 2200); });
 
 function gameStats() {
   const out = [], chess = readSave('pocketArcade.chess.v1'), sud = readSave('pocketArcade.sudoku.v1'), cards = readSave('pocketArcade.cardshop.v2'), tidy = readSave('pocketArcade.tidy.v1');
@@ -1993,7 +1989,7 @@ function renderProfile() {
       <div><h2 id="pfNameTxt"></h2><p>Playing since ${since}. Your name shows on leaderboards unless you picked a different one inside a game.</p><button class="lnk" id="pfEdit" type="button">Change name</button></div></div>
     ${titles ? `<div class="pfcard pftitles">${titles}<small>Ranks come from your ratings: Pawn, Knight, Bishop, Rook, Queen, King, then Grandmaster, with three steps (III, II, I) in each.</small></div>` : ''}
     <div class="pftot"><div><b>${st.played}</b><small>games played</small></div><div><b>${st.trophies}</b><small>achievements</small></div><div><b>🎟 ${p.tickets}</b><small>tickets</small></div></div>
-    <div class="pfcard pfshop"><h3>SHOP</h3><p class="pfnone">Earn tickets from daily quests on the arcade page and in Chess.</p>
+    <div class="pfcard pfshop"><h3>SHOP</h3><p class="pfnone">Earn tickets from the daily chess quests (Chess → Daily quests or the Puzzles tab).</p>
       <div class="shl">Avatars</div><div class="shgrid">${Object.entries(AR.PREMIUM).map(([k, c]) => { const own = p.owned.includes(k); return `<button type="button" data-buy="${k}" class="${own ? 'own' : p.tickets >= c ? 'can' : ''}"><img src="${AR.avURL(k, p.bg)}" alt=""><small>${own ? (p.av === k ? 'Wearing' : 'Wear') : '🎟 ' + c}</small></button>`; }).join('')}</div>
       <div class="shl">Frames</div><div class="shgrid">${Object.entries(AR.FRAMES).map(([k, f]) => { const own = AR.owns(p, k); return `<button type="button" data-frame="${k}" class="${own ? 'own' : p.tickets >= f.cost ? 'can' : ''}">${AR.avHTML(Object.assign({}, p, { frame: k }), 44)}<small>${own ? (p.frame === k || (k === 'none' && !p.frame) ? 'Using' : f.name) : '🎟 ' + f.cost}</small></button>`; }).join('')}</div>
     </div>
