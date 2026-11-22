@@ -647,6 +647,9 @@ html.recolor, html.recolor * { transition: background-color .35s ease, color .35
 .lrows .bigbtn::before { content: ''; width: 24px; height: 24px; border-radius: 6px; flex: none; }
 .lrows .bigbtn.friend::before { background: var(--friend, #7b5cd6); }
 .lrows .bigbtn.online::before { background: var(--online, #2a8fd6); }
+.lrows .bigbtn.qbtn::before { background: #e8a21a; }
+.lrows .bigbtn.frbtn::before { background: #3fae6a; }
+.lrows .bigbtn.hasnew .go { font-size: 12px; padding: 4px 9px; border-radius: 999px; background: var(--gold, #e8a21a); color: #1b1200; font-weight: 900; }
 .lrows .bigbtn b, .lrows .histbtn b { font-size: 15px; }
 .lrows .bigbtn small, .lrows .histbtn small { color: var(--soft); opacity: 1; font-size: 12.5px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lrows .bigbtn > div, .lrows .histbtn > span { flex: 1; min-width: 0; }
@@ -3091,7 +3094,7 @@ function openJourney() {
   const j = journey(PZ.pts);
   const o = document.createElement('div'); o.className = 'ov';
   o.innerHTML = `<div class="card"><h3 style="font-size:21px">Puzzle Journey</h3>
-    <p class="howpts">Earn points for accurate rated solves (no mistakes, no hints): <b>+10</b> each (+5 Hard, +10 Extra Hard), <b>speed bonus</b> up to +10, <b>streak bonus</b> for solves in a row, <b>+25</b> for beating your hardest solve, and <b>+50</b> for the daily quest of 3 accurate puzzles.</p>
+    <p class="howpts">Earn points for accurate rated solves (no mistakes, no hints): <b>+10</b> each (+5 Hard, +10 Extra Hard), <b>speed bonus</b> up to +10, <b>streak bonus</b> for solves in a row, <b>+25</b> for beating your hardest solve, and <b>+50</b> for the Journey bonus (3 accurate puzzles in a day).</p>
     <div class="tiers">${TIERS.map(([n, c], t) => `<div class="${t === j.t && !j.prestige ? 'cur' : ''}"><span class="bd" style="background:${c}">${n[0]}</span>${n}<small>20 levels · ${levelCost(t)} pts each</small></div>`).join('')}<div class="${j.prestige ? 'cur' : ''}"><span class="bd" style="background:#2b2a27">P</span>Prestige<small>after Legend 20 · 1000 pts each</small></div></div>
     <button class="btn" data-a="ok">Got it</button></div>`;
   document.body.append(o);
