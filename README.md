@@ -43,6 +43,35 @@ match /leaderboard/{uid} {
 }
 ```
 
+### Friends
+**Friends** in the Play lobby: everyone signed in gets a 7-letter friend code (and a link, `chess.html?friend=CODE`). Type a friend's code, or open their link, to send a request; they accept it from the same screen. The list shows who's online (Chess open in the last 2½ minutes), when they were last seen and their rating. **Challenge** picks your color and clock and sends it; your friend gets a bar at the top of Chess with **Play** or **Not now**, and the game starts for both of you as soon as they tap Play. During online games there's a row of emotes (👋 👍 😂 😮 😅 🔥 🤝 and GG!, Nice move!, Oops!, Your turn!, Hmm...) that pop up next to your name on both screens. Online games and the player plates show the avatar you picked on the arcade profile.
+
+These need three more parts in the Firestore rules:
+```
+match /players/{uid} {
+  allow read: if request.auth != null;
+  allow write: if request.auth != null && request.auth.uid == uid;
+}
+match /friends/{id} {
+  allow read, delete: if request.auth != null && request.auth.uid in resource.data.users;
+  allow create: if request.auth != null && request.resource.data.by == request.auth.uid
+                && request.auth.uid in request.resource.data.users && request.resource.data.users.size() == 2
+                && request.resource.data.status == 'pending'
+                && id == request.resource.data.users[0] + '_' + request.resource.data.users[1];
+  allow update: if request.auth != null && request.auth.uid in resource.data.users
+                && resource.data.by != request.auth.uid && request.resource.data.status == 'friends'
+                && request.resource.data.users == resource.data.users && request.resource.data.by == resource.data.by;
+}
+match /challenges/{id} {
+  allow read, delete: if request.auth != null && (resource.data.to == request.auth.uid || resource.data.from == request.auth.uid);
+  allow create: if request.auth != null && request.resource.data.from == request.auth.uid
+                && (exists(/databases/$(database)/documents/friends/$(request.resource.data.from + '_' + request.resource.data.to))
+                    || exists(/databases/$(database)/documents/friends/$(request.resource.data.to + '_' + request.resource.data.from)));
+  allow update: if request.auth != null && (resource.data.to == request.auth.uid || resource.data.from == request.auth.uid)
+                && request.resource.data.from == resource.data.from && request.resource.data.to == resource.data.to;
+}
+```
+
 ### Puzzle difficulty
 Under **Rated puzzles** there's a five-step difficulty switch, the same idea as chess.com's puzzle difficulty setting: **Easiest** (about 300 below your rating), **Easier** (150 below), **Normal** (near your rating, the default), **Harder** (150 above) and **Hardest** (300 above). It also sets where theme practice starts. The Rated puzzles button shows what's at stake, for example "Hardest · solve about +81, miss about −15".
 
