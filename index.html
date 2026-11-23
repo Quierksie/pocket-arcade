@@ -325,6 +325,59 @@ a.cab { color: inherit; text-decoration: none; box-sizing: border-box; }
 .shgrid button .afr img { width: 100%; height: 100%; }
 .shgrid button small { font-size: 11.5px; color: var(--muted); }
 .shgrid button.can { border-color: var(--gold); } .shgrid button.own small { color: var(--good); }
+
+/* ---------- Arcade home (2026-11 redesign): top bar, big "continue" card, 2-column game grid, account tucked away ---------- */
+#arcade { gap: 14px; padding: 18px 16px 28px;
+  background: radial-gradient(120% 60% at 50% -10%, rgba(245, 197, 24, .16), transparent 60%),
+              repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 1px, transparent 1px 4px); }
+.tophd { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.brand { margin: 0; font-family: var(--display); font-size: 17px; line-height: 1; color: var(--gold); letter-spacing: .02em;
+  text-shadow: 0 0 18px rgba(245,197,24,.45), 2px 2px 0 #6b3d00; display: flex; flex-direction: column; gap: 6px; }
+.brand span { font-size: 17px; color: var(--ink); text-shadow: 2px 2px 0 #000, 0 0 14px rgba(255,255,255,.15); }
+.mebtn { all: unset; cursor: pointer; display: flex; align-items: center; gap: 8px; padding: 4px 4px 4px 12px; border-radius: 999px; background: var(--panel); border: 2px solid var(--line); }
+.mebtn:hover { border-color: var(--gold); }
+.mebtn .tk { font-weight: 700; font-size: 14px; color: var(--ink); }
+.mebtn canvas { width: 38px; height: 38px; border-radius: 50%; image-rendering: pixelated; display: block; }
+.mebtn.framed canvas { outline: 3px solid var(--afr); }
+.hello { margin: 0; color: var(--muted); font-size: 15px; }
+.hello b { color: var(--ink); }
+.cabinets { grid-template-columns: 1fr 1fr; gap: 12px; }
+.cab { position: relative; display: flex; flex-direction: column; align-items: stretch; gap: 0; padding: 0; overflow: hidden; border-radius: 14px; border: 2px solid var(--line);
+  background: var(--panel); transition: transform .12s, border-color .12s, box-shadow .12s; }
+.cab:not(.locked):hover { border-color: var(--c); box-shadow: 0 6px 22px -8px var(--c); transform: translateY(-2px); }
+.cab:not(.locked):active { transform: translateY(1px); }
+.cab canvas { width: 100%; height: auto; aspect-ratio: 5 / 4; object-fit: contain; border-radius: 0; background: color-mix(in srgb, var(--c) 30%, #0d0a08); padding: 14% 0; box-sizing: border-box; }
+.cab > div { padding: 10px 12px 12px; }
+.cab h2 { margin: 0; font-size: 11px; letter-spacing: .02em; }
+.cab p { display: none; }
+.cab .chip.play { display: none; }
+.cab::after { content: attr(data-tag); display: block; padding: 0 12px 12px; margin-top: -8px; color: var(--muted); font-size: 12.5px; line-height: 1.3; }
+.cab .best { display: block; margin: 6px 0 0; font-size: 12px; color: var(--c); font-weight: 700; }
+.cab .best:empty { display: none; }
+/* the big card */
+.cab.hero { grid-column: 1 / -1; flex-direction: row; align-items: center; min-height: 150px;
+  background: linear-gradient(120deg, color-mix(in srgb, var(--c) 38%, #120d0a), #120d0a 75%); border-color: color-mix(in srgb, var(--c) 55%, var(--line)); }
+.cab.hero canvas { width: 140px; aspect-ratio: 1; flex: none; padding: 16px; background: transparent; filter: drop-shadow(0 6px 10px rgba(0,0,0,.5)); }
+.cab.hero > div { padding: 16px 16px 16px 4px; }
+.cab.hero::before { content: attr(data-hero); position: absolute; top: 10px; left: 10px; z-index: 1; font-family: var(--display); font-size: 8px; letter-spacing: .08em;
+  padding: 5px 7px; border-radius: 4px; background: rgba(0,0,0,.35); color: var(--ink); }
+.cab.hero h2 { font-size: 15px; margin-bottom: 6px; }
+.cab.hero p { display: block; margin: 0 0 12px; font-size: 13.5px; color: color-mix(in srgb, var(--ink) 80%, transparent); }
+.cab.hero .chip.play { display: inline-block; background: var(--c); color: #120d0a; font-size: 9px; padding: 8px 12px; border-radius: 6px; box-shadow: 0 3px 0 rgba(0,0,0,.4); }
+.cab.hero .chip.play::after { content: ' ▸'; }
+.cab.hero::after { display: none; }
+.cab.hero .best { display: inline; margin-left: 10px; }
+/* save & account, folded away */
+.acctbox { border-radius: 12px; background: var(--panel); border: 2px solid var(--line); margin-top: 4px; }
+.acctbox summary { list-style: none; display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer; font-size: 13.5px; color: var(--muted); }
+.acctbox summary::-webkit-details-marker { display: none; }
+.acctbox summary #acctSum { flex: 1; }
+.acctbox .mng { color: var(--gold); font-weight: 700; white-space: nowrap; }
+.acctbox .mng::after { content: ' ▾'; }
+.acctbox[open] .mng::after { content: ' ▴'; }
+.acctbox .acct { border: 0; border-top: 2px solid var(--line); border-radius: 0 0 12px 12px; background: transparent; }
+.sdot { width: 9px; height: 9px; border-radius: 50%; flex: none; background: var(--gold); }
+.sdot.on { background: var(--good); } .sdot.wait { background: var(--muted); }
 </style>
 </head>
 <body>
@@ -332,14 +385,13 @@ a.cab { color: inherit; text-decoration: none; box-sizing: border-box; }
 
   <!-- ===== ARCADE MENU ===== -->
   <main id="arcade">
-    <div class="logo">
-      <h1>POCKET<br>ARCADE</h1>
-      <p>Free games built for your phone. Tap a cabinet to play. New games get added to this page over time.</p>
-    </div>
-    <button class="mebtn" id="meBtn" type="button"><canvas width="8" height="8" id="meAv"></canvas><div><b id="meName">Player</b><small id="meSub">Your profile and stats</small></div><span class="go">›</span></button>
-    <div class="acct" id="acct-arcade"></div>
+    <header class="tophd">
+      <h1 class="brand">POCKET<span>ARCADE</span></h1>
+      <button class="mebtn" id="meBtn" type="button" aria-label="Your profile"><span class="tk" id="meTk">🎟 0</span><canvas width="8" height="8" id="meAv"></canvas></button>
+    </header>
+    <p class="hello">Hi, <b id="meName">Player</b>. <span id="meSub">Pick a game.</span></p>
     <div class="cabinets">
-      <button class="cab" id="cab-dig" type="button">
+      <button class="cab" style="--c:#e0772e" data-tag="Mine deep, sell ores, upgrade" id="cab-dig" type="button">
         <canvas width="16" height="16" id="thumb-dig"></canvas>
         <div>
           <h2>DEEP DIG</h2>
@@ -347,7 +399,7 @@ a.cab { color: inherit; text-decoration: none; box-sizing: border-box; }
           <span class="chip play">PLAY</span><span class="best" id="cab-best"></span>
         </div>
       </button>
-      <a class="cab" id="cab-tidy" href="./tidy.html">
+      <a class="cab" style="--c:#e98bb0" data-tag="Pack, sort and decorate" id="cab-tidy" href="./tidy.html">
         <canvas width="16" height="16" id="thumb-tidy"></canvas>
         <div>
           <h2>TIDY TIME</h2>
@@ -355,7 +407,7 @@ a.cab { color: inherit; text-decoration: none; box-sizing: border-box; }
           <span class="chip play">PLAY</span><span class="best" id="cab-tidy-best"></span>
         </div>
       </a>
-      <a class="cab" id="cab-cards" href="./card-shop.html">
+      <a class="cab" style="--c:#8a6cff" data-tag="Rip packs, chase shinies" id="cab-cards" href="./card-shop.html">
         <canvas width="16" height="16" id="thumb-cards"></canvas>
         <div>
           <h2>CARD SHOP</h2>
@@ -363,7 +415,7 @@ a.cab { color: inherit; text-decoration: none; box-sizing: border-box; }
           <span class="chip play">PLAY</span><span class="best" id="cab-cards-best"></span>
         </div>
       </a>
-      <a class="cab" id="cab-sudoku" href="./sudoku.html">
+      <a class="cab" style="--c:#5a8dee" data-tag="Four difficulties, best times" id="cab-sudoku" href="./sudoku.html">
         <canvas width="16" height="16" id="thumb-sudoku"></canvas>
         <div>
           <h2>SUDOKU</h2>
@@ -371,15 +423,16 @@ a.cab { color: inherit; text-decoration: none; box-sizing: border-box; }
           <span class="chip play">PLAY</span><span class="best" id="cab-sudoku-best"></span>
         </div>
       </a>
-      <a class="cab" id="cab-chess" href="./chess.html">
+      <a class="cab" style="--c:#6aa84f" data-tag="Bots, puzzles and friends" id="cab-chess" href="./chess.html">
         <canvas width="16" height="16" id="thumb-chess"></canvas>
         <div>
           <h2>CHESS</h2>
-          <p>Play six bots from beginner to master, or solve rated puzzles, a daily puzzle and climb the Puzzle Journey.</p>
+          <p>Play bots and friends online, solve rated puzzles and Puzzle Rush, and finish daily quests.</p>
           <span class="chip play">PLAY</span><span class="best" id="cab-chess-best"></span>
         </div>
       </a>
     </div>
+    <details class="acctbox" id="acctBox"><summary><span class="sdot" id="acctDot"></span><span id="acctSum">Progress saves on this device</span><span class="mng">Save &amp; account</span></summary><div class="acct" id="acct-arcade"></div></details>
   </main>
 
   <!-- ===== PROFILE ===== -->
@@ -1664,6 +1717,12 @@ const cloud = { state: 'checking', msg: '', name: '', ref: null, ready: false, w
 function setCloud(state, msg = '') { cloud.state = state; cloud.msg = msg; renderAcct(); updateBackupBanner(); maybeWarnBackup(); }
 function ago(ms) { const s = Math.round((Date.now() - ms) / 1000); return s < 5 ? 'just now' : s < 60 ? s + 's ago' : s < 3600 ? Math.floor(s / 60) + 'm ago' : Math.floor(s / 3600) + 'h ago'; }
 function renderAcct() {
+  const sum = $('acctSum'), dot = $('acctDot');
+  if (sum) {
+    const st = cloud.state;
+    sum.textContent = st === 'on' ? 'Synced to your account' : st === 'checking' ? 'Connecting to your account…' : fbAuth ? 'Saved on this device only · sign in to sync' : 'Saved on this device';
+    dot.className = 'sdot ' + (st === 'on' ? 'on' : st === 'checking' ? 'wait' : 'local');
+  }
   ['acct-arcade', 'acct-stats'].forEach(id => {
     const el = $(id); if (!el) return;
     const st = cloud.state; let head = '', sub = '', cls = 'local';
@@ -1924,6 +1983,9 @@ function sortCabs() {
   const box = document.querySelector('.cabinets'), cabs = [...box.children];
   cabs.forEach((c, i) => { if (c.dataset.order == null) c.dataset.order = i; });
   cabs.sort((a, b) => (r[b.id] || 0) - (r[a.id] || 0) || a.dataset.order - b.dataset.order).forEach(c => box.append(c));
+  // the first one is the big card: "Continue" if you've played it, otherwise a suggestion
+  cabs.forEach(c => { c.classList.remove('hero'); c.removeAttribute('data-hero'); });
+  const first = box.firstElementChild; if (first) { first.classList.add('hero'); first.dataset.hero = r[first.id] ? 'CONTINUE' : 'START HERE'; }
 }
 document.querySelector('.cabinets').addEventListener('click', e => { const c = e.target.closest('.cab'); if (c && c.id !== 'cab-dig') markPlayed(c.id); });
 window.addEventListener('pageshow', () => { sortCabs(); drawMe(); });
@@ -1946,9 +2008,10 @@ function readSave(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'
 function drawMe() {
   const p = AR.profile(); PF = p;
   drawAvatar($('meAv')); $('meName').textContent = pfName();
-  $('meAv').style.setProperty('--afr', (AR.FRAMES[p.frame] || AR.FRAMES.none).css);
-  $('meAv').classList.toggle('framed', !!p.frame && p.frame !== 'none');
-  $('meSub').textContent = `🎟 ${p.tickets} tickets · profile, shop and stats`;
+  $('meBtn').style.setProperty('--afr', (AR.FRAMES[p.frame] || AR.FRAMES.none).css);
+  $('meBtn').classList.toggle('framed', !!p.frame && p.frame !== 'none');
+  $('meTk').textContent = `🎟 ${p.tickets}`;
+  $('meSub').textContent = p.name ? 'Pick a game.' : 'Tap your avatar to set up your profile.';
 }
 
 function gameStats() {
