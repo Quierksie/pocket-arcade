@@ -2413,7 +2413,7 @@ let altUsed = false; // Alt was used to draw, so letting go of it shouldn't open
 addEventListener('keydown', e => { if (e.key === 'Alt') { document.body.classList.add('altdraw'); if (!e.repeat) altUsed = false; } });
 addEventListener('keyup', e => { if (e.key === 'Alt') { document.body.classList.remove('altdraw'); if (altUsed) { e.preventDefault(); altUsed = false; } } });
 addEventListener('blur', () => document.body.classList.remove('altdraw'));
-const MARK = { d: 'rgba(255,170,0,0.8)', s: 'rgba(21,120,27,0.8)', c: 'rgba(136,32,32,0.8)', a: 'rgba(0,48,136,0.8)' };
+const MARK = { r: 'rgba(235,72,60,0.8)', d: 'rgba(255,170,0,0.8)', s: 'rgba(21,120,27,0.8)', c: 'rgba(136,32,32,0.8)', a: 'rgba(0,48,136,0.8)' };
 const PEN_ORDER = ['d', 's', 'c', 'a'];
 let rightTip = false; // show the 'arrows moved to Alt' tip once
 function makeAnno(el, flippedFn, opts = {}) {
@@ -2438,7 +2438,12 @@ function makeAnno(el, flippedFn, opts = {}) {
     if (e.button === 2 && !altDraw) {
       e.preventDefault(); e.stopImmediatePropagation();
       if (opts.onRight && opts.onRight()) { A.clear(); return; } // right-click cancels a premove first
-      if (mode === 'alt') { if (!rightTip) { rightTip = true; toast('To draw arrows, hold Alt (Option on Mac) and click. You can change this in Settings.'); } return; }
+      if (mode === 'alt') { // right-click still highlights a square red; arrows stay on Alt + click in this mode
+        const sq = sqAt(e.clientX, e.clientY); if (sq < 0) return;
+        A.start = { sq, col: 'r', id: e.pointerId, markOnly: true, right: true };
+        try { el.setPointerCapture(e.pointerId); } catch (err) { }
+        return;
+      }
       rightDraw = true;
     }
     const drawing = altDraw || rightDraw || (A.pen && e.button === 0);
@@ -2446,7 +2451,7 @@ function makeAnno(el, flippedFn, opts = {}) {
       e.preventDefault(); e.stopImmediatePropagation();
       if (altDraw) altUsed = true;
       const sq = sqAt(e.clientX, e.clientY); if (sq < 0) return;
-      A.start = { sq, col: altDraw ? colorOf(e) : rightDraw ? colorOfRight(e) : A.pen, id: e.pointerId };
+      A.start = { sq, col: altDraw ? colorOf(e) : rightDraw ? colorOfRight(e) : A.pen, id: e.pointerId, right: rightDraw };
       try { el.setPointerCapture(e.pointerId); } catch (err) { }
       return;
     }
@@ -2459,8 +2464,12 @@ function makeAnno(el, flippedFn, opts = {}) {
     const st = A.start; A.start = null;
     const to = sqAt(e.clientX, e.clientY); if (to < 0) return;
     if (to === st.sq) {
+      const col = st.right && st.col === 'd' ? 'r' : st.col; // a plain right-click highlights the square red
       const i = A.marks.findIndex(m => m.sq === to);
-      if (i >= 0 && A.marks[i].col === st.col) A.marks.splice(i, 1); else if (i >= 0) A.marks[i].col = st.col; else A.marks.push({ sq: to, col: st.col });
+      if (i >= 0 && A.marks[i].col === col) A.marks.splice(i, 1); else if (i >= 0) A.marks[i].col = col; else A.marks.push({ sq: to, col });
+    } else if (st.markOnly) {
+      if (!rightTip) { rightTip = true; toast('To draw arrows, hold Alt (Option on Mac) and drag, or switch arrows to right-click in Settings.'); }
+      return;
     } else {
       const i = A.arrows.findIndex(a => a.from === st.sq && a.to === to);
       if (i >= 0 && A.arrows[i].col === st.col) A.arrows.splice(i, 1); else if (i >= 0) A.arrows[i].col = st.col; else A.arrows.push({ from: st.sq, to, col: st.col });
@@ -5153,7 +5162,7 @@ function drawMenuBoard() {
 }
 window.addEventListener('resize', () => { if (document.body.dataset.screen === 'menu') drawMenuBoard(); });
 // ---------- Settings ----------
-const ARROW_MODES = { alt: ['Alt + click', 'Hold Alt (Option on Mac) and left-click drag. Right-click only cancels premoves.'], right: ['Right-click', 'Right-click drag for arrows and right-click a square to highlight it, like chess.com. Right-click also cancels a premove.'], both: ['Both', 'Alt + left-click and right-click drag both draw.'] };
+const ARROW_MODES = { alt: ['Alt + click', 'Hold Alt (Option on Mac) and left-click drag for arrows. Right-click a square to highlight it red.'], right: ['Right-click', 'Right-click drag for arrows and right-click a square to highlight it red, like chess.com. Right-click also cancels a premove.'], both: ['Both', 'Alt + left-click and right-click drag both draw.'] };
 const arrowMode = () => ARROW_MODES[SV.arrows] ? SV.arrows : 'alt';
 function openSettings() {
   const o = document.createElement('div'); o.className = 'ov';
